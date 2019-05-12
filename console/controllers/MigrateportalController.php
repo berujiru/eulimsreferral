@@ -149,5 +149,4 @@ class MigrateportalController extends Controller
     {
         echo $message . "\n";
     }
-
 }
