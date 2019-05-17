@@ -150,7 +150,7 @@ if (Yii::$app->controller->action->id === 'login') {
 							$('#count_noti_sub').html('');
 							$('#count_noti_menu').html('');
 						} else {
-							alert(data.num_notification);
+							console.log(data.num_notification);
 						}
 					},
 					/*beforeSend: function (xhr) {

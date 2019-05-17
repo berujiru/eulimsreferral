@@ -79,8 +79,8 @@ $Host= "//".Yii::$app->getRequest()->serverName;
     <div class="pull-right hidden-xs">
         ULIMS <b>Version</b> 2.0
     </div>
-    <strong>Copyright &copy; <?= $CopyrightYear ?> <a href="//region9.dost.gov.ph" target="_blank">DOST-IX</a>.</strong> All rights
-    reserved. | <a href="<?= $Host ?>">frontend</a>.</strong>
+    <p><strong>Copyright &copy; <?= $CopyrightYear ?> <a href="//onelab.ph" target="_blank">OneLab</a>. All rights
+    reserved. | <a href="<?= $Host ?>">frontend</a>.</strong></p>
 </footer>
 
 <!-- Control Sidebar -->

@@ -67,6 +67,7 @@ return array(
     'kartik\\grid\\' => array($vendorDir . '/kartik-v/yii2-grid'),
     'kartik\\form\\' => array($vendorDir . '/kartik-v/yii2-widget-activeform'),
     'kartik\\file\\' => array($vendorDir . '/kartik-v/yii2-widget-fileinput'),
+    'kartik\\field\\' => array($vendorDir . '/kartik-v/yii2-field-range'),
     'kartik\\export\\' => array($vendorDir . '/kartik-v/yii2-export'),
     'kartik\\editable\\' => array($vendorDir . '/kartik-v/yii2-editable'),
     'kartik\\dynagrid\\' => array($vendorDir . '/kartik-v/yii2-dynagrid'),

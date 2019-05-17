@@ -112,6 +112,7 @@ class ComposerStaticInitb2e31f2d92d734baadeb2c74aa89265e
             'kartik\\grid\\' => 12,
             'kartik\\form\\' => 12,
             'kartik\\file\\' => 12,
+            'kartik\\field\\' => 13,
             'kartik\\export\\' => 14,
             'kartik\\editable\\' => 16,
             'kartik\\dynagrid\\' => 16,
@@ -464,6 +465,10 @@ class ComposerStaticInitb2e31f2d92d734baadeb2c74aa89265e
         'kartik\\file\\' => 
         array (
             0 => __DIR__ . '/..' . '/kartik-v/yii2-widget-fileinput',
+        ),
+        'kartik\\field\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/kartik-v/yii2-field-range',
         ),
         'kartik\\export\\' => 
         array (

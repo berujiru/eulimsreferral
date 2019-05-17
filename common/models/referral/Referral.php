@@ -224,4 +224,28 @@ class Referral extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Statuslogs::className(), ['referral_id' => 'referral_id']);
     }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAgencyreceiving()
+    {
+        return $this->hasOne(Agency::className(), ['agency_id' => 'receiving_agency_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAgencytesting()
+    {
+        return $this->hasOne(Agency::className(), ['agency_id' => 'testing_agency_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCustomer()
+    {
+        return $this->hasOne(Customer::className(), ['customer_id' => 'customer_id']);
+    }
 }
