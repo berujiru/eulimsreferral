@@ -3,7 +3,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use common\models\system\User;
 use common\models\system\Package;
-use common\models\system\Message;
+//use common\models\system\Message;
 use yii\helpers\ArrayHelper;
 use common\components\Functions;
 
@@ -42,19 +42,6 @@ if(Yii::$app->user->isGuest){
 }
 
 $Packages= Package::find()->all();
-$conditions = ['to' => Yii::$app->user->id, 'status' => 0];
-$messages=Message::find()->where($conditions)->all();
-$TotalMsg=count($messages);
-if($TotalMsg<=0){
-    $TotalUnreadMessage="You have no message.";
-}elseif($TotalMsg==1){
-    $TotalUnreadMessage="You have $TotalMsg unread message.";
-}else{
-    $TotalUnreadMessage="You have $TotalMsg unread messages.";
-}
-if($TotalMsg==0){
-    $TotalMsg='';
-}
 $GLOBALS['rstl_id']= 11;
 ?>
 
@@ -67,37 +54,6 @@ $GLOBALS['rstl_id']= 11;
         <div class="navbar-custom-menu">
             
             <ul class="nav navbar-nav">
-                <li class="dropdown messages-menu">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-envelope-o"></i>
-                        <span class="label label-success"><?= $TotalMsg ?></span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li class="header"><?= $TotalUnreadMessage ?></li>
-                        <li>
-                            <!-- inner menu: contains the actual data -->
-                            <ul class="menu">
-                                <li><!-- start message -->
-                                    <?php foreach($messages as $message){ ?>
-                                    <a href="<?= Url::to(['/message/message/view','hash'=>$message->hash]) ?>">
-                                            <div class="pull-left">
-                                                <span><?= $message->sender->username ?></span>
-                                            </div>
-                                            <h4>
-                                                <?= $message->title ?>
-                                                <small><i class="fa fa-clock-o"></i> <?= $message->created_at ?></small>
-                                            </h4>
-                                            <p><?= $message->message ?></p>
-                                        </a> 
-                                    <?php } ?>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="footer">
-                            <a href="<?= Url::to($GLOBALS['frontend_base_uri'].'message/message/inbox') ?>">View all Messages</a>
-                        </li>
-                    </ul>
-                </li>
                 <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
 

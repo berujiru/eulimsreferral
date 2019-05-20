@@ -1,7 +1,13 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\DetailView;
+use kartik\detail\DetailView;
+use kartik\grid\GridView;
+use yii\helpers\Url;
+use yii\bootstrap\Modal;
+use kartik\dialog\Dialog;
+use yii\web\JsExpression;
+use yii\widgets\ListView;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\referral\Referral */
@@ -20,7 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'hover'=>true,
             'mode'=>DetailView::MODE_VIEW,
             'panel'=>[
-                'heading'=>'<i class="glyphicon glyphicon-book"></i> Referral Code ' . $referral->referral_code,
+                'heading'=>'<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code,
                 'type'=>DetailView::TYPE_PRIMARY,
             ],
             'buttons1' => '',
@@ -36,12 +42,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             'label'=>'Referral Code',
                             'displayOnly'=>true,
                             'valueColOptions'=>['style'=>'width:30%'],
-                            'value'=> $request->referral_code,
+                            'value'=> $model->referral_code,
                         ],
                         [
                             'label'=>'Customer / Agency',
                             'format'=>'raw',
-                            'value'=> $referral->customer_id > 0 && !empty($referral->customer->customer_name) ? $referral->customer->customer_name : "",
+                            'value'=> $model->customer_id > 0 && !empty($model->customer->customer_name) ? $model->customer->customer_name : "",
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
                         ],
@@ -52,14 +58,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         [
                             'label'=>'Referral Date / Time',
                             'format'=>'raw',
-                            'value'=> ($referral->referral_date_time != "0000-00-00 00:00:00") ? Yii::$app->formatter->asDate($referral->referral_date_time, 'php:F j, Y h:i a') : "<i class='text-danger font-weight-bold h5'>Pending referral request</i>",
+                            'value'=> ($model->referral_date_time != "0000-00-00 00:00:00") ? Yii::$app->formatter->asDate($model->referral_date_time, 'php:F j, Y h:i a') : "<i class='text-danger font-weight-bold h5'>Pending referral request</i>",
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
                         ],
                         [
                             'label'=>'Address',
                             'format'=>'raw',
-                            'value'=> $referral->customer_id > 0 && !empty($referral->customer->customer_name) ? $referral->customer->address : "",
+                            'value'=> $model->customer_id > 0 && !empty($model->customer->customer_name) ? $model->customer->address : "",
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
                         ],
@@ -71,14 +77,14 @@ $this->params['breadcrumbs'][] = $this->title;
                        [
                             'label'=>'Sample Received Date',
                             'format'=>'raw',
-                            'value'=> !empty($referral->sample_received_date) ? Yii::$app->formatter->asDate($referral->sample_received_date, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No sample received date</i>",
+                            'value'=> !empty($model->sample_received_date) ? Yii::$app->formatter->asDate($model->sample_received_date, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No sample received date</i>",
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
                         ],
                         [
                             'label'=>'Tel no.',
                             'format'=>'raw',
-                            'value'=> $referral->customer_id > 0 && !empty($referral->customer->customer_name) ? $referral->customer->tel : "",
+                            'value'=> $model->customer_id > 0 && !empty($model->customer->customer_name) ? $model->customer->tel : "",
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
                         ],
@@ -89,14 +95,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         [
                             'label'=>'Estimated Due Date',
                             'format'=>'raw',
-                            'value'=> ($referral->report_due != "0000-00-00 00:00:00") ? Yii::$app->formatter->asDate($referral->report_due, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>Pending referral request</i>",
+                            'value'=> ($model->report_due != "0000-00-00 00:00:00") ? Yii::$app->formatter->asDate($model->report_due, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>Pending referral request</i>",
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
                         ],
                         [
                             'label'=>'Fax no.',
                             'format'=>'raw',
-                            'value'=> $referral->customer_id > 0 && !empty($referral->customer->customer_name) ? $referral->customer->fax : "",
+                            'value'=> $model->customer_id > 0 && !empty($model->customer->customer_name) ? $model->customer->fax : "",
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
                         ],
@@ -189,5 +195,62 @@ $this->params['breadcrumbs'][] = $this->title;
 
         ]);
         ?>
+    </div>
+    <div class="container">
+        <div class="table-responsive">
+        <?php
+            $gridColumns = [
+                [
+                    'attribute'=>'sample_code',
+                    'enableSorting' => false,
+                    'contentOptions' => [
+                        'style'=>'max-width:70px; overflow: auto; white-space: normal; word-wrap: break-word;'
+                    ],
+                ],
+                [
+                    'attribute'=>'sample_name',
+                    'enableSorting' => false,
+                ],
+                [
+                    'attribute'=>'description',
+                    'format' => 'raw',
+                    'enableSorting' => false,
+                    'value' => function($data) use ($model){
+                        return ($model->lab_id == 2) ? "Sampling Date: <span style='color:#000077;'><b>".date("Y-m-d h:i A",strtotime($data->sampling_date))."</b></span>,&nbsp;".$data->description : $data->description;
+                    },
+                   'contentOptions' => [
+                        'style'=>'max-width:180px; overflow: auto; white-space: normal; word-wrap: break-word;'
+                    ],
+                ],
+            ];
+
+            echo GridView::widget([
+                'id' => 'sample-grid',
+                'dataProvider'=> $sampleDataProvider,
+                'pjax'=>true,
+                'pjaxSettings' => [
+                    'options' => [
+                        'enablePushState' => false,
+                    ]
+                ],
+                'responsive'=>true,
+                'striped'=>true,
+                'hover'=>true,
+                'panel' => [
+                    'heading'=>'<h3 class="panel-title">Samples</h3>',
+                    'type'=>'primary',
+                    'before'=>null,
+                    'after'=>false,
+                ],
+                'columns' => $gridColumns,
+                'toolbar' => [
+                    'content'=> Html::a('<i class="glyphicon glyphicon-repeat"></i> Refresh Grid', [Url::to(['referral/view','id'=>$model->referral_id])], [
+                                'class' => 'btn btn-default', 
+                                'title' => 'Refresh Grid'
+                            ]),
+                ],
+            ]);
+        ?>
+        </div>
     </div>
 </div>

@@ -8,6 +8,11 @@ use common\models\referral\ReferralSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use common\components\ReferralComponent;
+use linslin\yii2\curl;
+use yii\helpers\Json;
+use yii\helpers\ArrayHelper;
+use yii\data\ArrayDataProvider;
 
 /**
  * ReferralController implements the CRUD actions for Referral model.
@@ -51,6 +56,90 @@ class ReferralController extends Controller
      * @throws NotFoundHttpException if the model cannot be found
      */
     public function actionView($id)
+    {
+        $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+
+        if($rstlId > 0)
+        {
+            $refcomponent = new ReferralComponent();
+            $referralDetails = json_decode($refcomponent->getReferraldetails($id,$rstlId),true);
+            //$noticeDetails = json_decode($this->getNotificationDetails($noticeId,$rstlId),true);
+            //$noticeDetails = json_decode($refcomponent->getNotificationOne(3,$rstlId),true);
+
+            if($referralDetails != 0)
+            {
+                $model = $this->findModel($id);
+
+                $request = $referralDetails['request_data'];
+                $samples = $referralDetails['sample_data'];
+                $analyses = $referralDetails['analysis_data'];
+                $customer = $referralDetails['customer_data'];
+
+                //set third parameter to 1 for attachment type deposit slip
+                $deposit = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
+                //set third parameter to 2 for attachment type or
+                $or = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                $referred_agency = json_decode($refcomponent->getReferredAgency($id,Yii::$app->user->identity->profile->rstl_id),true);
+
+                $receiving_agency = !empty($referred_agency['receiving_agency']) && $referred_agency > 0 ? $referred_agency['receiving_agency']['name'] : null;
+                $testing_agency = !empty($referred_agency['testing_agency']) && $referred_agency > 0 ? $referred_agency['testing_agency']['name'] : null;
+
+                $sampleDataProvider = new ArrayDataProvider([
+                    'allModels' => $model->samples,
+                    'pagination'=> [
+                        'pageSize' => 10,
+                    ],
+                ]);
+
+                $analysisDataprovider = new ArrayDataProvider([
+                    'allModels' => $analyses,
+                    //'pagination'=>false,
+                    'pagination'=> [
+                        'pageSize' => 10,
+                    ],
+
+                ]);
+
+                $analysis_fees = implode(',', array_map(function ($data) {
+                    return $data['analysis_fee'];
+                }, $analyses));
+
+                $subtotal = array_sum(explode(",",$analysis_fees));
+                $rate = $request['discount_rate'];
+                $discounted = $subtotal * ($rate/100);
+                $total = $subtotal - $discounted;
+
+                return $this->render('view', [
+                    'model' => $model,
+                    'request' => $request,
+                    'customer' => $customer,
+                    'sampleDataProvider' => $sampleDataProvider,
+                    'analysisdataprovider'=> $analysisDataprovider,
+                    'subtotal' => $subtotal,
+                    'discounted' => $discounted,
+                    'total' => $total,
+                    'countSample' => count($samples),
+                    //'notification' => $noticeDetails,
+                    'receiving_agency' => $receiving_agency,
+                    'testing_agency' => $testing_agency,
+                    'depositslip' => $deposit,
+                    'officialreceipt' => $or,
+                ]);
+            } else {
+                Yii::$app->session->setFlash('error', "Your agency doesn't appear notified!");
+                return $this->redirect(['/referrals/notification']);
+            }
+        } else {
+            Yii::$app->session->setFlash('error', "Invalid request!");
+            return $this->redirect(['/referrals/notification']);
+        }
+
+        /*return $this->render('view', [
+            'model' => $this->findModel($id),
+        ]);*/
+    }
+
+    public function actionViewnotice($id)
     {
         
 

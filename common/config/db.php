@@ -10,7 +10,7 @@ return [
         'charset' => 'utf8',
         'tablePrefix' => 'tbl_',
     ],
-    'labdb'=>[
+    'eulimsdb'=>[
         'class' => 'yii\db\Connection',  
         'dsn' => 'mysql:host=localhost;dbname=eulims_lab',
         'username' => 'eulims',

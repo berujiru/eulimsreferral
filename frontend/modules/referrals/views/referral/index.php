@@ -34,7 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'after'=>false,
             //'before'=>Html::button('<i class="glyphicon glyphicon-plus"></i> Create Referral Request', ['value' => Url::to(['referral/create']),'title'=>'Create Referral Request', 'onclick'=>'addSample(this.value,this.title)', 'class' => 'btn btn-success','id' => 'referralcreate']),
             //'before'=>"<button type='button' onclick='LoadModal(\"Create Referral Request\",\"/referrals/referral/create\")' class=\"btn btn-success\"><i class=\"glyphicon glyphicon-plus\"></i> Create Referral Request</button>",
-            'before'=>"<span style='color:#000099;'><b>Note:</b> Only referrals with referral code are shown.</span>",
+            'before'=>"<span style='color:#000099;'><b>Note:</b> All referral requests with referral code are shown.</span>",
         ],
         'columns' => [
             ['class' => 'kartik\grid\SerialColumn'],
@@ -68,7 +68,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 'header' => 'Customer',
                 'attribute' => 'customer_id',
                 'format' => 'raw',
-                'value' => function($data){ return $data->customer->customer_name;},
+                'value' => function($data){ 
+                    return !empty($data->customer) ? $data->customer->customer_name : null;
+                },
                 'headerOptions' => ['class' => 'text-center'],
             ],
             [
@@ -76,7 +78,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'receiving_agency_id',
                 'format' => 'raw',
                 'value' => function($data){
-                    return $data->agencyreceiving->name;
+                    return !empty($data->customer) ? $data->agencyreceiving->name : null;
                 },
                 'headerOptions' => ['class' => 'text-center'],
             ],
@@ -85,7 +87,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'testing_agency_id',
                 'format' => 'raw',
                 'value' => function($data){
-                    return $data->agencytesting->name;
+                    return !empty($data->customer) ? $data->agencytesting->name : null;
                 },
                 'headerOptions' => ['class' => 'text-center'],
             ],
@@ -97,8 +99,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 'headerOptions' => ['class' => 'kartik-sheet-style'],
                 'buttons' => [
                     'view' => function ($url, $data) {
-
-                        return Html::button('<span class="glyphicon glyphicon-eye-open"></span>', ['value'=>Url::to(['referral/view','id'=>$data->referral_id]),'onclick'=>'location.href=this.value', 'class' => 'btn btn-primary','title' => 'View '.$data->referral_code]);
+                        return Html::button('<span class="glyphicon glyphicon-eye-open"></span>', ['value'=>Url::to(['referral/view','id'=>$data->referral_id]),'onclick'=>'window.open(this.value,"_blank")', 'class' => 'btn btn-primary','title' => 'View '.$data->referral_code]);
+                        //onclick="window.open('your_html', '_blank')"
+                        //return Html::a('<span class="glyphicon glyphicon-eye-open"></span>', ['referral/view', 'id' => $data->referral_id], ['class' => 'btn btn-primary','title' => 'View '.$data->referral_code,'target'=>"_blank"]);
                     },
                 ],
             ],
