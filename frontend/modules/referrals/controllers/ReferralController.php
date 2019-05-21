@@ -5,14 +5,20 @@ namespace frontend\modules\referrals\controllers;
 use Yii;
 use common\models\referral\Referral;
 use common\models\referral\ReferralSearch;
+use common\models\referral\Sample;
+use common\models\referral\Analysis;
+use common\models\referral\Notification;
+use common\models\referral\Customer;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use common\components\ReferralComponent;
+use common\components\ReferralFunctions;
 use linslin\yii2\curl;
 use yii\helpers\Json;
 use yii\helpers\ArrayHelper;
 use yii\data\ArrayDataProvider;
+use yii\db\Query;
 
 /**
  * ReferralController implements the CRUD actions for Referral model.
@@ -61,31 +67,27 @@ class ReferralController extends Controller
 
         if($rstlId > 0)
         {
+            $function = new ReferralFunctions();
             $refcomponent = new ReferralComponent();
-            $referralDetails = json_decode($refcomponent->getReferraldetails($id,$rstlId),true);
-            //$noticeDetails = json_decode($this->getNotificationDetails($noticeId,$rstlId),true);
-            //$noticeDetails = json_decode($refcomponent->getNotificationOne(3,$rstlId),true);
 
-            if($referralDetails != 0)
+            $checknotified = $function->checkNotified($id,$rstlId);
+            $checkowner = $function->checkowner($id,$rstlId);
+
+            if($checknotified > 0 || $checkowner > 0)
             {
                 $model = $this->findModel($id);
 
-                $request = $referralDetails['request_data'];
-                $samples = $referralDetails['sample_data'];
-                $analyses = $referralDetails['analysis_data'];
-                $customer = $referralDetails['customer_data'];
+                $samples = $model->samples;
+                $analyses = Analysis::find()->joinWith('sample',false)->where('referral_id =:referralId',[':referralId'=>$id])->all();
+                //$customer = Customer::findOne($model->customer_id);
 
                 //set third parameter to 1 for attachment type deposit slip
                 $deposit = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
                 //set third parameter to 2 for attachment type or
                 $or = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
-                $referred_agency = json_decode($refcomponent->getReferredAgency($id,Yii::$app->user->identity->profile->rstl_id),true);
-
-                $receiving_agency = !empty($referred_agency['receiving_agency']) && $referred_agency > 0 ? $referred_agency['receiving_agency']['name'] : null;
-                $testing_agency = !empty($referred_agency['testing_agency']) && $referred_agency > 0 ? $referred_agency['testing_agency']['name'] : null;
 
                 $sampleDataProvider = new ArrayDataProvider([
-                    'allModels' => $model->samples,
+                    'allModels' => $samples,
                     'pagination'=> [
                         'pageSize' => 10,
                     ],
@@ -93,26 +95,31 @@ class ReferralController extends Controller
 
                 $analysisDataprovider = new ArrayDataProvider([
                     'allModels' => $analyses,
-                    //'pagination'=>false,
-                    'pagination'=> [
+                    'pagination'=>false,
+                    /*'pagination'=> [
                         'pageSize' => 10,
-                    ],
+                    ],*/
 
                 ]);
 
-                $analysis_fees = implode(',', array_map(function ($data) {
-                    return $data['analysis_fee'];
-                }, $analyses));
+                $query = new Query;
+                $subtotal = $query->from('tbl_analysis')
+                   ->join('INNER JOIN', 'tbl_sample', 'tbl_analysis.sample_id = tbl_sample.sample_id')
+                   ->where('referral_id =:referralId',[':referralId'=>$id])
+                   ->sum('analysis_fee');
 
-                $subtotal = array_sum(explode(",",$analysis_fees));
-                $rate = $request['discount_rate'];
+                /*$subtotal = Analysis::find()->joinWith('sample',false)
+                    ->where('referral_id =:referralId',[':referralId'=>$id])
+                    ->sum('analysis_fee');*/
+
+                $rate = $model->discount_rate;
                 $discounted = $subtotal * ($rate/100);
                 $total = $subtotal - $discounted;
 
                 return $this->render('view', [
                     'model' => $model,
-                    'request' => $request,
-                    'customer' => $customer,
+                    //'request' => $request,
+                    //'customer' => $customer,
                     'sampleDataProvider' => $sampleDataProvider,
                     'analysisdataprovider'=> $analysisDataprovider,
                     'subtotal' => $subtotal,
@@ -120,8 +127,6 @@ class ReferralController extends Controller
                     'total' => $total,
                     'countSample' => count($samples),
                     //'notification' => $noticeDetails,
-                    'receiving_agency' => $receiving_agency,
-                    'testing_agency' => $testing_agency,
                     'depositslip' => $deposit,
                     'officialreceipt' => $or,
                 ]);
@@ -141,11 +146,79 @@ class ReferralController extends Controller
 
     public function actionViewnotice($id)
     {
-        
+        $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+        $noticeId = (int) Yii::$app->request->get('notice_id');
 
-        /*return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);*/
+        if($rstlId > 0 && $noticeId > 0)
+        {
+            $function = new ReferralFunctions();
+            $refcomponent = new ReferralComponent();
+
+            $checknotified = $function->checkNotified($id,$rstlId);
+            $checkowner = $function->checkowner($id,$rstlId);
+
+            $noticeDetails = Notification::find()
+                ->where('notification_id =:notificationId AND recipient_id =:recipientId', [':notificationId'=>$noticeId,':recipientId'=>$rstlId])
+                ->one();
+
+            if(($checknotified > 0 && count($noticeDetails) > 0) || $checkowner > 0)
+            {
+                $model = $this->findModel($id);
+
+                $samples = $model->samples;
+                $analyses = Analysis::find()->joinWith('sample',false)->where('referral_id =:referralId',[':referralId'=>$id])->all();
+
+                //set third parameter to 1 for attachment type deposit slip
+                $deposit = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
+                //set third parameter to 2 for attachment type or
+                $or = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+
+                $sampleDataProvider = new ArrayDataProvider([
+                    'allModels' => $samples,
+                    'pagination'=> [
+                        'pageSize' => 10,
+                    ],
+                ]);
+
+                $analysisDataprovider = new ArrayDataProvider([
+                    'allModels' => $analyses,
+                    //'pagination'=>false,
+                    'pagination'=> [
+                        'pageSize' => 10,
+                    ],
+
+                ]);
+
+                $query = new Query;
+                $subtotal = $query->from('tbl_analysis')
+                   ->join('INNER JOIN', 'tbl_sample', 'tbl_analysis.sample_id = tbl_sample.sample_id')
+                   ->where('referral_id =:referralId',[':referralId'=>$id])
+                   ->sum('analysis_fee');
+
+                $rate = $model->discount_rate;
+                $discounted = $subtotal * ($rate/100);
+                $total = $subtotal - $discounted;
+
+                return $this->render('view', [
+                    'model' => $model,
+                    'sampleDataProvider' => $sampleDataProvider,
+                    'analysisdataprovider'=> $analysisDataprovider,
+                    'subtotal' => $subtotal,
+                    'discounted' => $discounted,
+                    'total' => $total,
+                    'countSample' => count($samples),
+                    'notification' => $noticeDetails,
+                    'depositslip' => $deposit,
+                    'officialreceipt' => $or,
+                ]);
+            } else {
+                Yii::$app->session->setFlash('error', "Your agency doesn't appear notified!");
+                return $this->redirect(['/referrals/notification']);
+            }
+        } else {
+            Yii::$app->session->setFlash('error', "Invalid request!");
+            return $this->redirect(['/referrals/notification']);
+        }
     }
 
     /**

@@ -111,17 +111,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'columns' => [
                         [
-                            //'attribute'=>'report_due',
                             'label'=>'Referred by',
                             'format'=>'raw',
-                            'value'=> !empty($receiving_agency) ? $receiving_agency : null,
+                            'value'=> !empty($model->agencyreceiving) ? $model->agencyreceiving->name : null,
                             'displayOnly'=>true
                         ],
                         [
                             'label'=>'Referred to',
                             'format'=>'raw',
-                            //'value'=>$model->customer ? $model->customer->fax : "",
-                            'value'=> !empty($testing_agency) ? $testing_agency : null,
+                            'value'=> !empty($model->agencytesting) ? $model->agencytesting->name : null,
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
                         ],
@@ -136,11 +134,11 @@ $this->params['breadcrumbs'][] = $this->title;
                     'columns' => [
                         [
                             'label'=>'Deposite Slip',
-                            'value'=>function() use ($depositslip,$model,$request){
+                            'value'=>function($data) use ($depositslip,$model){
                                 $link = '';
                                 if($depositslip > 0){
                                     foreach ($depositslip as $deposit) {
-                                        $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$deposit['filename'],'/referrals/attachment/download?request_id='.$request['local_request_id'].'&file='.$deposit['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Deposit Slip','target'=>'_self'])."<br>";
+                                        $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$deposit['filename'],'/referrals/attachment/download?request_id='.$model->local_request_id.'&file='.$deposit['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Deposit Slip','target'=>'_self'])."<br>";
                                     }
                                 }
                                 return $link;
@@ -153,11 +151,11 @@ $this->params['breadcrumbs'][] = $this->title;
                         [
                             'label'=>'Official Receipt',
                             'format'=>'raw',
-                            'value'=>function() use ($officialreceipt,$model,$request){
+                            'value'=>function($data) use ($officialreceipt,$model){
                                 $link = '';
                                 if($officialreceipt > 0){
                                     foreach ($officialreceipt as $or) {
-                                        $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$or['filename'],'/referrals/attachment/download?request_id='.$request['local_request_id'].'&file='.$or['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Official Receipt','target'=>'_self'])."<br>";
+                                        $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$or['filename'],'/referrals/attachment/download?request_id='.$model->local_request_id.'&file='.$or['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Official Receipt','target'=>'_self'])."<br>";
                                     }
                                 }
                                 return $link;
@@ -177,14 +175,16 @@ $this->params['breadcrumbs'][] = $this->title;
                     'columns' => [
                         [ 
                             'label'=>'Recieved By',
+                            'attribute' => 'cro_receiving',
                             'format'=>'raw',
-                            'value'=>$request['cro_receiving'],
+                            //'value'=>$model->cro_receiving,
                             'displayOnly'=>true,
                             'valueColOptions'=>['style'=>'width:30%']
                         ],
                         [
                             'label'=>'Conforme',
-                            'value'=> $request['conforme'],
+                            'attribute' => 'conforme',
+                            //'value'=> $model->conforme,
                             'format'=>'raw',
                             'valueColOptions'=>['style'=>'width:30%'], 
                             'displayOnly'=>true
@@ -252,5 +252,103 @@ $this->params['breadcrumbs'][] = $this->title;
             ]);
         ?>
         </div>
+    </div>
+    <div class="container">
+    <?php
+
+        $analysisgridColumns = [
+            [
+                'attribute'=>'sample.sample_name',
+                'header'=>'Sample',
+                'format' => 'raw',
+                'enableSorting' => false,
+                'value' => function($data) {
+                    return !empty($data->sample) ? $data->sample->sample_name : null;
+                },
+                'contentOptions' => ['style' => 'width:10%; white-space: normal;'],
+               
+            ],
+            [
+                'attribute'=>'sample.sample_code',
+                'header'=>'Sample Code',
+                'value' => function($data) {
+                    return !empty($data->sample) ? $data->sample->sample_code : null;
+                },
+                'format' => 'raw',
+                'enableSorting' => false,
+                'contentOptions' => ['style' => 'width:10%; white-space: normal;'],
+            ],
+            [
+                'attribute'=>'testname.test_name',
+                'format' => 'raw',
+                'header'=>'Test/ Calibration Requested',
+                'contentOptions' => ['style' => 'width: 15%;word-wrap: break-word;white-space:pre-line;'],
+                'enableSorting' => false,
+            ],
+            [
+                'attribute'=>'methodreference.method',
+                'format' => 'raw',
+                'header'=>'Test Method',
+                'enableSorting' => false,  
+                'contentOptions' => ['style' => 'width: 50%;word-wrap: break-word;white-space:pre-line;'],
+                'pageSummary' => '<span style="float:right";>SUBTOTAL<BR>DISCOUNT<BR><B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TOTAL</B></span>',             
+            ],
+            [
+                'attribute'=>'analysis_fee',
+                'header'=>'Unit Price',
+                'enableSorting' => false,
+                'hAlign'=>'right',
+                'format' => 'raw',
+                'value'=>function($data){
+                    return number_format($data['analysis_fee'],2);
+                },
+                'contentOptions' => [
+                    'style'=>'max-width:80px; overflow: auto; white-space: normal; word-wrap: break-word;'
+                ],
+                'hAlign' => 'right', 
+                'vAlign' => 'left',
+                'width' => '7%',
+                'format' => 'raw',
+                'pageSummary'=> function () use ($subtotal,$discounted,$total,$countSample) {
+                    if($countSample > 0){
+                        return  '<div id="subtotal">₱'.number_format($subtotal, 2).'</div><div id="discount">₱'.number_format($discounted, 2).'</div><div id="total"><b>₱'.number_format($total, 2).'</b></div>';
+                    } else {
+                        return '';
+                    }
+                },
+            ],
+        ];
+            echo GridView::widget([
+                'id' => 'analysis-grid',
+                'responsive'=>true,
+                'dataProvider'=> $analysisdataprovider,
+                'pjax'=>true,
+                'pjaxSettings' => [
+                    'options' => [
+                        'enablePushState' => false,
+                    ]
+                ],
+                'responsive'=>true,
+                'striped'=>true,
+                'hover'=>true,
+                'showPageSummary' => true,
+                'hover'=>true,
+                
+                'panel' => [
+                    'heading'=>'<h3 class="panel-title">Analysis</h3>',
+                    'type'=>'primary',
+                    'before'=> null,
+                    'after'=> false,
+                    'footer'=>null,
+                ],
+                'columns' => $analysisgridColumns,
+                'toolbar' => [
+                    'content'=> Html::a('<i class="glyphicon glyphicon-repeat"></i> Refresh Grid', [Url::to(['referral/view','id'=>$model->referral_id])], [
+                                'class' => 'btn btn-default', 
+                                'title' => 'Refresh Grid'
+                            ]),
+                ],
+            ]);
+        ?>
     </div>
 </div>
