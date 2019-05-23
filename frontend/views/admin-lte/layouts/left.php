@@ -125,7 +125,7 @@ if(Yii::$app->user->isGuest){
 					$showURL = [$mItem->url];
 				}
                 $ItemS=[
-                   'label' =>'<img src="/images/icons/' .$mItem->icon. '.png" style="width:20px">  <span>' . $mItem->Package_Detail . '</span>', 
+                   'label' =>'<img src="/images/icons/' .$mItem->icon. '.png" style="width:20px">  <span>' . $mItem->Package_Detail . $numNotification . '</span>', 
                    'icon'=>' " style="display:none;width:0px"',
                    'url'=>$showURL,
                    'visible'=>Yii::$app->user->can($SubmodulePermission),

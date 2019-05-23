@@ -68,4 +68,12 @@ class Notification extends \yii\db\ActiveRecord
             'notification_date' => 'Notification Date',
         ];
     }
+
+    /**
+     * @return \yii\db\ActiveQuery
+    */
+    public function getReferral()
+    {
+        return $this->hasOne(Referral::className(), ['referral_id' => 'referral_id']);
+    }
 }

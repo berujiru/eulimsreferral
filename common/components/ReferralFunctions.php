@@ -62,7 +62,7 @@ class ReferralFunctions extends Component
 	}
 
 	//check if the agency is the owner of the referral request
-	function checkowner($referralId,$senderId)
+	function checkOwner($referralId,$senderId)
 	{
 		if($referralId > 0 && $senderId > 0){
 			$check = Referral::find()
