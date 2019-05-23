@@ -5,12 +5,15 @@ namespace frontend\modules\referrals\controllers;
 use Yii;
 use common\models\referral\Notification;
 use common\models\referral\NotificationSearch;
+use common\models\referral\Agency;
+use common\models\referral\Referral;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use common\models\lab\exRequestreferral;
 use yii\helpers\Json;
 use common\components\ReferralComponent;
+use common\components\ReferralFunctions;
 use yii\data\ArrayDataProvider;
 
 /**
@@ -39,18 +42,15 @@ class NotificationController extends Controller
      */
     public function actionIndex()
     {
-        /*$searchModel = new NotificationSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);*/
         if(isset(Yii::$app->user->identity->profile->rstl_id)){
-            $rstlId = Yii::$app->user->identity->profile->rstl_id;
-            $refcomponent = new ReferralComponent();
-            $notification = json_decode($refcomponent->getNotificationAll($rstlId),true);
-            $count = $notification['count_notification'];
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+            $function= new ReferralFunctions();
+            //$notification = json_decode($refcomponent->getNotificationAll($rstlId),true);
+            //$count = $notification['count_notification'];
+            $query = Notification::find()->where('recipient_id =:recipientId', [':recipientId'=>$rstlId]);
+            $notification = $query->all();
+            $count = $query->count();
+
         } else {
             //return 'Session time out!';
             return $this->redirect(['/site/login']);
@@ -59,27 +59,24 @@ class NotificationController extends Controller
         //$unresponded_notification = !empty($notification['notification']) ? $notification['notification'] : null;
         $list = [];
         if($count > 0){
-            $notice_list = $notification['notification'];
-            foreach ($notice_list as $data) {
-                $notification_type = $data['notification_type_id'];
-                switch($data['notification_type_id']){
+            //$notice_list = $notification['notification'];
+            foreach ($notification as $data) {
+                $notification_type = $data->notification_type_id;
+                switch($data->notification_type_id){
                     case 1:
-                        $agencyName = $this->getAgency($data['sender_id']);
-                        $referral = $this->getReferral($data['referral_id']);
-                        $checkOwner = json_decode($refcomponent->checkOwner($data['referral_id'],$rstlId),true);
-                        $arr_data = ['notice_sent'=>"<b>".$data['sender_name']."</b> of <b>".$agencyName."</b> notified a referral request.",'notice_id'=>$data['notification_id'],'notification_date'=>$data['notification_date'],'referral_id'=>$data['referral_id'],'owner'=>$checkOwner,'local_request_id'=>$referral['local_request_id']];
+                        $agencyName = $this->getAgency($data->sender_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> notified a referral request.",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                     case 2:
-                        $agencyName = $this->getAgency($data['sender_id']);
-                        $referral = $this->getReferral($data['referral_id']);
-                        $checkOwner = json_decode($refcomponent->checkOwner($data['referral_id'],$rstlId),true);
-                        $arr_data = ['notice_sent'=>"<b>".$data['sender_name']."</b> of <b>".$agencyName."</b> confirmed the referral notification.",'notice_id'=>$data['notification_id'],'notification_date'=>$data['notification_date'],'referral_id'=>$data['referral_id'],'owner'=>$checkOwner,'local_request_id'=>$referral['local_request_id']];
+                        $agencyName = $this->getAgency($data->sender_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> confirmed the referral notification.",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                     case 3:
-                        $agencyName = $this->getAgency($data['sender_id']);
-                        $referral = $this->getReferral($data['referral_id']);
-                        $checkOwner = json_decode($refcomponent->checkOwner($data['referral_id'],$rstlId),true);
-                        $arr_data = ['notice_sent'=>"<b>".$data['sender_name']."</b> of <b>".$agencyName."</b> sent a referral request with referral code <b style='color:#000099;'>".$referral['referralcode']."</b>",'notice_id'=>$data['notification_id'],'notification_date'=>$data['notification_date'],'referral_id'=>$data['referral_id'],'owner'=>$checkOwner,'local_request_id'=>$referral['local_request_id']];
+                        $agencyName = $this->getAgency($data->sender_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> sent a referral request with referral code <b style='color:#000099;'>".$data->referral->referralcode."</b>",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                 }
                 array_push($list, $arr_data);
@@ -101,7 +98,7 @@ class NotificationController extends Controller
 
         if(\Yii::$app->request->isAjax){
             return $this->renderAjax('notifications_all', [
-                //'notifications' => $list,
+                'notifications' => $list,
                 'count_notice' => $count,
                 'notificationProvider' => $notificationDataProvider,
             ]);
@@ -113,57 +110,59 @@ class NotificationController extends Controller
             ]);
         }
     }
+
     //get unresponded notifications
     public function actionCount_unresponded_notification()
     {   
-        
         if(isset(Yii::$app->user->identity->profile->rstl_id)){
-            $rstlId = Yii::$app->user->identity->profile->rstl_id;
-            $refcomponent = new ReferralComponent();
-            $notification = json_decode($refcomponent->listUnrespondedNofication($rstlId),true);
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+            $notificationCount = Notification::find()
+                ->where('recipient_id =:recipientId', [':recipientId'=>$rstlId])
+                ->andWhere('responded =:responded',[':responded'=>0])
+                ->count();
+
+            return Json::encode(['num_notification'=>$notificationCount]);
         } else {
             //return 'Session time out!';
             return $this->redirect(['/site/login']);
         }
-        return Json::encode(['num_notification'=>$notification['count_notification']]);
     }
+
     //get list of unresponded notifications
     public function actionList_unresponded_notification()
     {
         if(isset(Yii::$app->user->identity->profile->rstl_id)){
-            $rstlId = Yii::$app->user->identity->profile->rstl_id;
-            $refcomponent = new ReferralComponent();
-            $notification = json_decode($refcomponent->listUnrespondedNofication($rstlId),true);
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+            $function= new ReferralFunctions();
+            $query = Notification::find()->where('recipient_id =:recipientId AND responded =:responded', [':recipientId'=>$rstlId,':responded'=>0]);
+            $notification = $query->all();
+            $count = $query->count();
         } else {
             //return 'Session time out!';
             return $this->redirect(['/site/login']);
         }
 
-        $unresponded_notification = !empty($notification['notification']) ? $notification['notification'] : null;
+        //$unresponded_notification = !empty($notification) ? $notification['notification'] : null;
 
         $notice_list = [];
-        if(count($unresponded_notification) > 0) {
-            foreach ($unresponded_notification as $data) {
-
-                $notification_type = $data['notification_type_id'];
+        if(count($count) > 0) {
+            foreach ($notification as $data) {
+                $notification_type = $data->notification_type_id;
                 switch($data['notification_type_id']){
                     case 1:
-                        $agencyName = $this->getAgency($data['sender_id']);
-                        $referral = $this->getReferral($data['referral_id']);
-                        $checkOwner = json_decode($refcomponent->checkOwner($data['referral_id'],$rstlId),true);
-                        $arr_data = ['notice_sent'=>"<b>".$data['sender_name']."</b> of <b>".$agencyName."</b> notified a referral request.",'notice_id'=>$data['notification_id'],'notification_date'=>$data['notification_date'],'referral_id'=>$data['referral_id'],'owner'=>$checkOwner,'local_request_id'=>$referral['local_request_id']];
+                        $agencyName = $this->getAgency($data->sender_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> notified a referral request.",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                     case 2:
-                        $agencyName = $this->getAgency($data['sender_id']);
-                        $referral = $this->getReferral($data['referral_id']);
-                        $checkOwner = json_decode($refcomponent->checkOwner($data['referral_id'],$rstlId),true);
-                        $arr_data = ['notice_sent'=>"<b>".$data['sender_name']."</b> of <b>".$agencyName."</b> confirmed the referral notification.",'notice_id'=>$data['notification_id'],'notification_date'=>$data['notification_date'],'referral_id'=>$data['referral_id'],'owner'=>$checkOwner,'local_request_id'=>$referral['local_request_id']];
+                        $agencyName = $this->getAgency($data->sender_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> confirmed the referral notification.",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                     case 3:
-                        $agencyName = $this->getAgency($data['sender_id']);
-                        $referral = $this->getReferral($data['referral_id']);
-                        $checkOwner = json_decode($refcomponent->checkOwner($data['referral_id'],$rstlId),true);
-                        $arr_data = ['notice_sent'=>"<b>".$data['sender_name']."</b> of <b>".$agencyName."</b> sent a referral request with referral code <b style='color:#000099;'>".$referral['referralcode']."</b>",'notice_id'=>$data['notification_id'],'notification_date'=>$data['notification_date'],'referral_id'=>$data['referral_id'],'owner'=>$checkOwner,'local_request_id'=>$referral['local_request_id']];
+                        $agencyName = $this->getAgency($data->sender_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> sent a referral request with referral code <b style='color:#000099;'>".$data->referral->referralcode."</b>",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                 }
                 array_push($notice_list, $arr_data);
@@ -179,36 +178,29 @@ class NotificationController extends Controller
             ]);
         }
     }
-    //get list of all notifications
-    /*public function actionNotification_all()
-    {
-        $rstlId = Yii::$app->user->identity->profile->rstl_id;
-        $refcomponent = new ReferralComponent();
-        $notification = json_decode($refcomponent->listUnrespondedNofication($rstlId),true);
-    }*/
+
     //get list agencies
     private function getAgency($agencyId)
-    {   
-        $refcomponent = new ReferralComponent();
-        $agency = json_decode($refcomponent->listAgency($agencyId),true);
+    {
+        $agency = Agency::findOne($agencyId);
 
-        if($agency != null){
-            return $agency[0]['name'];
+        if($agency !== null){
+            return $agency->name;
         } else {
             return null;
         }
     }
+
     //get referral code
     private function getReferral($referralId)
     {
-        $refcomponent = new ReferralComponent();
         $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
-        $referral = json_decode($refcomponent->getReferralOne($referralId,$rstlId),true);
+        $referral = Referral::findOne($referralId);
 
-        if($referral ==  0){
-            return null;
+        if($referral !==  null){
+            return $referral;
         } else {
-            return ['referralcode'=>$referral['referral_code'],'receiving_agency_id'=>$referral['receiving_agency_id'],'local_request_id'=>$referral['local_request_id']];
+            return null;
         }
     }
 }

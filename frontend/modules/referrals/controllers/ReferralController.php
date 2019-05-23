@@ -71,9 +71,9 @@ class ReferralController extends Controller
             $refcomponent = new ReferralComponent();
 
             $checknotified = $function->checkNotified($id,$rstlId);
-            $checkowner = $function->checkowner($id,$rstlId);
+            $checkOwner = $function->checkOwner($id,$rstlId);
 
-            if($checknotified > 0 || $checkowner > 0)
+            if($checknotified > 0 || $checkOwner > 0)
             {
                 $model = $this->findModel($id);
 
@@ -144,6 +144,7 @@ class ReferralController extends Controller
         ]);*/
     }
 
+    //view notification
     public function actionViewnotice($id)
     {
         $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
@@ -155,13 +156,13 @@ class ReferralController extends Controller
             $refcomponent = new ReferralComponent();
 
             $checknotified = $function->checkNotified($id,$rstlId);
-            $checkowner = $function->checkowner($id,$rstlId);
+            $checkOwner = $function->checkOwner($id,$rstlId);
 
             $noticeDetails = Notification::find()
                 ->where('notification_id =:notificationId AND recipient_id =:recipientId', [':notificationId'=>$noticeId,':recipientId'=>$rstlId])
                 ->one();
 
-            if(($checknotified > 0 && count($noticeDetails) > 0) || $checkowner > 0)
+            if(($checknotified > 0 && count($noticeDetails) > 0) || $checkOwner > 0)
             {
                 $model = $this->findModel($id);
 
@@ -199,7 +200,7 @@ class ReferralController extends Controller
                 $discounted = $subtotal * ($rate/100);
                 $total = $subtotal - $discounted;
 
-                return $this->render('view', [
+                return $this->render('viewnotice', [
                     'model' => $model,
                     'sampleDataProvider' => $sampleDataProvider,
                     'analysisdataprovider'=> $analysisDataprovider,
@@ -218,6 +219,77 @@ class ReferralController extends Controller
         } else {
             Yii::$app->session->setFlash('error', "Invalid request!");
             return $this->redirect(['/referrals/notification']);
+        }
+    }
+
+    //confirm notification
+    public function actionConfirm()
+    {
+        if (Yii::$app->request->post()) {
+
+            if(!empty(Yii::$app->request->post('estimated_due_date')))
+            {
+                $connection= Yii::$app->labdb;
+                $connection->createCommand('SET FOREIGN_KEY_CHECKS=0')->execute();
+                $transaction = $connection->beginTransaction();
+
+                $mi = !empty(Yii::$app->user->identity->profile->middleinitial) ? " ".substr(Yii::$app->user->identity->profile->middleinitial, 0, 1).". " : " ";
+
+                $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+                $noticeId = (int) Yii::$app->request->get('notice_id');
+                $referralId = (int) Yii::$app->request->get('referral_id');
+                $sentby = (int) Yii::$app->request->get('sender_id'); //will become the recipient
+
+                $senderName = Yii::$app->user->identity->profile->firstname.$mi.Yii::$app->user->identity->profile->lastname;
+
+                if($noticeId > 0 && $referralId > 0 && $sentby > 0){
+
+                        $connection= Yii::$app->db;
+                        $connection->createCommand('SET FOREIGN_KEY_CHECKS=0')->execute();
+                        $transaction = $connection->beginTransaction();
+                        
+                        $notification = new Notification();
+                        $notification->referral_id = $referralId;
+                        $notification->notification_type_id = 2;
+                        $notification->sender_id = (int) Yii::$app->user->identity->profile->rstl_id;
+                        $notification->recipient_id = $sentby; //sender will become the recipient
+                        $notification->sender_user_id = (int) Yii::$app->user->identity->profile->user_id;
+                        $notification->sender_name = $senderName;
+                        $notification->remarks = date('Y-m-d',strtotime(Yii::$app->request->post('estimated_due_date')));
+                        $notification->notification_date = date('Y-m-d H:i:s');
+                        if($notification->save()){
+                            $noticeSent = Notification::find()->where(['notification_id'=>$noticeId])->one();
+                            $noticeSent->responded = 1;
+                            if($noticeSent->save()){
+                                //$transaction->commit();
+                                $success = 1;
+                            } else {
+                                $transaction->rollBack();
+                                $success = 0;
+                            }
+                        } else {
+                            $transaction->rollBack();
+                            $success = 0;
+                        }
+
+                    if($success == 1){
+                        $transaction->commit();
+                        Yii::$app->session->setFlash('success', "Confirmation sent");
+                        return $this->redirect(['/referrals/notification']);
+                    } else {
+                        $transaction->rollBack();
+                        return "<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign' style='font-size:18px;'></span>&nbsp;Server Error: Confirmation fail!</div>";
+                    }
+                } else {
+                    $transaction->rollBack();
+                    return "<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign' style='font-size:18px;'></span>&nbsp;Invalid request!</div>";
+                }
+            } else {
+                Yii::$app->session->setFlash('error', "Estimated Due Date should not be empty!");
+                return $this->redirect(['/referrals/referral/view','id'=>Yii::$app->request->get('referral_id'),'notice_id'=>Yii::$app->request->get('notice_id')]);
+            }
+        } else {
+            return $this->renderAjax('_confirm');
         }
     }
 
