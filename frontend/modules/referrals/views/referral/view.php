@@ -6,7 +6,9 @@ use kartik\grid\GridView;
 use yii\helpers\Url;
 use yii\bootstrap\Modal;
 use kartik\dialog\Dialog;
-
+use yii\web\JsExpression;
+use yii\widgets\ListView;
+use kartik\tabs\TabsX;
 /* @var $this yii\web\View */
 /* @var $model common\models\referral\Referral */
 
@@ -14,11 +16,51 @@ $this->title = empty($model->referral_code) ? $model->referral_id : $model->refe
 $this->params['breadcrumbs'][] = ['label' => 'Referrals', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
+$this->registerCssFile("/css/modcss/progress.css", [], 'css-search-bar');
+
+$stat=1;
+$style2 = "progress-todo";
+if ($stat==1){
+			$style1 = "progress-done";
+		} else {
+			$style1 = "progress-todo";
+		}
+$haveStatus = "";
+
+
+/*
+
+ * 
+ * 
+ *  */
+if(!isset(\Yii::$app->session['config-item'])){
+   \Yii::$app->session['config-item']=1; //Laboratories 
+}
+switch(\Yii::$app->session['config-item']){
+    case 1: //Laboratories
+        $LogActive=true;
+        $ResultActive=false;
+        $TrackActive=false;
+        break;
+    case 2: // Technical Managers
+        $LogActive=false;
+        $ResultActive=true;
+        $TrackActive=false;
+        break;
+    case 3: //Discount
+        $LogActive=false;
+        $ResultActive=false;
+        $TrackActive=true;
+        break;
+}
+$Session= Yii::$app->session;
+
 if(empty($model->referral_code)){
     $btnPrint = "";
 } else {
     $btnPrint = "<a href='/reports/preview?url=/lab/request/print-request?id=".$model->referral_id."' class='btn btn-primary' style='margin-left: 20px;text-align:right;'><i class='fa fa-print'></i> Print Request</a>";
 }
+
 ?>
 <div class="referral-view">
     <div class="image-loader" style="display: none;"></div>
@@ -355,4 +397,86 @@ if(empty($model->referral_code)){
             ]);
         ?>
     </div>
+    <div class="container" <?php echo $haveStatus; ?>>
+        <ul class="progress-track">
+                <li class="<?php echo $style1; ?> progress-tooltip">
+                        <div class="progress-icon-wrap">
+                                <span class="fa fa-dropbox fa-fw to-fit-icon" aria-hidden="true"></span>
+                        </div>
+                        <span class="progress-tooltiptext">Received</span>
+                </li>
+                <li class="<?php echo $style1; ?> progress-tooltip">
+                        <div class="progress-icon-wrap">
+                                <span class="fa fa-truck fa-fw fa-flip-horizontal to-fit-icon" aria-hidden="true"></span>
+                        </div>
+                        <span class="progress-tooltiptext">Shipped</span>
+                </li>
+                <li class="<?php echo $style1; ?> progress-tooltip">
+                        <div class="progress-icon-wrap">
+                                <span style="margin-left:2px;" class="fa fa-cube fa-fw fa-lg to-fit-icon" aria-hidden="true"></span>
+                        </div>
+                        <span class="progress-tooltiptext">Accepted</span>
+                </li>
+                <li class="<?php echo $style1; ?> progress-tooltip">
+                        <div class="progress-icon-wrap">
+                                <span class="fa fa-flask fa-fw to-fit-icon" aria-hidden="true"></span>
+                        </div>
+                        <span class="progress-tooltiptext">Ongoing</span>
+                </li>
+                <li class="<?php echo $style1; ?> progress-tooltip">
+                        <div class="progress-icon-wrap">
+                                <span class="fa fa-check fa-fw to-fit-icon" aria-hidden="true"></span>
+                        </div>
+                        <span class="progress-tooltiptext">Completed</span>
+                </li>
+                <li class="<?php echo $style2; ?> progress-tooltip">
+                        <div class="progress-icon-wrap">
+                                <span class="fa fa-upload fa-fw to-fit-icon" aria-hidden="true"></span>
+                        </div>
+                        <span class="progress-tooltiptext">Uploaded</span>
+                </li>
+        </ul>
+    </div>
+    
+      <div class="container">
+         <div class="panel-body">
+        <?php  
+         $gridColumn="123456";
+         $gridColumn1="abcdefh123456";
+         $gridColumn2="qwerty";
+                echo TabsX::widget([
+                    'position' => TabsX::POS_ABOVE,
+                    'align' => TabsX::ALIGN_LEFT,
+                    'encodeLabels' => false,
+                    'id' => 'tab_referral',
+                    'items' => [
+                        [
+                            'label' => '<i class="fa fa-columns"></i> Logs',
+                            'content' => $gridColumn,//$LogContent,
+                            'active' => $LogActive,
+                            'options' => ['id' => 'log'],
+                           // 'visible' => Yii::$app->user->can('access-terminal-configurations')
+                        ],
+                        [
+                            'label' => '<i class="fa fa-users"></i> Results',
+                            'content' => $gridColumn1,//$ResultContent,
+                            'active' => $ResultActive,
+                            'options' => ['id' => 'result'],
+                           // 'visible' => Yii::$app->user->can('access-terminal-configurations')
+                        ],
+                        [
+                            'label' => '<i class="fa-level-down"></i> Referral Track',
+                            'content' =>$gridColumn2,//$TrackContent ,
+                            'active' => $TrackActive,
+                            'options' => ['id' => 'referral_track'],
+                           // 'visible' => Yii::$app->user->can('access-terminal-configurations')
+                        ]
+                    ],
+                ]);
+        ?>
+        </div>
+    </div>
 </div>
+
+</div>
+
