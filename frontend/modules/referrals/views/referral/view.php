@@ -21,18 +21,12 @@ $this->registerCssFile("/css/modcss/progress.css", [], 'css-search-bar');
 $stat=1;
 $style2 = "progress-todo";
 if ($stat==1){
-			$style1 = "progress-done";
-		} else {
-			$style1 = "progress-todo";
-		}
+	$style1 = "progress-done";
+} else {
+	$style1 = "progress-todo";
+}
 $haveStatus = "";
 
-
-/*
-
- * 
- * 
- *  */
 if(!isset(\Yii::$app->session['config-item'])){
    \Yii::$app->session['config-item']=1; //Laboratories 
 }
@@ -56,9 +50,10 @@ switch(\Yii::$app->session['config-item']){
 $Session= Yii::$app->session;
 
 if(empty($model->referral_code)){
-    $btnPrint = "";
+    $labelpanel = '<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code;
 } else {
-    $btnPrint = "<a href='/reports/preview?url=/lab/request/print-request?id=".$model->referral_id."' class='btn btn-primary' style='margin-left: 20px;text-align:right;'><i class='fa fa-print'></i> Print Request</a>";
+    $btnPrint = "<a href='/reports/preview?url=/lab/request/print-request?id=".$model->referral_id."' class='btn-sm btn-default' style='color:#000000;margin-left:15px;'><i class='fa fa-print'></i> Print</a>";
+    $labelpanel = '<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code .' '.$btnPrint;
 }
 
 ?>
