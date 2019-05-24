@@ -48,7 +48,7 @@ class NotificationController extends Controller
             //$notification = json_decode($refcomponent->getNotificationAll($rstlId),true);
             //$count = $notification['count_notification'];
             $query = Notification::find()->where('recipient_id =:recipientId', [':recipientId'=>$rstlId]);
-            $notification = $query->all();
+            $notification = $query->orderBy('notification_date DESC')->all();
             $count = $query->count();
 
         } else {
@@ -66,17 +66,17 @@ class NotificationController extends Controller
                     case 1:
                         $agencyName = $this->getAgency($data->sender_id);
                         $checkOwner = $function->checkowner($data->referral_id,$rstlId);
-                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> notified a referral request.",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> notified a referral request.",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'responded'=>$data->responded];
                     break;
                     case 2:
                         $agencyName = $this->getAgency($data->sender_id);
                         $checkOwner = $function->checkowner($data->referral_id,$rstlId);
-                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> confirmed the referral notification.",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> confirmed the referral notification.",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'responded'=>$data->responded];
                     break;
                     case 3:
                         $agencyName = $this->getAgency($data->sender_id);
                         $checkOwner = $function->checkowner($data->referral_id,$rstlId);
-                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> sent a referral request with referral code <b style='color:#000099;'>".$data->referral->referralcode."</b>",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> sent a referral request with referral code <b style='color:#000099;'>".$data->referral->referral_code."</b>",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'responded'=>$data->responded];
                     break;
                 }
                 array_push($list, $arr_data);
@@ -135,7 +135,7 @@ class NotificationController extends Controller
             $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
             $function= new ReferralFunctions();
             $query = Notification::find()->where('recipient_id =:recipientId AND responded =:responded', [':recipientId'=>$rstlId,':responded'=>0]);
-            $notification = $query->all();
+            $notification = $query->limit(10)->orderBy('notification_date DESC')->all();
             $count = $query->count();
         } else {
             //return 'Session time out!';
@@ -162,7 +162,7 @@ class NotificationController extends Controller
                     case 3:
                         $agencyName = $this->getAgency($data->sender_id);
                         $checkOwner = $function->checkowner($data->referral_id,$rstlId);
-                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> sent a referral request with referral code <b style='color:#000099;'>".$data->referral->referralcode."</b>",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
+                        $arr_data = ['notice_sent'=>"<b>".$data->sender_name."</b> of <b>".$agencyName."</b> sent a referral request with referral code <b style='color:#000099;'>".$data->referral->referral_code."</b>",'notice_id'=>$data->notification_id,'notification_date'=>$data->notification_date,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                 }
                 array_push($notice_list, $arr_data);
@@ -171,12 +171,30 @@ class NotificationController extends Controller
             $notice_list = [];
         }
 
+        /*$notificationDataProvider = new ArrayDataProvider([
+            //'key'=>'notification_id',
+            //'allModels' => $notification['notification'],
+            'allModels' => $notice_list,
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+            //'pagination'=>false,
+        ]);*/
+
         if(\Yii::$app->request->isAjax){
             return $this->renderAjax('list_unresponded_notification', [
                 //'notifications' => $unseen_notification,
                 'notifications' => $notice_list,
             ]);
         }
+
+        /*if(\Yii::$app->request->isAjax){
+            return $this->renderAjax('list_unresponded_notification', [
+                'notifications' => $notice_list,
+                'count_notice' => $count,
+                'notificationProvider' => $notificationDataProvider,
+            ]);
+        }*/
     }
 
     //get list agencies
