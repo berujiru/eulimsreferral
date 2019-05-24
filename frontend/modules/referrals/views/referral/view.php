@@ -18,13 +18,35 @@ $this->params['breadcrumbs'][] = $this->title;
 
 $this->registerCssFile("/css/modcss/progress.css", [], 'css-search-bar');
 
-$stat=1;
-$style2 = "progress-todo";
-if ($stat==1){
-	$style1 = "progress-done";
-} else {
-	$style1 = "progress-todo";
+$statusreceived="progress-todo";
+$statusshipped="progress-todo";
+$statusaccepted="progress-todo";
+$statusongoing="progress-todo";
+$statuscompleted="progress-todo";
+$statusuploaded="progress-todo";
+
+foreach($logs as $log){
+    if($log->referralstatus_id == 1){
+       $statusreceived ="progress-done";
+    }
+    if($log->referralstatus_id == 2){
+       $statusshipped ="progress-done";
+    }
+    if($log->referralstatus_id == 3){
+       $statusaccepted ="progress-done";
+    }
+    if($log->referralstatus_id == 4){
+       $statusongoing ="progress-done";
+    }
+    
+    if($log->referralstatus_id == 4){
+       $statuscompleted ="progress-done";
+    }
+    if($log->referralstatus_id == 5){
+       $statusuploaded ="progress-done";
+    }
 }
+
 $haveStatus = "";
 
 if(!isset(\Yii::$app->session['config-item'])){
@@ -394,37 +416,37 @@ if(empty($model->referral_code)){
     </div>
     <div class="container" <?php echo $haveStatus; ?>>
         <ul class="progress-track">
-                <li class="<?php echo $style1; ?> progress-tooltip">
+                <li class="<?php echo $statusreceived; ?> progress-tooltip">
                         <div class="progress-icon-wrap">
                                 <span class="fa fa-dropbox fa-fw to-fit-icon" aria-hidden="true"></span>
                         </div>
                         <span class="progress-tooltiptext">Received</span>
                 </li>
-                <li class="<?php echo $style1; ?> progress-tooltip">
+                <li class="<?php echo $statusshipped; ?> progress-tooltip">
                         <div class="progress-icon-wrap">
                                 <span class="fa fa-truck fa-fw fa-flip-horizontal to-fit-icon" aria-hidden="true"></span>
                         </div>
                         <span class="progress-tooltiptext">Shipped</span>
                 </li>
-                <li class="<?php echo $style1; ?> progress-tooltip">
+                <li class="<?php echo $statusaccepted; ?> progress-tooltip">
                         <div class="progress-icon-wrap">
                                 <span style="margin-left:2px;" class="fa fa-cube fa-fw fa-lg to-fit-icon" aria-hidden="true"></span>
                         </div>
                         <span class="progress-tooltiptext">Accepted</span>
                 </li>
-                <li class="<?php echo $style1; ?> progress-tooltip">
+                <li class="<?php echo $statusongoing; ?> progress-tooltip">
                         <div class="progress-icon-wrap">
                                 <span class="fa fa-flask fa-fw to-fit-icon" aria-hidden="true"></span>
                         </div>
                         <span class="progress-tooltiptext">Ongoing</span>
                 </li>
-                <li class="<?php echo $style1; ?> progress-tooltip">
+                <li class="<?php echo $statuscompleted; ?> progress-tooltip">
                         <div class="progress-icon-wrap">
                                 <span class="fa fa-check fa-fw to-fit-icon" aria-hidden="true"></span>
                         </div>
                         <span class="progress-tooltiptext">Completed</span>
                 </li>
-                <li class="<?php echo $style2; ?> progress-tooltip">
+                <li class="<?php echo $statusuploaded; ?> progress-tooltip">
                         <div class="progress-icon-wrap">
                                 <span class="fa fa-upload fa-fw to-fit-icon" aria-hidden="true"></span>
                         </div>
@@ -434,11 +456,92 @@ if(empty($model->referral_code)){
     </div>
     
       <div class="container">
-         <div class="panel-body">
+         <div class="panel panel-primary">
+        
+        <div class="panel-body">
         <?php  
-         $gridColumn="123456";
+         $gridColumn="<div class='row'><div class='col-md-12'>". GridView::widget([
+           'dataProvider' => $notificationDataProvider,
+           // 'filterModel' => $searchModel,
+            'id'=>'LaboratoryGrid',
+            'tableOptions'=>['class'=>'table table-hover table-stripe table-hand'],
+            'pjax'=>true,
+            'pjaxSettings' => [
+                    'options' => [
+                        'enablePushState' => false,
+                    ],
+            ],
+            'toolbar'=>[],
+            'panel' => [
+                'type' => GridView::TYPE_PRIMARY,
+                'heading' => '<i class="fa fa-columns"></i> List',
+             ],
+            'columns' => [
+                [
+                    'attribute' => '',
+                    'label' => 'Date and Time',
+                    'value' => function($model) {
+                        return date("F j, Y h:i:s A", strtotime($model->notification_date));
+                    }
+                ],
+                [
+                    'attribute' => '',
+                    'label' => 'Details',
+                    'value'=>function($model){
+                        switch($model->notification_type_id){
+                            case 1:
+                                return 'Notification sent to '.$model->recipient_id;
+                            case 2:
+                                return $model->sender_id.' confirmed the notification for Referral.';
+                            case 3:
+                                return 'Referral sent to '.$model->recipient_id;
+                            default:
+
+                        }
+                    }
+                ],
+            ],
+        ])."</div></div>";
          $gridColumn1="abcdefh123456";
-         $gridColumn2="qwerty";
+         //$display=true;
+         $gridColumn2=DetailView::widget([
+                'model'=>$model,
+                'responsive'=>true, 
+             
+                'hover'=>true,
+                'mode'=>DetailView::MODE_VIEW,
+                'panel'=>[
+                    'type'=>DetailView::TYPE_PRIMARY,
+                ],
+                'buttons1' => '',
+                'attributes' => [
+                    [
+                        'group'=>true,
+                        'label'=>Html::button('<span class="glyphicon glyphicon-plus"></span> Add Referral Track', ['value'=>'/referrals/referral/addreceivedtrack', 'class' => 'btn btn-success','title' => Yii::t('app', "Add Referral Track"),'id'=>'btnreceivedtrack','onclick'=>'addreceivedtrack(this.value,this.title)']),
+                        'rowOptions'=>['class'=>'info']
+                    ],
+                    [
+                        'columns' => [
+                            [
+                                'label'=>'Transaction Number',
+                                'format'=>'raw',
+                                'value'=>'abcdsfsdf',//$model->transactionnum,
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                            [
+                                'label'=>'Customer Name',
+                                'format'=>'raw',
+                                'value'=>'131431412',//$model->customer ? $model->customer->customer_name : "",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                        ],
+
+                    ], 
+                
+                ],
+            ]);
                 echo TabsX::widget([
                     'position' => TabsX::POS_ABOVE,
                     'align' => TabsX::ALIGN_LEFT,
@@ -470,8 +573,15 @@ if(empty($model->referral_code)){
                 ]);
         ?>
         </div>
+        </div>      
     </div>
 </div>
 
 </div>
 
+<script type="text/javascript">
+    function addreceivedtrack(url,title){
+       LoadModal(title,url,'true','600px');
+   }
+</script>   
+   

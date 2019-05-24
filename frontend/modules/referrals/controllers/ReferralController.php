@@ -19,7 +19,9 @@ use yii\helpers\Json;
 use yii\helpers\ArrayHelper;
 use yii\data\ArrayDataProvider;
 use yii\db\Query;
-
+use common\models\referral\Statuslogs;
+use common\models\referral\Referraltrackreceiving;
+use common\models\referral\Referraltracktesting;
 /**
  * ReferralController implements the CRUD actions for Referral model.
  */
@@ -79,6 +81,10 @@ class ReferralController extends Controller
 
                 $samples = $model->samples;
                 $analyses = Analysis::find()->joinWith('sample',false)->where('referral_id =:referralId',[':referralId'=>$id])->all();
+                $notification= Notification::find()->where('referral_id =:referralId',[':referralId'=>$id])->orderBy(['notification_type_id' => SORT_ASC])->all();
+                $statuslogs= Statuslogs::find()->where('referral_id =:referralId',[':referralId'=>$id])->all();
+                $modelRefTrackreceiving= Referraltrackreceiving::find()->where('referral_id =:referralId',[':referralId'=>$id])->all();
+                $modelRefTracktesting= Referraltracktesting::find()->where('referral_id =:referralId',[':referralId'=>$id])->all();
                 //$customer = Customer::findOne($model->customer_id);
 
                 //set third parameter to 1 for attachment type deposit slip
@@ -100,6 +106,13 @@ class ReferralController extends Controller
                         'pageSize' => 10,
                     ],*/
 
+                ]);
+                
+                $notificationDataProvider = new ArrayDataProvider([
+                    'allModels' => $notification,
+                    'pagination'=> [
+                        'pageSize' => 10,
+                    ],
                 ]);
 
                 $query = new Query;
@@ -129,6 +142,10 @@ class ReferralController extends Controller
                     //'notification' => $noticeDetails,
                     'depositslip' => $deposit,
                     'officialreceipt' => $or,
+                    'notificationDataProvider' => $notificationDataProvider,
+                    'logs'=>$statuslogs,
+                    'modelRefTrackreceiving'=>$modelRefTrackreceiving,
+                    'modelRefTracktesting'=>$modelRefTracktesting
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', "Your agency doesn't appear notified!");
@@ -359,5 +376,9 @@ class ReferralController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+    
+    public function actionAddreceivedtrack() {
+        return "hello pisti ka!";
     }
 }
