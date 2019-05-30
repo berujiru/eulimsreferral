@@ -70,7 +70,6 @@ class ReferralController extends Controller
         if($rstlId > 0)
         {
             $function = new ReferralFunctions();
-            $refcomponent = new ReferralComponent();
 
             $checknotified = $function->checkNotified($id,$rstlId);
             $checkOwner = $function->checkOwner($id,$rstlId);
@@ -88,9 +87,9 @@ class ReferralController extends Controller
                 //$customer = Customer::findOne($model->customer_id);
 
                 //set third parameter to 1 for attachment type deposit slip
-                $deposit = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
+                $deposit = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
                 //set third parameter to 2 for attachment type or
-                $or = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                $or = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
 
                 $sampleDataProvider = new ArrayDataProvider([
                     'allModels' => $samples,
@@ -170,7 +169,6 @@ class ReferralController extends Controller
         if($rstlId > 0 && $noticeId > 0)
         {
             $function = new ReferralFunctions();
-            $refcomponent = new ReferralComponent();
 
             $checknotified = $function->checkNotified($id,$rstlId);
             $checkOwner = $function->checkOwner($id,$rstlId);
@@ -187,9 +185,9 @@ class ReferralController extends Controller
                 $analyses = Analysis::find()->joinWith('sample',false)->where('referral_id =:referralId',[':referralId'=>$id])->all();
 
                 //set third parameter to 1 for attachment type deposit slip
-                $deposit = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
+                $deposit = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
                 //set third parameter to 2 for attachment type or
-                $or = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                $or = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
 
                 $sampleDataProvider = new ArrayDataProvider([
                     'allModels' => $samples,
