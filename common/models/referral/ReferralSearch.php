@@ -42,7 +42,7 @@ class ReferralSearch extends Referral
      */
     public function search($params)
     {
-        $query = Referral::find();
+        $query = Referral::find()->orderBy('referral_date_time DESC, create_time DESC');
 
         // add conditions that should always apply here
 

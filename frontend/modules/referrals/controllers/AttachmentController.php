@@ -140,7 +140,7 @@ class AttachmentController extends Controller
             $referral = $this->findReferral($referralId);
         } else {
             Yii::$app->session->setFlash('error', "Referral ID not valid!");
-            return $this->redirect(['/lab/request']);
+            return $this->redirect(['/referrals/referral']);
         }
 
         $model = new Attachment();
@@ -215,7 +215,7 @@ class AttachmentController extends Controller
             $referral = $this->findReferral($referralId);
         } else {
             Yii::$app->session->setFlash('error', "Referral ID not valid!");
-            return $this->redirect(['/lab/request']);
+            return $this->redirect(['/referrals/referral']);
         }
 
         $model = new Attachment();
@@ -275,11 +275,69 @@ class AttachmentController extends Controller
             ]);
         }
     }
+
 	//upload Test Result
     public function actionUpload_result()
     {
+        if(Yii::$app->request->get('referral_id')){
+            $referralId = (int) Yii::$app->request->get('referral_id');
+            $referral = $this->findReferral($referralId);
+        } else {
+            Yii::$app->session->setFlash('error', "Referral ID not valid!");
+            return $this->redirect(['/referrals/referral']);
+        }
+
         $model = new Attachment();
-        
+        if($model->load(Yii::$app->request->post())){
+            $model->filename = UploadedFile::getInstances($model,'filename');
+            $model->referral_id = $referralId;
+            if($model->filename){
+                $ch = curl_init();
+                $referralCode = $referral->referral_code;
+                foreach ($model->filename as $filename) {
+                    $file = $referralCode."_".date('YmdHis').".".$filename->extension;
+                    $file_data = curl_file_create($filename->tempName,$filename->type,$file);
+
+                    $mi = !empty(Yii::$app->user->identity->profile->middleinitial) ? " ".substr(Yii::$app->user->identity->profile->middleinitial, 0, 1).". " : " "; 
+                    $uploaderName = Yii::$app->user->identity->profile->firstname.$mi.Yii::$app->user->identity->profile->lastname;
+
+                    $uploader_data = [
+                        'file_name' => $referralCode."_".date('YmdHis').".".$filename->extension,
+                        'referral_id' => $referralId,
+                        'referral_code' => $referralCode,
+                        'user_id' => Yii::$app->user->identity->profile->user_id,
+                        'uploader' => $uploaderName,
+                    ];
+                    $referralUrl='https://eulimsapi.onelab.ph/api/web/referral/attachments/upload_result';
+
+                    $data = ['file_data'=>$file_data,'uploader_data'=>json_encode($uploader_data)];
+
+                    //hardcoded curl since the linslin\yii2\curl extension doesn't support create file
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_URL, $referralUrl);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                    //curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+                    $response = curl_exec($ch);
+
+                    if($response == 1){
+                        Yii::$app->session->setFlash('success', "Test result successfully uploaded.");
+                        return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
+                    } elseif($response == 0) {
+                        Yii::$app->session->setFlash('error', "Attachment invalid!");
+                        return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
+                    } else {
+                        Yii::$app->session->setFlash('error', "Can't upload attachment!");
+                        return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
+                    }
+                }
+            } else {
+                Yii::$app->session->setFlash('error', "Not valid upload attachment!");
+                return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
+            }
+        }
         if(Yii::$app->request->isAjax) {
             return $this->renderAjax('_formUploadResult', [
                 'model' => $model,

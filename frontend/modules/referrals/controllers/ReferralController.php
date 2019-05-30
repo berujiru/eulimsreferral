@@ -88,8 +88,10 @@ class ReferralController extends Controller
 
                 //set third parameter to 1 for attachment type deposit slip
                 $deposit = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
-                //set third parameter to 2 for attachment type or
+                //set third parameter to 2 for attachment type OR
                 $or = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                //set third parameter to 3 for attachment type test result
+                $testresult = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,3),true);
 
                 $sampleDataProvider = new ArrayDataProvider([
                     'allModels' => $samples,
@@ -141,6 +143,7 @@ class ReferralController extends Controller
                     //'notification' => $noticeDetails,
                     'depositslip' => $deposit,
                     'officialreceipt' => $or,
+                    'testresult' => $testresult,
                     'notificationDataProvider' => $notificationDataProvider,
                     'logs'=>$statuslogs,
                     'modelRefTrackreceiving'=>$modelRefTrackreceiving,
@@ -188,6 +191,8 @@ class ReferralController extends Controller
                 $deposit = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
                 //set third parameter to 2 for attachment type or
                 $or = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                //set third parameter to 3 for attachment type test result
+                $testresult = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,3),true);
 
                 $sampleDataProvider = new ArrayDataProvider([
                     'allModels' => $samples,
@@ -226,6 +231,7 @@ class ReferralController extends Controller
                     'notification' => $noticeDetails,
                     'depositslip' => $deposit,
                     'officialreceipt' => $or,
+                    'testresult' => $testresult,
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', "Your agency doesn't appear notified!");
