@@ -37,7 +37,7 @@ class Bid extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['referral_id', 'bidder_agency_id', 'sample_requirements', 'bid_amount', 'remarks', 'estimated_due', 'seen', 'created_at', 'updated_at'], 'required'],
+            [['referral_id', 'bidder_agency_id', 'sample_requirements', 'bid_amount', 'remarks', 'estimated_due', 'created_at', 'updated_at'], 'required'],
             [['referral_id', 'bidder_agency_id', 'seen'], 'integer'],
             [['sample_requirements'], 'string'],
             [['bid_amount'], 'number'],

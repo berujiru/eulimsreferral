@@ -380,7 +380,8 @@ class AttachmentController extends Controller
             }
         }
     }
-    //find request
+
+    //find referral request
     protected function findReferral($id)
     {
         $model = Referral::find()->where(['referral_id'=>$id])->one();

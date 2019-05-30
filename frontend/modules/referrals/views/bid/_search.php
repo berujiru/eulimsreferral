@@ -29,6 +29,10 @@ use yii\widgets\ActiveForm;
 
     <?php // echo $form->field($model, 'estimated_due') ?>
 
+    <?php // echo $form->field($model, 'seen') ?>
+
+    <?php // echo $form->field($model, 'seen_date') ?>
+
     <?php // echo $form->field($model, 'created_at') ?>
 
     <?php // echo $form->field($model, 'updated_at') ?>

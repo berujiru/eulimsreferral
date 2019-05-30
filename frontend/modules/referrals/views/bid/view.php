@@ -35,6 +35,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'bid_amount',
             'remarks',
             'estimated_due',
+            'seen',
+            'seen_date',
             'created_at',
             'updated_at',
         ],

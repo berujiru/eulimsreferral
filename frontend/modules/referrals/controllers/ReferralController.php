@@ -150,12 +150,12 @@ class ReferralController extends Controller
                     'modelRefTracktesting'=>$modelRefTracktesting
                 ]);
             } else {
-                Yii::$app->session->setFlash('error', "Your agency doesn't appear notified!");
-                return $this->redirect(['/referrals/notification']);
+                Yii::$app->session->setFlash('error', "Denied access!");
+                return $this->redirect(['/referrals/referral']);
             }
         } else {
             Yii::$app->session->setFlash('error', "Invalid request!");
-            return $this->redirect(['/referrals/notification']);
+            return $this->redirect(['/referrals/referral']);
         }
 
         /*return $this->render('view', [
