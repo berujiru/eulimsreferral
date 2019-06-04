@@ -54,4 +54,10 @@ class Service extends \yii\db\ActiveRecord
             'offered_date' => 'Offered Date',
         ];
     }
+
+    //relate agency
+    public function getAgency()
+    {
+        return $this->hasOne(Agency::className(), ['agency_id' => 'agency_id']);
+    }
 }

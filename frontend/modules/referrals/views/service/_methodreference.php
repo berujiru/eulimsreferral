@@ -9,7 +9,7 @@ use kartik\widgets\Select2;
 use kartik\widgets\DepDrop;
 use yii\helpers\Url;
 use yii\helpers\Json;
-use common\components\ReferralComponent;
+use common\components\ReferralFunctions;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\lab\Analysis */
@@ -17,81 +17,16 @@ use common\components\ReferralComponent;
 ?>
 
 <?php
-    $refcomponent = new ReferralComponent();
+    $refcomponent = new ReferralFunctions();
     $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
-    $img_url = "https://eulimsapi.onelab.ph/img_logo/icons/";
+    $img_url = Url::home(true)."img_logo/icons/";
+
 ?>
 
 <div class="methodreference-grid">
     <div class="row">
         <div class="col-lg-12">
             <div class="table-responsive">
-            <?php
-                /*$gridColumns = [
-                    [
-                        'class' => '\kartik\grid\SerialColumn',
-                        'headerOptions' => ['class' => 'text-center'],
-                        'contentOptions' => ['class' => 'text-center','style'=>'max-width:10px;'],
-                    ],
-                    [
-                        'class' => '\kartik\grid\CheckboxColumn',
-                        //'class' => '\yii\grid\CheckboxColumn',
-                        'headerOptions' => ['class' => 'text-center'],
-                        'contentOptions' => ['class' => 'text-center','style'=>'max-width:10px;'],
-                        'name' => 'methodref_ids',
-                        //'checked' => $model['sample_id'] == 125,
-                        //'multiple' => false,
-                    ],
-                    [
-                        //'attribute'=>'samplename',
-                        //'enableSorting' => false,
-                        //'contentOptions' => ['style'=>'max-width:200px;'],
-                        'header' => 'Offered',
-                        'format' => 'raw',
-                        'value' => 'YES/NO',
-                    ],
-                    [
-                        'attribute'=>'description',
-                        'format' => 'raw',
-                        'enableSorting' => false,
-                        'value' => function($data){
-                            return ($data->request->lab_id == 2) ? "Sampling Date: <span style='color:#000077;'><b>".date("Y-m-d h:i A",strtotime($data->sampling_date))."</b></span>,&nbsp;".$data->description : $data->description;
-                        },
-                       'contentOptions' => [
-                            'style'=>'max-width:200px; overflow: auto; white-space: normal; word-wrap: break-word;'
-                        ],
-                    ],
-                ];
-
-                echo GridView::widget([
-                    'id' => 'sample-analysis-grid',
-                    'dataProvider'=> $sampleDataProvider,
-                    //'dataProvider' => ,
-                    'pjax'=>true,                
-                    'pjaxSettings' => [
-                        'options' => [
-                            'enablePushState' => false,
-                        ]
-                    ],
-                    'containerOptions'=>[
-                        'style'=>'overflow:auto; height:250px',
-                    ],
-                    'floatHeaderOptions' => ['scrollingTop' => true],
-                    'responsive'=>true,
-                    'striped'=>true,
-                    'hover'=>true,
-                    'bordered' => true,
-                    'panel' => [
-                       'heading'=>'<h3 class="panel-title">Samples</h3>',
-                       'type'=>'primary',
-                       'before' => '',
-                       'after'=>false,
-                       'footer'=>false,
-                    ],
-                    'columns' => $gridColumns,
-                    'toolbar' => false,
-                ]);*/
-            ?>
             <?php
                 $gridColumns = [
                     [
@@ -187,7 +122,7 @@ use common\components\ReferralComponent;
                         //'value' => 'List of Agencies',
                         'value' => function($data) use ($refcomponent,$count_methods,$img_url) {
                             if($count_methods > 0){
-                                $data = json_decode($refcomponent->offeredby($data['methodreference_id']),true);
+                                $data = $refcomponent->offeredBy($data['methodreference_id']);
                                 $img = '';
                                 $non_dost = [];
                                 $non_dost_img = '';

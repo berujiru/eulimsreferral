@@ -80,6 +80,8 @@ if(empty($model->referral_code)){
     $labelpanel = '<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code .' '.$btnPrint;
 }
 
+$rstlId = Yii::$app->user->identity->profile->rstl_id;
+
 ?>
 <div class="referral-view">
     <div class="image-loader" style="display: none;"></div>
@@ -199,11 +201,12 @@ if(empty($model->referral_code)){
                     'columns' => [
                         [
                             'label'=>'Deposite Slip',
-                            'value'=>function($data) use ($depositslip,$model){
+                            'value'=>function($data) use ($depositslip,$model,$rstlId){
                                 $link = '';
+                                $link .= !empty($model->referral_code) && $model->receiving_agency_id  == $rstlId ? Html::button('<span class="glyphicon glyphicon-upload"></span> Upload', ['value'=>Url::to(['/referrals/attachment/upload_deposit','referral_id'=>$model->referral_id]), 'onclick'=>'upload(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Upload Deposit Slip'])."<br>" : '';
                                 if($depositslip > 0){
                                     foreach ($depositslip as $deposit) {
-                                        $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$deposit['filename'],'/referrals/attachment/download?request_id='.$model->local_request_id.'&file='.$deposit['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Deposit Slip','target'=>'_self'])."<br>";
+                                        $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$deposit['filename'],'/referrals/attachment/download?referral_id='.$model->referral_id.'&file='.$deposit['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Deposit Slip','target'=>'_self'])."<br>";
                                     }
                                 }
                                 return $link;
@@ -215,18 +218,19 @@ if(empty($model->referral_code)){
                         ],
                         [
                             'label'=>'Official Receipt',
-                            'format'=>'raw',
-                            'value'=>function($data) use ($officialreceipt,$model){
+                            'value'=>function($data) use ($officialreceipt,$model,$rstlId){
                                 $link = '';
+                                $link .= !empty($model->referral_code) && $model->testing_agency_id == $rstlId ? Html::button('<span class="glyphicon glyphicon-upload"></span> Upload', ['value'=>Url::to(['/referrals/attachment/upload_or','referral_id'=>$model->referral_id]), 'onclick'=>'upload(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Upload Official Receipt'])."<br>" : '';
                                 if($officialreceipt > 0){
                                     foreach ($officialreceipt as $or) {
-                                        $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$or['filename'],'/referrals/attachment/download?request_id='.$model->local_request_id.'&file='.$or['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Official Receipt','target'=>'_self'])."<br>";
+                                        $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$or['filename'],'/referrals/attachment/download?referral_id='.$model->referral_id.'&file='.$or['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Official Receipt','target'=>'_self'])."<br>";
                                     }
                                 }
                                 return $link;
                             },
-                            'valueColOptions'=>['style'=>'width:30%;vertical-align: top;'], 
+                            'format'=>'raw',
                             'displayOnly'=>true,
+                            'valueColOptions'=>['style'=>'width:30%;vertical-align: top;'],
                             'labelColOptions' => ['style' => 'width: 20%; text-align: right; vertical-align: top;'],
                         ],
                     ],
@@ -261,6 +265,12 @@ if(empty($model->referral_code)){
         ]);
         ?>
     </div>
+    <?php 
+    //echo Html::button('<span class="glyphicon glyphicon-plus"></span> Place Bid', ['value'=>Url::to(['/referrals/bid/placebid','referral_id'=>$model->referral_id]), 'onclick'=>'sendNotification(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Place Bid'])."<br>";
+
+    echo Html::button('<span class="glyphicon glyphicon-plus"></span> Place Bid', ['value'=>Url::to(['/referrals/bid/placebid','referral_id'=>$model->referral_id]), 'onclick'=>'placebid(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Place Bid'])."<br>"; 
+
+    ?>
     <div class="container">
         <div class="table-responsive">
         <?php
@@ -733,5 +743,56 @@ if(empty($model->referral_code)){
     function addtestingtrack(url,title){
        LoadModal(title,url,'true','600px');
    }
+
+   //upload slip
+    function upload(url,title){
+        $('.modal-title').html(title);
+        $('#modal').modal('show')
+            .find('#modalContent')
+            .load(url);
+    }
+
+    //placing bid
+    function placebid(url,title){
+        $('.modal-title').html(title);
+        $('#modal').modal('show')
+            .find('#modalContent')
+            .load(url);
+    }
+
+    /*function sendNotification(url,title){
+
+        BootstrapDialog.show({
+            title: "<span class='glyphicon glyphicon-folder-close'></span>&nbsp;&nbsp;" + title,
+            message: "<div class='alert alert-danger' style='border:2px #ff3300 dotted;margin:auto;font-size:13px;text-align:justify;text-justify:inter-word;'>"
+                +"<strong style='font-size:16px;'>Warning:</strong><br>"
+                +"<ol>"
+                +"<li>Make sure the selected laboratory is correct before you notify. Is it really Chem Lab, Micro Lab, Metro Lab, etc.?</li>"
+                +"<li>If you are notifying to <strong><i>DOST-ITDI</i></strong> for chemical analysis, make sure you have selected either Organic Chemistry Laboratory (OCS) or Inorganic Chemistry Laboratory (ICS).</li>"
+                +"</ol>"
+                +"<p style='font-weight:bold;font-size:13px;'><span class='glyphicon glyphicon-info-sign' style='font-size:17px;'></span>&nbsp;If you need assistance, please contact the web administrator.</p>"
+                +"</div>"
+                +"<p class='note' style='margin:15px 0 0 15px;font-weight:bold;color:#0d47a1;font-size:14px;'>Are you sure you want to send notification to <span class='agency-name' style='color:#000000;'>"+title+"</span>?</p>",
+            buttons: [
+                {
+                    label: 'Bid',
+                    cssClass: 'btn-primary',
+                    action: function(thisDialog){
+                        thisDialog.close();
+                        $('.modal-title').html(title);
+                        $('#modal').modal('show')
+                            .find('#modalContent')
+                            .load(url);
+                    }
+                }, 
+                {
+                    label: 'Close',
+                    action: function(thisDialog){
+                        thisDialog.close();
+                    }
+                }
+            ]
+        });
+    }*/
 </script>   
    

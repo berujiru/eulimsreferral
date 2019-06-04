@@ -11,6 +11,7 @@ use common\models\referral\Referral;
 use common\models\referral\Sample;
 use common\models\referral\Analysis;
 use common\models\referral\Notification;
+use common\models\referral\Service;
 
 /**
  * Referral User Defined Functions
@@ -18,6 +19,7 @@ use common\models\referral\Notification;
  */
 class ReferralFunctions extends Component
 {
+	public $source = 'https://eulimsapi.onelab.ph';
 
 	//check if the agency is notified
 	function checkNotified($referralId,$recipientId)
@@ -81,59 +83,64 @@ class ReferralFunctions extends Component
 		}
 	}
 
-	public function actionViewdetail()
-	{
-		$getrequest = Yii::$app->request;
-		
-		if(!empty($getrequest->get('referral_id')) && !empty($getrequest->get('rstl_id'))){
-			$referralId = (int) $getrequest->get('referral_id');
-			$recipientId = (int) $getrequest->get('rstl_id');
-			$senderId = (int) $getrequest->get('rstl_id');
+	//check if service is already offered
+    function checkOffered($methodrefId,$rstlId){
+        if($rstlId > 0 && $methodrefId > 0) {
+			$service = Service::find()->where(['method_ref_id'=>$methodrefId,'agency_id'=>$rstlId])->count();
 			
-			$checkNotified = $this->checkNotified($referralId,$recipientId);
-			$checkOwner = $this->actionCheckowner($referralId,$senderId);
-			
-			if($checkNotified > 0 || $checkOwner > 0){
-				$modelReferral = new $this->modelClass;
-				$modelSample = new $this->modelSampleClass;
-				$modelAnalysis = new $this->modelAnalysisClass;
-				$modelCustomer = new $this->modelCustomerClass;
-				
-				$referral = $modelReferral::find()
-					->where('referral_id =:referralId', [':referralId'=>$referralId])
-					->one();
-				
-				$samples = $modelSample::find()
-					->where('referral_id =:referralId', [':referralId'=>$referralId])
-					->asArray()
-					->all();
-					
-				$sampleIds = implode(',', array_map(function ($data) {
-					return $data['sample_id'];
-				}, $samples));
-					
-				$analyses = $modelAnalysis::find()
-					->select('tbl_analysis.*,tbl_sample.sample_name,tbl_sample.sample_code,tbl_testname.test_name,tbl_methodreference.method,tbl_methodreference.reference')
-					->joinWith(['sample','testname','methodreference'],false)
-					->where(['in', 'tbl_analysis.sample_id', explode(',',$sampleIds)])
-					//->andWhere(['cancelled'=>0])
-					->asArray()
-					->all();
-					
-				$customer = $modelCustomer::find()
-					->where('customer_id =:customerId', [':customerId'=>$referral->customer_id])
-					->one();
-				
-				$data = ['request_data'=>$referral,'sample_data'=>$samples,'analysis_data'=>$analyses,'customer_data'=>$customer];
-				
-				return $data;
-				
+			if($service > 0){
+				$return = 1;
 			} else {
-				//return "Your agency doesn't appear notified!";
+				$return = 0;
+			}
+		} else {
+			$return = 0;
+		}
+		return $return;
+    }
+
+    //return method reference offered by
+    function offeredBy($methodrefId){
+        if($methodrefId > 0){
+			$service = Service::find()
+				->joinWith('agency',true)
+				->where(['method_ref_id'=>$methodrefId])
+				->orderBy('tbl_agency.agency_id');
+			
+			$query = $service->asArray()->all();
+			$count = $service->count();
+			
+			if($count > 0){
+				return $query;
+			} else {
 				return 0;
 			}
 		} else {
-			throw new \yii\web\HttpException(400, 'No records found');
+			return 0;
 		}
-	}
+    }
+
+    //get attachments
+    function getAttachment($referralId,$rstlId,$type){
+        if($referralId > 0 && $rstlId > 0 && $type > 0) {
+            $apiUrl=$this->source.'/api/web/referral/attachments/show_upload?referral_id='.$referralId.'&rstl_id='.$rstlId.'&type='.$type;
+            $curl = new curl\Curl();
+            $curl->setOption(CURLOPT_CONNECTTIMEOUT, 120);
+            $curl->setOption(CURLOPT_TIMEOUT, 120);
+            $list = $curl->get($apiUrl);
+            return $list;
+        } else {
+            return 'Invalid referral!';
+        }
+    }
+
+    //download attachment
+    function downloadAttachment($referralId,$rstlId,$fileId){
+        if($referralId > 0 && $rstlId > 0 && $fileId > 0) {
+            $apiUrl=$this->source.'/api/web/referral/attachments/download?referral_id='.$referralId.'&rstl_id='.$rstlId.'&file='.$fileId;
+            return $apiUrl;
+        } else {
+            return 'false';
+        }
+    }
 }

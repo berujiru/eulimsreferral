@@ -43,6 +43,7 @@ class Attachment extends \yii\db\ActiveRecord
             [['attachment_type', 'referral_id', 'uploadedby_user_id'], 'integer'],
             [['upload_date'], 'safe'],
             [['filename'], 'string', 'max' => 400],
+            [['filename'], 'file', 'extensions' => 'png,jpg,pdf','maxSize' => 2048000,'tooBig' => 'Limit is 2,048KB or 2MB','skipOnEmpty'=>false],
             [['uploadedby_name'], 'string', 'max' => 100],
         ];
     }

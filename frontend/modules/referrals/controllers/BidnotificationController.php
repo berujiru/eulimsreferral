@@ -3,17 +3,18 @@
 namespace frontend\modules\referrals\controllers;
 
 use Yii;
-use common\models\referral\Bid;
-use common\models\referral\BidSearch;
+use common\models\referral\Bidnotification;
+use common\models\referral\BidnotificationSearch;
 use common\models\referral\Referral;
+use common\models\referral\Agency;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * BidController implements the CRUD actions for Bid model.
+ * BidnotificationController implements the CRUD actions for Bidnotification model.
  */
-class BidController extends Controller
+class BidnotificationController extends Controller
 {
     /**
      * {@inheritdoc}
@@ -31,12 +32,12 @@ class BidController extends Controller
     }
 
     /**
-     * Lists all Bid models.
+     * Lists all Bidnotification models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new BidSearch();
+        $searchModel = new BidnotificationSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -46,7 +47,7 @@ class BidController extends Controller
     }
 
     /**
-     * Displays a single Bid model.
+     * Displays a single Bidnotification model.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -59,44 +60,25 @@ class BidController extends Controller
     }
 
     /**
-     * Creates a new Bid model.
+     * Creates a new Bidnotification model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        if(Yii::$app->request->get('referral_id')){
-            $referralId = (int) Yii::$app->request->get('referral_id');
-            $referral = $this->findReferral($referralId);
-        } else {
-            Yii::$app->session->setFlash('error', "Referral ID not valid!");
-            return $this->redirect(['/referrals/notification']);
-        }
-
-        $model = new Bid();
+        $model = new Bidnotification();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            //return $this->redirect(['view', 'id' => $model->bid_id]);
-            return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
+            return $this->redirect(['view', 'id' => $model->bid_notification_id]);
         }
 
-        /*return $this->render('create', [
+        return $this->render('create', [
             'model' => $model,
-        ]);*/
-
-        if(Yii::$app->request->isAjax){
-            return $this->renderAjax('_form', [
-                'model' => $model,
-            ]);
-        } else {
-            return $this->renderAjax('create', [
-                'model' => $model,
-            ]);
-        }
+        ]);
     }
 
     /**
-     * Updates an existing Bid model.
+     * Updates an existing Bidnotification model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -107,7 +89,7 @@ class BidController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->bid_id]);
+            return $this->redirect(['view', 'id' => $model->bid_notification_id]);
         }
 
         return $this->render('update', [
@@ -116,7 +98,7 @@ class BidController extends Controller
     }
 
     /**
-     * Deletes an existing Bid model.
+     * Deletes an existing Bidnotification model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -130,19 +112,39 @@ class BidController extends Controller
     }
 
     /**
-     * Finds the Bid model based on its primary key value.
+     * Finds the Bidnotification model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Bid the loaded model
+     * @return Bidnotification the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Bid::findOne($id)) !== null) {
+        if (($model = Bidnotification::findOne($id)) !== null) {
             return $model;
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    //send notification
+    public function actionNotify()
+    {
+        if(Yii::$app->request->get('referral_id')){
+            $referralId = (int) Yii::$app->request->get('referral_id');
+            $referral = $this->findReferral($referralId);
+        } else {
+            Yii::$app->session->setFlash('error', "Referral ID not valid!");
+            return $this->redirect(['/referrals/bidnotification']);
+        }
+
+        $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+
+        if($rstlId > 0){
+            return "<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign' style='font-size:18px;'></span>&nbsp;No agency to be notified!</div>";
+        } else {
+            return "<div class='alert alert-danger'><span class='glyphicon glyphicon-exclamation-sign' style='font-size:18px;'></span>&nbsp;No agency to be notified!</div>";
+        }
     }
 
     //find referral request
@@ -153,39 +155,6 @@ class BidController extends Controller
             return $model;
         } else {
             throw new NotFoundHttpException('The requested Request its either does not exist or you have no permission to view it.');
-        }
-    }
-
-    //place bid
-    public function actionPlacebid()
-    {
-        if(Yii::$app->request->get('referral_id')){
-            $referralId = (int) Yii::$app->request->get('referral_id');
-            $referral = $this->findReferral($referralId);
-        } else {
-            Yii::$app->session->setFlash('error', "Referral ID not valid!");
-            return $this->redirect(['/referrals/notification']);
-        }
-
-        $model = new Bid();
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            //return $this->redirect(['view', 'id' => $model->bid_id]);
-            return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
-        }
-
-        /*return $this->render('create', [
-            'model' => $model,
-        ]);*/
-
-        if(Yii::$app->request->isAjax){
-            return $this->renderAjax('_form', [
-                'model' => $model,
-            ]);
-        } else {
-            return $this->renderAjax('create', [
-                'model' => $model,
-            ]);
         }
     }
 }

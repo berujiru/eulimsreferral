@@ -14,6 +14,8 @@ use Yii;
  * @property string $bid_amount
  * @property string $remarks
  * @property string $estimated_due
+ * @property int $seen
+ * @property string $seen_date
  * @property string $created_at
  * @property string $updated_at
  *
@@ -30,24 +32,16 @@ class Bid extends \yii\db\ActiveRecord
     }
 
     /**
-     * @return \yii\db\Connection the database connection used by this AR class.
-     */
-    public static function getDb()
-    {
-        return Yii::$app->get('referraldb');
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
             [['referral_id', 'bidder_agency_id', 'sample_requirements', 'bid_amount', 'remarks', 'estimated_due', 'created_at', 'updated_at'], 'required'],
-            [['referral_id', 'bidder_agency_id'], 'integer'],
+            [['referral_id', 'bidder_agency_id', 'seen'], 'integer'],
             [['sample_requirements'], 'string'],
             [['bid_amount'], 'number'],
-            [['estimated_due', 'created_at', 'updated_at'], 'safe'],
+            [['estimated_due', 'seen_date', 'created_at', 'updated_at'], 'safe'],
             [['remarks'], 'string', 'max' => 200],
             [['referral_id'], 'exist', 'skipOnError' => true, 'targetClass' => Referral::className(), 'targetAttribute' => ['referral_id' => 'referral_id']],
         ];
@@ -66,6 +60,8 @@ class Bid extends \yii\db\ActiveRecord
             'bid_amount' => 'Bid Amount',
             'remarks' => 'Remarks',
             'estimated_due' => 'Estimated Due',
+            'seen' => 'Seen',
+            'seen_date' => 'Seen Date',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];

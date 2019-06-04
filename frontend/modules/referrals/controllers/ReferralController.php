@@ -70,8 +70,7 @@ class ReferralController extends Controller
         if($rstlId > 0)
         {
             $function = new ReferralFunctions();
-            $refcomponent = new ReferralComponent();
-            
+          
             $checknotified = $function->checkNotified($id,$rstlId);
             $checkOwner = $function->checkOwner($id,$rstlId);
 
@@ -86,9 +85,11 @@ class ReferralController extends Controller
                 //$customer = Customer::findOne($model->customer_id);
 
                 //set third parameter to 1 for attachment type deposit slip
-                $deposit = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
-                //set third parameter to 2 for attachment type or
-                $or = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                $deposit = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
+                //set third parameter to 2 for attachment type OR
+                $or = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                //set third parameter to 3 for attachment type test result
+                $testresult = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,3),true);
 
                 $sampleDataProvider = new ArrayDataProvider([
                     'allModels' => $samples,
@@ -143,6 +144,7 @@ class ReferralController extends Controller
                     //'notification' => $noticeDetails,
                     'depositslip' => $deposit,
                     'officialreceipt' => $or,
+                    'testresult' => $testresult,
                     'notificationDataProvider' => $notificationDataProvider,
                     'logs'=>$statuslogs,
                     'modelRefTracktesting'=>$this->findModeltestingtrack($id),
@@ -151,12 +153,12 @@ class ReferralController extends Controller
                     'countreceiving'=>$countreceiving
                 ]);
             } else {
-                Yii::$app->session->setFlash('error', "Your agency doesn't appear notified!");
-                return $this->redirect(['/referrals/notification']);
+                Yii::$app->session->setFlash('error', "Denied access!");
+                return $this->redirect(['/referrals/referral']);
             }
         } else {
             Yii::$app->session->setFlash('error', "Invalid request!");
-            return $this->redirect(['/referrals/notification']);
+            return $this->redirect(['/referrals/referral']);
         }
 
         /*return $this->render('view', [
@@ -173,7 +175,6 @@ class ReferralController extends Controller
         if($rstlId > 0 && $noticeId > 0)
         {
             $function = new ReferralFunctions();
-            $refcomponent = new ReferralComponent();
 
             $checknotified = $function->checkNotified($id,$rstlId);
             $checkOwner = $function->checkOwner($id,$rstlId);
@@ -190,9 +191,11 @@ class ReferralController extends Controller
                 $analyses = Analysis::find()->joinWith('sample',false)->where('referral_id =:referralId',[':referralId'=>$id])->all();
 
                 //set third parameter to 1 for attachment type deposit slip
-                $deposit = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
+                $deposit = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
                 //set third parameter to 2 for attachment type or
-                $or = json_decode($refcomponent->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                $or = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
+                //set third parameter to 3 for attachment type test result
+                $testresult = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,3),true);
 
                 $sampleDataProvider = new ArrayDataProvider([
                     'allModels' => $samples,
@@ -231,6 +234,7 @@ class ReferralController extends Controller
                     'notification' => $noticeDetails,
                     'depositslip' => $deposit,
                     'officialreceipt' => $or,
+                    'testresult' => $testresult,
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', "Your agency doesn't appear notified!");

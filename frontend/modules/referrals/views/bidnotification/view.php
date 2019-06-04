@@ -4,19 +4,19 @@ use yii\helpers\Html;
 use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\referral\Bid */
+/* @var $model common\models\referral\Bidnotification */
 
-$this->title = $model->bid_id;
-$this->params['breadcrumbs'][] = ['label' => 'Bids', 'url' => ['index']];
+$this->title = $model->bid_notification_id;
+$this->params['breadcrumbs'][] = ['label' => 'Bidnotifications', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="bid-view">
+<div class="bidnotification-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Update', ['update', 'id' => $model->bid_id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->bid_id], [
+        <?= Html::a('Update', ['update', 'id' => $model->bid_notification_id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('Delete', ['delete', 'id' => $model->bid_notification_id], [
             'class' => 'btn btn-danger',
             'data' => [
                 'confirm' => 'Are you sure you want to delete this item?',
@@ -28,17 +28,13 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
-            'bid_id',
+            'bid_notification_id',
             'referral_id',
-            'bidder_agency_id',
-            'sample_requirements:ntext',
-            'bid_amount',
-            'remarks',
-            'estimated_due',
+            'postedby_agency_id',
+            'posted_at',
+            'recipient_agency_id',
             'seen',
             'seen_date',
-            'created_at',
-            'updated_at',
         ],
     ]) ?>
 
