@@ -63,11 +63,11 @@ class Referraltracktesting extends \yii\db\ActiveRecord
             'referral_id' => 'Referral ID',
             'testing_agency_id' => 'Testing Agency ID',
             'receiving_agency_id' => 'Receiving Agency ID',
-            'date_received_courier' => 'Date Received Courier',
-            'analysis_started' => 'Analysis Started',
-            'analysis_completed' => 'Analysis Completed',
-            'cal_specimen_send_date' => 'Cal Specimen Send Date',
-            'courier_id' => 'Courier ID',
+            'date_received_courier' => 'Date Received from Courier',
+            'analysis_started' => 'Analysis/Calibration Started',
+            'analysis_completed' => 'Analysis/Calibration Completed',
+            'cal_specimen_send_date' => 'Calibration Specimen Send Date',
+            'courier_id' => 'Courier',
             'date_created' => 'Date Created',
         ];
     }

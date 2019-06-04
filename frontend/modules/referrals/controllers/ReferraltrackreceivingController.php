@@ -8,6 +8,8 @@ use common\models\referral\ReferraltrackreceivingSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\db\Query;
+use common\models\referral\Referral;
 
 /**
  * ReferraltrackreceivingController implements the CRUD actions for Referraltrackreceiving model.
@@ -62,15 +64,26 @@ class ReferraltrackreceivingController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    public function actionCreate()
+//    public function actionCreate($referralid,$testingid,$receiveddate)
+    public function actionCreate($referralid)
     {
+        
         $model = new Referraltrackreceiving();
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->referraltrackreceiving_id]);
+        
+        if ($model->load(Yii::$app->request->post())) {
+            
+            $model->referral_id=$referralid;
+            $model->date_created=date('Y-m-d H:i:s');
+            $model->testing_agency_id=$model->referral->testing_agency_id;
+            $model->receiving_agency_id=Yii::$app->user->identity->profile->rstl_id;
+            $model->sample_received_date=$model->referral->sample_received_date;
+            $model->save();
+            Yii::$app->session->setFlash('success', 'Successfully Created!');
+            return $this->redirect(['/referrals/referral/view', 'id' => $referralid]);      
         }
 
-        return $this->render('create', [
+        
+        return $this->renderAjax('create', [
             'model' => $model,
         ]);
     }
@@ -87,10 +100,12 @@ class ReferraltrackreceivingController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->referraltrackreceiving_id]);
+            //return $this->redirect(['view', 'id' => $model->referraltrackreceiving_id]);
+            Yii::$app->session->setFlash('success', 'Successfully Updated!');
+            return $this->redirect(['/referrals/referral/view', 'id' => $model->referral_id]); 
         }
 
-        return $this->render('update', [
+        return $this->renderAjax('update', [
             'model' => $model,
         ]);
     }

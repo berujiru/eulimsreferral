@@ -62,15 +62,22 @@ class ReferraltracktestingController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    public function actionCreate()
+    public function actionCreate($referralid,$receivingid)
     {
         $model = new Referraltracktesting();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->referraltracktesting_id]);
+        if ($model->load(Yii::$app->request->post())) {
+            $model->testing_agency_id=Yii::$app->user->identity->profile->rstl_id;
+            $model->referral_id=$referralid;
+            $model->date_created=date('Y-m-d H:i:s');
+            $model->receiving_agency_id=$receivingid;
+            $model->save();
+            Yii::$app->session->setFlash('success', 'Successfully Created!');
+            return $this->redirect(['/referrals/referral/view', 'id' => $referralid]);
+          
         }
 
-        return $this->render('create', [
+        return $this->renderAjax('create', [
             'model' => $model,
         ]);
     }
@@ -87,10 +94,12 @@ class ReferraltracktestingController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->referraltracktesting_id]);
+            //return $this->redirect(['view', 'id' => $model->referraltracktesting_id]);
+            Yii::$app->session->setFlash('success', 'Successfully Updated!');
+            return $this->redirect(['/referrals/referral/view', 'id' => $model->referral_id]); 
         }
 
-        return $this->render('update', [
+        return $this->renderAjax('update', [
             'model' => $model,
         ]);
     }

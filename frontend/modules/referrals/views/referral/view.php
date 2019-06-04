@@ -18,6 +18,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
 $this->registerCssFile("/css/modcss/progress.css", [], 'css-search-bar');
 
+$rstl_id=$rstl_id=(int) Yii::$app->user->identity->profile->rstl_id;
 $statusreceived="progress-todo";
 $statusshipped="progress-todo";
 $statusaccepted="progress-todo";
@@ -48,7 +49,8 @@ foreach($logs as $log){
 }
 
 $haveStatus = "";
-
+//$Func="LoadModal('Update Received Track','/finance/cancelop/create?op=".$model->orderofpayment_id."',true,500)";
+//$UpdateButton='<button id="btnUpdate" onclick="'.$Func.'" type="button" style="float: right;padding-right:5px;margin-left: 5px" class="btn btn-danger"><i class="fa fa-remove"></i> Cancel Order of Payment</button>';
 if(!isset(\Yii::$app->session['config-item'])){
    \Yii::$app->session['config-item']=1; //Laboratories 
 }
@@ -514,8 +516,8 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
         ])."</div></div>";
          $gridColumn1="abcdefh123456";
          //$display=true;
-         $gridColumn2=DetailView::widget([
-                'model'=>$model,
+         $trackreceiving=DetailView::widget([
+                'model' =>$modelRefTrackreceiving,
                 'responsive'=>true, 
              
                 'hover'=>true,
@@ -526,61 +528,205 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                 'buttons1' => '',
                 'attributes' => [
                     [
-                        'group'=>true,
-                        'label'=>Html::button('<span class="glyphicon glyphicon-plus"></span> Add Referral Track', ['value'=>'/referrals/referral/addreceivedtrack', 'class' => 'btn btn-success','title' => Yii::t('app', "Add Referral Track"),'id'=>'btnreceivedtrack','onclick'=>'addreceivedtrack(this.value,this.title)']),
-                        'rowOptions'=>['class'=>'info']
-                    ],
-                    [
+                       
                         'columns' => [
                             [
-                                'label'=>'Transaction Number',
+                                'label'=>'Referred to',
                                 'format'=>'raw',
-                                'value'=>'abcdsfsdf',//$model->transactionnum,
+                                'value'=>!empty($model->agencytesting) ? $model->agencytesting->name : null,//$model->transactionnum,
                                 'valueColOptions'=>['style'=>'width:30%'], 
                                 'displayOnly'=>true
                             ],
                             [
-                                'label'=>'Customer Name',
+                                'label'=>'Referral Code',
                                 'format'=>'raw',
-                                'value'=>'131431412',//$model->customer ? $model->customer->customer_name : "",
+                                'value'=>$model->referral_code,
                                 'valueColOptions'=>['style'=>'width:30%'], 
                                 'displayOnly'=>true
                             ],
                         ],
 
                     ], 
-                
+                    [
+                        'columns' => [
+                            [
+                                'label'=>'Date Received from Customer',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTrackreceiving->sample_received_date) ? Yii::$app->formatter->asDate($modelRefTrackreceiving->sample_received_date, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No sample received date</i>",//$model->transactionnum,
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                            [
+                                'label'=>'Courier',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTrackreceiving->courier) ? $modelRefTrackreceiving->courier->name : "<i class='text-danger font-weight-bold h5'>No courier</i>",//$model->customer ? $model->customer->customer_name : "",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                        ],
+
+                    ], 
+                     [
+                        'columns' => [
+                            [
+                                'label'=>'Shipping Date',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTrackreceiving->shipping_date) ? Yii::$app->formatter->asDate($modelRefTrackreceiving->shipping_date, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No data</i>",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                            [
+                                'label'=>'Calibration Specimen Received from Customer',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTrackreceiving->cal_specimen_received_date) ? Yii::$app->formatter->asDate($modelRefTrackreceiving->cal_specimen_received_date, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No data</i>",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                        ],
+
+                    ],
                 ],
             ]);
-                echo TabsX::widget([
-                    'position' => TabsX::POS_ABOVE,
-                    'align' => TabsX::ALIGN_LEFT,
-                    'encodeLabels' => false,
-                    'id' => 'tab_referral',
-                    'items' => [
-                        [
-                            'label' => '<i class="fa fa-columns"></i> Logs',
-                            'content' => $gridColumn,//$LogContent,
-                            'active' => $LogActive,
-                            'options' => ['id' => 'log'],
-                           // 'visible' => Yii::$app->user->can('access-terminal-configurations')
+         $tracktesting=DetailView::widget([
+                'model' =>$modelRefTracktesting,
+                'responsive'=>true, 
+             
+                'hover'=>true,
+                'mode'=>DetailView::MODE_VIEW,
+                'panel'=>[
+                    'type'=>DetailView::TYPE_PRIMARY,
+                ],
+                'buttons1' => '',
+                'attributes' => [
+                  
+                    [
+                        'columns' => [
+                            [
+                                'label'=>'Referred by',
+                                'format'=>'raw',
+                                'value'=>!empty($model->agencyreceiving) ? $model->agencyreceiving->name : null,//$model->transactionnum,
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                            [
+                                'label'=>'Referral Code',
+                                'format'=>'raw',
+                                'value'=>$model->referral_code,
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
                         ],
-                        [
-                            'label' => '<i class="fa fa-users"></i> Results',
-                            'content' => $gridColumn1,//$ResultContent,
-                            'active' => $ResultActive,
-                            'options' => ['id' => 'result'],
-                           // 'visible' => Yii::$app->user->can('access-terminal-configurations')
+
+                    ], 
+                    [
+                        'columns' => [
+                            [
+                                'label'=>'Date Received from Courier',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTracktesting->date_received_courier) ? Yii::$app->formatter->asDate($modelRefTracktesting->date_received_courier, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No received date</i>",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                            [
+                                'label'=>'Analysis/Calibration Started',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTracktesting->analysis_started) ? Yii::$app->formatter->asDate($modelRefTracktesting->analysis_started, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No data</i>",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
                         ],
-                        [
-                            'label' => '<i class="fa-level-down"></i> Referral Track',
-                            'content' =>$gridColumn2,//$TrackContent ,
-                            'active' => $TrackActive,
-                            'options' => ['id' => 'referral_track'],
-                           // 'visible' => Yii::$app->user->can('access-terminal-configurations')
-                        ]
+
+                    ], 
+                     [
+                        'columns' => [
+                            [
+                                'label'=>'Analysis/Calibration Completed',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTracktesting->analysis_completed) ? Yii::$app->formatter->asDate($modelRefTracktesting->analysis_completed, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No data</i>",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                            [
+                                'label'=>'Courier',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTracktesting->courier) ? $modelRefTracktesting->courier->name : "<i class='text-danger font-weight-bold h5'>No courier</i>",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                        ],
+
                     ],
-                ]);
+                    [
+                        'columns' => [
+                            [
+                                'label'=>'Calibration Specimen Send back to Receiving Lab',
+                                'format'=>'raw',
+                                'value'=>!empty($modelRefTracktesting->cal_specimen_send_date) ? Yii::$app->formatter->asDate($modelRefTracktesting->cal_specimen_send_date, 'php:F j, Y') : "<i class='text-danger font-weight-bold h5'>No data</i>",
+                                'valueColOptions'=>['style'=>'width:30%'], 
+                                'displayOnly'=>true
+                            ],
+                            [
+                                'label'=>'',
+                                'format'=>'raw',
+                                'value'=>''
+                            ],
+                        ],
+
+                    ],
+                ],
+            ]);
+                
+        if($model->receiving_agency_id == $rstl_id){
+            $Func="LoadModal('Update Tracking','/referrals/referraltrackreceiving/update?id=".$modelRefTrackreceiving->referraltrackreceiving_id."',true,500)";
+            $UpdateButton='<button id="btnUpdate" onclick="'.$Func.'" type="button" style="float: left;padding-right:5px;margin-left: 5px" class="btn btn-primary"><i class="fa fa-pencil"></i> Update Tracking</button><br><br>';
+
+            if($countreceiving > 0){
+               $gridColumn2=$UpdateButton.$trackreceiving;  
+            } else{
+                $gridColumn2=Html::button('<span class="glyphicon glyphicon-plus"></span> Add Referral Track', ['value'=>"/referrals/referraltrackreceiving/create?referralid=$model->referral_id", 'class' => 'btn btn-success','title' => Yii::t('app', "Referral Track Receiving Lab"),'id'=>'btnreceivedtrack','onclick'=>'addreceivedtrack(this.value,this.title)']);
+            }
+            
+         }
+         else{
+            $Func="LoadModal('Update Tracking','/referrals/referraltracktesting/update?id=".$modelRefTracktesting->referraltracktesting_id."',true,500)";
+            $UpdateButton='<button id="btnUpdate" onclick="'.$Func.'" type="button" style="float: left;padding-right:5px;margin-left: 5px" class="btn btn-primary"><i class="fa fa-pencil"></i> Update Tracking</button><br><br>';
+
+            if($counttesting > 0){
+                $gridColumn2=$UpdateButton.$tracktesting;
+            } else{
+                $gridColumn2=Html::button('<span class="glyphicon glyphicon-plus"></span> Add Referral Track', ['value'=>'/referrals/referraltracktesting/create?referralid='.$model->referral_id.'&receivingid='.$model->receiving_agency_id, 'class' => 'btn btn-success','title' => Yii::t('app', "Referral Track Testing/Calibration Lab"),'id'=>'btntestingtrack','onclick'=>'addtestingtrack(this.value,this.title)']);
+            }
+            
+         }                   
+        echo TabsX::widget([
+            'position' => TabsX::POS_ABOVE,
+            'align' => TabsX::ALIGN_LEFT,
+            'encodeLabels' => false,
+            'id' => 'tab_referral',
+            'items' => [
+                [
+                    'label' => '<i class="fa fa-columns"></i> Logs',
+                    'content' => $gridColumn,//$LogContent,
+                    'active' => $LogActive,
+                    'options' => ['id' => 'log'],
+                   // 'visible' => Yii::$app->user->can('access-terminal-configurations')
+                ],
+                [
+                    'label' => '<i class="fa fa-users"></i> Results',
+                    'content' => $gridColumn1,//$ResultContent,
+                    'active' => $ResultActive,
+                    'options' => ['id' => 'result'],
+                   // 'visible' => Yii::$app->user->can('access-terminal-configurations')
+                ],
+                [
+                    'label' => '<i class="fa-level-down"></i> Referral Track',
+                    'content' =>$gridColumn2,//$TrackContent ,
+                    'active' => $TrackActive,
+                    'options' => ['id' => 'referral_track'],
+                   // 'visible' => Yii::$app->user->can('access-terminal-configurations')
+                ]
+            ],
+        ]);
         ?>
         </div>
         </div>      
@@ -591,6 +737,10 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
 
 <script type="text/javascript">
     function addreceivedtrack(url,title){
+        //alert(title);
+       LoadModal(title,url,'true','600px');
+   }
+    function addtestingtrack(url,title){
        LoadModal(title,url,'true','600px');
    }
 

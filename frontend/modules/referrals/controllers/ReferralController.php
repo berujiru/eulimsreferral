@@ -70,20 +70,18 @@ class ReferralController extends Controller
         if($rstlId > 0)
         {
             $function = new ReferralFunctions();
-
+          
             $checknotified = $function->checkNotified($id,$rstlId);
             $checkOwner = $function->checkOwner($id,$rstlId);
 
             if($checknotified > 0 || $checkOwner > 0)
             {
                 $model = $this->findModel($id);
-
                 $samples = $model->samples;
                 $analyses = Analysis::find()->joinWith('sample',false)->where('referral_id =:referralId',[':referralId'=>$id])->all();
                 $notification= Notification::find()->where('referral_id =:referralId',[':referralId'=>$id])->orderBy(['notification_type_id' => SORT_ASC])->all();
                 $statuslogs= Statuslogs::find()->where('referral_id =:referralId',[':referralId'=>$id])->all();
-                $modelRefTrackreceiving= Referraltrackreceiving::find()->where('referral_id =:referralId',[':referralId'=>$id])->all();
-                $modelRefTracktesting= Referraltracktesting::find()->where('referral_id =:referralId',[':referralId'=>$id])->all();
+                
                 //$customer = Customer::findOne($model->customer_id);
 
                 //set third parameter to 1 for attachment type deposit slip
@@ -115,7 +113,7 @@ class ReferralController extends Controller
                         'pageSize' => 10,
                     ],
                 ]);
-
+               
                 $query = new Query;
                 $subtotal = $query->from('tbl_analysis')
                    ->join('INNER JOIN', 'tbl_sample', 'tbl_analysis.sample_id = tbl_sample.sample_id')
@@ -129,7 +127,10 @@ class ReferralController extends Controller
                 $rate = $model->discount_rate;
                 $discounted = $subtotal * ($rate/100);
                 $total = $subtotal - $discounted;
-
+                
+                $countreceiving=Referraltrackreceiving::find()->where('referral_id =:referralId',[':referralId'=>$id])->count();
+                $counttesting=Referraltracktesting::find()->where('referral_id =:referralId',[':referralId'=>$id])->count();
+               
                 return $this->render('view', [
                     'model' => $model,
                     //'request' => $request,
@@ -146,8 +147,10 @@ class ReferralController extends Controller
                     'testresult' => $testresult,
                     'notificationDataProvider' => $notificationDataProvider,
                     'logs'=>$statuslogs,
-                    'modelRefTrackreceiving'=>$modelRefTrackreceiving,
-                    'modelRefTracktesting'=>$modelRefTracktesting
+                    'modelRefTracktesting'=>$this->findModeltestingtrack($id),
+                    'modelRefTrackreceiving'=>$this->findModelreceivedtrack($id),
+                    'counttesting'=> $counttesting,
+                    'countreceiving'=>$countreceiving
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', "Denied access!");
@@ -382,7 +385,28 @@ class ReferralController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
     
-    public function actionAddreceivedtrack() {
-        return "hello pisti ka!";
+    protected function findModelreceivedtrack($referral_id)
+    {
+        $received = Referraltrackreceiving::find()->where('referral_id =:referralId',[':referralId'=>$referral_id])->one();
+        if ($received !== null) {
+            return $received;
+        }
+        else{
+            $model= new Referraltrackreceiving();
+            return $model;
+        }
+    }  
+    protected function findModeltestingtrack($referral_id)
+    {
+        $tracking = Referraltracktesting::find()->where('referral_id =:referralId',[':referralId'=>$referral_id])->one();
+        if ($tracking !== null) {
+            return $tracking;
+        }
+        else{
+            $newModel = new Referraltracktesting();
+            return $newModel;
+        }
+       // throw new NotFoundHttpException('hayiop');
     }
+    
 }
