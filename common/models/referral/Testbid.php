@@ -7,7 +7,7 @@ use Yii;
 /**
  * This is the model class for table "tbl_test_bid".
  *
- * @property int $analysis_bid_id
+ * @property int $test_bid_id
  * @property int $bidder_agency_id
  * @property int $referral_id
  * @property int $bid_id
@@ -42,7 +42,7 @@ class Testbid extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'analysis_bid_id' => 'Analysis Bid ID',
+            'test_bid_id' => 'Test Bid ID',
             'bidder_agency_id' => 'Bidder Agency ID',
             'referral_id' => 'Referral ID',
             'bid_id' => 'Bid ID',

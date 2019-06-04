@@ -5,12 +5,12 @@ namespace common\models\referral;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\referral\Testbid;
+use common\models\referral\Bidnotification;
 
 /**
- * TestbidSearch represents the model behind the search form of `common\models\referral\Testbid`.
+ * BidnotificationSearch represents the model behind the search form of `common\models\referral\Bidnotification`.
  */
-class TestbidSearch extends Testbid
+class BidnotificationSearch extends Bidnotification
 {
     /**
      * {@inheritdoc}
@@ -18,8 +18,8 @@ class TestbidSearch extends Testbid
     public function rules()
     {
         return [
-            [['test_bid_id', 'bidder_agency_id', 'referral_id', 'bid_id', 'analysis_id'], 'integer'],
-            [['fee'], 'number'],
+            [['bid_notification_id', 'referral_id', 'postedby_agency_id', 'recipient_agency_id', 'seen'], 'integer'],
+            [['posted_at', 'seen_date'], 'safe'],
         ];
     }
 
@@ -41,7 +41,7 @@ class TestbidSearch extends Testbid
      */
     public function search($params)
     {
-        $query = Testbid::find();
+        $query = Bidnotification::find();
 
         // add conditions that should always apply here
 
@@ -59,12 +59,13 @@ class TestbidSearch extends Testbid
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'test_bid_id' => $this->test_bid_id,
-            'bidder_agency_id' => $this->bidder_agency_id,
+            'bid_notification_id' => $this->bid_notification_id,
             'referral_id' => $this->referral_id,
-            'bid_id' => $this->bid_id,
-            'analysis_id' => $this->analysis_id,
-            'fee' => $this->fee,
+            'postedby_agency_id' => $this->postedby_agency_id,
+            'posted_at' => $this->posted_at,
+            'recipient_agency_id' => $this->recipient_agency_id,
+            'seen' => $this->seen,
+            'seen_date' => $this->seen_date,
         ]);
 
         return $dataProvider;

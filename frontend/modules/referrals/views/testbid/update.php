@@ -5,9 +5,9 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model common\models\referral\Testbid */
 
-$this->title = 'Update Testbid: ' . $model->analysis_bid_id;
+$this->title = 'Update Testbid: ' . $model->test_bid_id;
 $this->params['breadcrumbs'][] = ['label' => 'Testbids', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->analysis_bid_id, 'url' => ['view', 'id' => $model->analysis_bid_id]];
+$this->params['breadcrumbs'][] = ['label' => $model->test_bid_id, 'url' => ['view', 'id' => $model->test_bid_id]];
 $this->params['breadcrumbs'][] = 'Update';
 ?>
 <div class="testbid-update">

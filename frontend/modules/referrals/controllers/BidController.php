@@ -155,4 +155,37 @@ class BidController extends Controller
             throw new NotFoundHttpException('The requested Request its either does not exist or you have no permission to view it.');
         }
     }
+
+    //place bid
+    public function actionPlacebid()
+    {
+        if(Yii::$app->request->get('referral_id')){
+            $referralId = (int) Yii::$app->request->get('referral_id');
+            $referral = $this->findReferral($referralId);
+        } else {
+            Yii::$app->session->setFlash('error', "Referral ID not valid!");
+            return $this->redirect(['/referrals/notification']);
+        }
+
+        $model = new Bid();
+
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            //return $this->redirect(['view', 'id' => $model->bid_id]);
+            return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
+        }
+
+        /*return $this->render('create', [
+            'model' => $model,
+        ]);*/
+
+        if(Yii::$app->request->isAjax){
+            return $this->renderAjax('_form', [
+                'model' => $model,
+            ]);
+        } else {
+            return $this->renderAjax('create', [
+                'model' => $model,
+            ]);
+        }
+    }
 }

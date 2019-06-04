@@ -263,6 +263,12 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
         ]);
         ?>
     </div>
+    <?php 
+    //echo Html::button('<span class="glyphicon glyphicon-plus"></span> Place Bid', ['value'=>Url::to(['/referrals/bid/placebid','referral_id'=>$model->referral_id]), 'onclick'=>'sendNotification(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Place Bid'])."<br>";
+
+    echo Html::button('<span class="glyphicon glyphicon-plus"></span> Place Bid', ['value'=>Url::to(['/referrals/bid/placebid','referral_id'=>$model->referral_id]), 'onclick'=>'placebid(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Place Bid'])."<br>"; 
+
+    ?>
     <div class="container">
         <div class="table-responsive">
         <?php
@@ -595,5 +601,48 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
             .find('#modalContent')
             .load(url);
     }
+
+    //placing bid
+    function placebid(url,title){
+        $('.modal-title').html(title);
+        $('#modal').modal('show')
+            .find('#modalContent')
+            .load(url);
+    }
+
+    /*function sendNotification(url,title){
+
+        BootstrapDialog.show({
+            title: "<span class='glyphicon glyphicon-folder-close'></span>&nbsp;&nbsp;" + title,
+            message: "<div class='alert alert-danger' style='border:2px #ff3300 dotted;margin:auto;font-size:13px;text-align:justify;text-justify:inter-word;'>"
+                +"<strong style='font-size:16px;'>Warning:</strong><br>"
+                +"<ol>"
+                +"<li>Make sure the selected laboratory is correct before you notify. Is it really Chem Lab, Micro Lab, Metro Lab, etc.?</li>"
+                +"<li>If you are notifying to <strong><i>DOST-ITDI</i></strong> for chemical analysis, make sure you have selected either Organic Chemistry Laboratory (OCS) or Inorganic Chemistry Laboratory (ICS).</li>"
+                +"</ol>"
+                +"<p style='font-weight:bold;font-size:13px;'><span class='glyphicon glyphicon-info-sign' style='font-size:17px;'></span>&nbsp;If you need assistance, please contact the web administrator.</p>"
+                +"</div>"
+                +"<p class='note' style='margin:15px 0 0 15px;font-weight:bold;color:#0d47a1;font-size:14px;'>Are you sure you want to send notification to <span class='agency-name' style='color:#000000;'>"+title+"</span>?</p>",
+            buttons: [
+                {
+                    label: 'Bid',
+                    cssClass: 'btn-primary',
+                    action: function(thisDialog){
+                        thisDialog.close();
+                        $('.modal-title').html(title);
+                        $('#modal').modal('show')
+                            .find('#modalContent')
+                            .load(url);
+                    }
+                }, 
+                {
+                    label: 'Close',
+                    action: function(thisDialog){
+                        thisDialog.close();
+                    }
+                }
+            ]
+        });
+    }*/
 </script>   
    
