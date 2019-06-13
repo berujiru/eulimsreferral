@@ -12,10 +12,12 @@ use kartik\widgets\DatePicker;
 <div class="bid-form">
 
     <?php $form = ActiveForm::begin(); ?>
+	
+	<?= Html::hiddenInput('referral_id', Yii::$app->request->get('referral_id')); ?>
 
     <?= $form->field($model, 'sample_requirements')->textarea(['rows' => 3]) ?>
 
-    <?= $form->field($model, 'bid_amount')->textInput() ?>
+    <?= $form->field($model, 'bid_amount')->textInput(['value'=>0]) ?>
 
     <?= $form->field($model, 'remarks')->textarea(['maxlength' => true]) ?>
 

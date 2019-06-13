@@ -253,9 +253,6 @@ class ReferralController extends Controller
 
             if(!empty(Yii::$app->request->post('estimated_due_date')))
             {
-                $connection= Yii::$app->labdb;
-                $connection->createCommand('SET FOREIGN_KEY_CHECKS=0')->execute();
-                $transaction = $connection->beginTransaction();
 
                 $mi = !empty(Yii::$app->user->identity->profile->middleinitial) ? " ".substr(Yii::$app->user->identity->profile->middleinitial, 0, 1).". " : " ";
 
