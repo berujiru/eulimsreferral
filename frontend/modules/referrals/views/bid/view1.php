@@ -232,7 +232,7 @@ use yii\helpers\Url;
                 'panel' => [
                     'heading'=>'<h3 class="panel-title">Analysis</h3>',
                     'type'=>'primary',
-                    'before'=> $countBid == 0 ? Html::button('<span class="glyphicon glyphicon-plus"></span> Add Sample Requirements', ['value'=>Url::to(['/referrals/bid/addbid_requirement','referral_id'=>$referralId]),'onclick'=>'insertbid(this.value,this.title)','class' => 'btn btn-primary','title' => 'Add Sample Requirements']) : Html::button('<span class="glyphicon glyphicon-eye-open"></span> View your sample requirement', ['value'=>Url::to(['/referrals/bid/viewbid_requirement','referral_id'=>$referralId]),'onclick'=>'insertbid(this.value,this.title)','class' => 'btn btn-success','title' => 'View your sample requirement']),
+                    'before'=> $countBid == 0 && !isset($_SESSION['addbid_requirement_'.$referralId]) ? Html::button('<span class="glyphicon glyphicon-plus"></span> Add Sample Requirements', ['value'=>Url::to(['/referrals/bid/addbid_requirement','referral_id'=>$referralId]),'onclick'=>'insertbid(this.value,this.title)','class' => 'btn btn-primary','title' => 'Add Sample Requirements']) : Html::button('<span class="glyphicon glyphicon-eye-open"></span> View your sample requirement', ['value'=>Url::to(['/referrals/bid/viewbid_requirement','referral_id'=>$referralId]),'onclick'=>'insertbid(this.value,this.title)','class' => 'btn btn-success','title' => 'View your sample requirement']),
                    'after'=> false,
                    //'footer'=>$actionButtonConfirm.$actionButtonSaveLocal,
                 ],

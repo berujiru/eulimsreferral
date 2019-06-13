@@ -386,9 +386,9 @@ class BidController extends Controller
             }
             asort($listTestbid);
 
-            echo "<pre>";
-            print_r($listTestbid);
-            echo "</pre>";
+            //echo "<pre>";
+            //print_r($listTestbid);
+            //echo "</pre>";
 
             $subtotal = array_sum($sum_fees);
             $discounted = $subtotal * ($referral->discount_rate/100);
@@ -403,12 +403,14 @@ class BidController extends Controller
             ]);
         }
 
-        //if(isset($_SESSION['test_bids'])){
+        //if(isset($_SESSION['addbid_requirement_'.$referralId])){
             //echo "<pre>";
+            //var_dump($_SESSION['addbid_requirement_'.$referralId]);
             //print_r($_SESSION['test_bids']);
             //echo "</pre>";
             //unset($_SESSION['tests_bidded']);
             //unset($_SESSION['test_bids']);
+            //unset($_SESSION['addbid_requirement_'.$referralId]);
         //}
 
         //$model = new Analysis();
@@ -448,22 +450,33 @@ class BidController extends Controller
             //echo $out;
             //return;
             if($referralId > 0){
-                $model->referral_id = $referralId;
-                $model->bidder_agency_id = (int) Yii::$app->user->identity->profile->rstl_id;
-                $model->sample_requirements = $bid['sample_requirements'];
-                $model->bid_amount = $bid['bid_amount'];
-                $model->remarks = $bid['remarks'];
-                $model->estimated_due = date('Y-m-d',strtotime($bid['estimated_due']));
-                $model->created_at = date('Y-m-d H:i:s');
-                $model->updated_at = date('Y-m-d H:i:s');
+                //$model->referral_id = $referralId;
+                //$model->bidder_agency_id = (int) Yii::$app->user->identity->profile->rstl_id;
+                //$model->sample_requirements = $bid['sample_requirements'];
+                //$model->bid_amount = $bid['bid_amount'];
+                //$model->remarks = $bid['remarks'];
+                //$model->estimated_due = date('Y-m-d',strtotime($bid['estimated_due']));
+                //$model->created_at = date('Y-m-d H:i:s');
+                //$model->updated_at = date('Y-m-d H:i:s');
+                $session = Yii::$app->session;
+                $bid_requirement = 'addbid_requirement_'.$referralId;
+                $requirements = $session[$bid_requirement];
+                //$testBids[$analysisId] = ['analysis_id'=>$analysisId,'analysis_fee'=> $fee];
+                $requirements['bidder_agency_id'] = (int) Yii::$app->user->identity->profile->rstl_id;
+                $requirements['sample_requirements'] = $bid['sample_requirements'];
+                $requirements['remarks'] = $bid['remarks'];
+                $requirements['estimated_due'] = date('Y-m-d',strtotime($bid['estimated_due']));
+                $_SESSION[$bid_requirement] = $requirements;
 
-                if($model->save()){
-                    Yii::$app->session->setFlash('success', "Add test bid successful!");
-                    return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
-                } else {
-                    Yii::$app->session->setFlash('error', "Fail to add test bid");
-                    return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
-                }
+
+                //if($model->save()){
+                //if($model->save()){
+                Yii::$app->session->setFlash('success', "Bidder requirements added.");
+                return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
+                //} else {
+                //    Yii::$app->session->setFlash('error', "Fail to add test bid");
+                //    return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
+                //}
             } else {
                 return 'Not a valid referral ID!';
             }
@@ -519,7 +532,14 @@ class BidController extends Controller
         $agencyId = (int) Yii::$app->user->identity->profile->rstl_id;
         $referralId = (int) Yii::$app->request->get('referral_id');
         if($referralId > 0 && $agencyId > 0){
-            $model = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:agencyId',[':referralId'=>$referralId,':agencyId'=>$agencyId])->one();
+            $query = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:agencyId',[':referralId'=>$referralId,':agencyId'=>$agencyId]);
+            $count = $query->count();
+
+            if($count > 0){
+                $model = $query->one();
+            } else {
+                $model = new Bid();
+            }
         } else {
             Yii::$app->session->setFlash('error', "Not a valid referral!");
             return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
@@ -527,6 +547,8 @@ class BidController extends Controller
 
         return $this->renderAjax('_view_requirement', [
             'model' => $model,
+            'count' => $count,
+            'referralId' => $referralId,
         ]);
     }
 

@@ -383,3 +383,5 @@ frontend/web/img_logo/icons/10.png
 frontend/web/img_logo/icons/1.png
 frontend/modules/referrals/views/bid/_form - Copy.php
 frontend/modules/referrals/views/bid/view1 - Copy.php
+frontend/modules/referrals/controllers/BidController_20190613.php
+frontend/modules/referrals/views/bid/_view_requirement_20190611.php
