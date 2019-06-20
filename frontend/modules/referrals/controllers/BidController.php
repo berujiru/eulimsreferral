@@ -364,6 +364,7 @@ class BidController extends Controller
             ]);
            // print_r($_SESSION['test_bid']);
         } else {
+            //$session = Yii::$app->session;
             $listTestbid = [];
             $sum_fees = [];
             //ksort($_SESSION[$list_testbid]); //sort array key in ascending order so that analysis_id will be sorted
@@ -387,8 +388,9 @@ class BidController extends Controller
             asort($listTestbid);
 
             //echo "<pre>";
-            //print_r($listTestbid);
+            //print_r($_SESSION);
             //echo "</pre>";
+            //echo Yii::app()->session->add('test_bid_'.$referralId, $listTestbid);
 
             $subtotal = array_sum($sum_fees);
             $discounted = $subtotal * ($referral->discount_rate/100);
@@ -471,7 +473,7 @@ class BidController extends Controller
 
                 //if($model->save()){
                 //if($model->save()){
-                Yii::$app->session->setFlash('success', "Bidder requirements added.");
+                Yii::$app->session->setFlash('success', "Bid requirements added.");
                 return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
                 //} else {
                 //    Yii::$app->session->setFlash('error', "Fail to add test bid");
@@ -484,6 +486,37 @@ class BidController extends Controller
 
         return $this->renderAjax('_form', [
             'model' => $model,
+            'referralId' => (int) Yii::$app->request->get('referral_id'),
+       ]);
+    }
+
+    public function actionUpdatebid_requirement(){
+        $model = new Bid();
+
+        if (Yii::$app->request->post()) {
+            $bid = Yii::$app->request->post('Bid');
+            $referralId = (int) Yii::$app->request->post('referral_id');
+            if($referralId > 0){
+                $session = Yii::$app->session;
+                $bid_requirement = 'addbid_requirement_'.$referralId;
+                $requirements = $session[$bid_requirement];
+                $requirements['bidder_agency_id'] = (int) Yii::$app->user->identity->profile->rstl_id;
+                $requirements['sample_requirements'] = $bid['sample_requirements'];
+                $requirements['remarks'] = $bid['remarks'];
+                $requirements['estimated_due'] = date('Y-m-d',strtotime($bid['estimated_due']));
+                $_SESSION[$bid_requirement] = $requirements;
+
+                Yii::$app->session->setFlash('success', "Bid requirements updated.");
+                return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
+            } else {
+                return 'Not a valid referral ID!';
+            }
+        }
+        $bid_requirement = Yii::$app->session->get('addbid_requirement_'.Yii::$app->request->get('referral_id'));
+        $model->estimated_due = $bid_requirement['estimated_due'];
+        return $this->renderAjax('_form', [
+            'model' => $model,
+            'referralId' =>  (int) Yii::$app->request->get('referral_id'),
        ]);
     }
 
@@ -671,7 +704,7 @@ class BidController extends Controller
                     ]);*/
 
                     //return $this->renderPartial('_testbid', ['testbidDataProvider'=>$testbidDataProvider]);
-                    Yii::$app->session->setFlash('success', 'successful');
+                    Yii::$app->session->setFlash('success', 'Adding fee successful!');
                     return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
 
                 } else {
@@ -687,6 +720,62 @@ class BidController extends Controller
         } else {
             return "<span style='color:#FF0000;'>Not a valid referral ID</span>";
         }
+    }
+
+    public function actionRemove_testbid(){
+        $referralId = (int) Yii::$app->request->get('referral_id');
+        $analysisId = (int) Yii::$app->request->get('analysis_id');
+        $testbidRefId = 'test_bids_'.$referralId;
+        $test_bids = Yii::$app->session->get($testbidRefId);
+
+        if($analysisId > 0 && $referralId > 0 && count($test_bids) > 0){
+            foreach ($test_bids as $key => $value) {
+                if($value["analysis_id"] == $analysisId){
+                    unset($_SESSION[$testbidRefId][$key]);
+                    if(count($test_bids) == 0 && empty($test_bids)){
+                        //unset($_SESSION[$testbidRefId]);
+                        Yii::$app->session->remove($testbidRefId);
+                    }
+                    Yii::$app->session->setFlash('success', 'Successfully removed.');
+                    return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
+                } else {
+                    Yii::$app->session->setFlash('error', 'Fail to remove!');
+                    return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
+                }
+            }
+        } else {
+            Yii::$app->session->setFlash('error', 'Not a valid action!');
+            return $this->redirect(['/referrals/bid/temporary?referral_id='.$referralId]);
+        }
+
+    }
+
+    public function actionUpdate_analysis_fee(){
+        $referralId = (int) Yii::$app->request->get('referral_id');
+        if (Yii::$app->request->post()) {
+            $analysisId = (int) Yii::$app->request->post('editableKey');
+            $fee = Yii::$app->request->post('analysis_fee');
+            $output = '';
+            $message = '';
+
+            if(is_numeric($fee) == 1 && $fee > 0 && !empty($fee)){
+                //$analysis_fee = Yii::$app->session->get('test_bids_'.$referralId);
+                //$_SESSION['test_bid'] = [['analysis_id'=>$analysisId,'analysis_fee'=>$fee]];
+                $session = Yii::$app->session;
+                $list_testbid = 'test_bids_'.$referralId;
+                $testBids = $session[$list_testbid];
+                $testBids[$analysisId] = $analysisId;
+                $testBids[$analysisId] = ['analysis_id'=>$analysisId,'analysis_fee'=> $fee];
+                $_SESSION[$list_testbid] = $testBids;
+                $output = $fee;
+            } else {
+                $output = "<span style='color:#FF0000;'>Invalid input!</span>";
+                $message = 'Invalid input';
+            }
+            $out = Json::encode(['output' => $output, 'message' => $message]);
+            echo $out;
+        }
+
     }
 
     public function actionInserttest_bid0()

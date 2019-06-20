@@ -268,7 +268,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
     <?php 
     //echo Html::button('<span class="glyphicon glyphicon-plus"></span> Place Bid', ['value'=>Url::to(['/referrals/bid/placebid','referral_id'=>$model->referral_id]), 'onclick'=>'sendNotification(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Place Bid'])."<br>";
 
-    echo Html::button('<span class="glyphicon glyphicon-plus"></span> Place Bid', ['value'=>Url::to(['/referrals/bid/placebid','referral_id'=>$model->referral_id]), 'onclick'=>'placebid(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Place Bid'])."<br>"; 
+    //echo Html::button('<span class="glyphicon glyphicon-plus"></span> Place Bid', ['value'=>Url::to(['/referrals/bid/placebid','referral_id'=>$model->referral_id]), 'onclick'=>'placebid(this.value,this.title)', 'class' => 'btn btn-primary btn-xs','title' => 'Place Bid'])."<br>"; 
 
     ?>
     <div class="container">

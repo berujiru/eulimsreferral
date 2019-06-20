@@ -91,6 +91,39 @@ use yii\helpers\Url;
                     }
                 },
 			],
+            [
+                'class' => 'kartik\grid\ActionColumn',
+                'template' => '{remove}',
+                'dropdown' => false,
+                'dropdownOptions' => ['class' => 'pull-right'],
+                'headerOptions' => ['class' => 'kartik-sheet-style'],
+                'width' => '5%',
+                //'format'=>['decimal', 2],
+                'buttons' => [
+                    'remove' => function ($url, $data) use ($referralId) {
+                        /*$testbidRefId = 'test_bids_'.$referralId;
+                        if(isset($_SESSION[$testbidRefId]) && array_key_exists($data['analysis_id'],$_SESSION[$testbidRefId])){
+                            //return number_format();
+                            //if (array_key_exists($data->analysis_id,$_SESSION[$testbidRefId])){
+                                //foreach($_SESSION[$testbidRefId] as $item) {
+                                    //return $item['analysis_id'];
+                                //}
+                                //return $data->analysis_id;
+                                return 'Done';
+                            //}
+                        } else {
+                            return Html::button('<span class="glyphicon glyphicon-plus"></span> Add Fee', ['value'=>Url::to(['/referrals/bid/inserttest_bid','referral_id'=>$referralId,'analysis_id'=>$data['analysis_id']]),'onclick'=>'insertbid(this.value,this.title)','class' => 'btn btn-xs btn-primary','title' => 'Add Fee']);
+                        }*/
+                        $testbidRefId = 'test_bids_'.$referralId;
+                        if(isset($_SESSION[$testbidRefId])){
+                            //return Html::button('<span class="glyphicon glyphicon-remove"></span> Remove', ['value'=>Url::to(['/referrals/bid/remove_testbid','analysis_id'=>$data['analysis_id'],'referral_id'=>$referralId]),'onclick'=>'updateBid(this.value,this.title)','class' => 'btn btn-xs btn-danger','title' => 'Remove Bid']);
+                            return Html::button('<span class="glyphicon glyphicon-remove"></span> Remove', ['value'=>Url::to(['/referrals/bid/redirect','analysis_id'=>$data['analysis_id'],'referral_id'=>$referralId]),'onclick'=>'updateBid(this.value,this.title)','class' => 'btn btn-xs btn-danger','title' => 'Remove Bid']);
+                        } else {
+                            return '';
+                        }
+                    },
+                ],
+            ],
         ];
             echo GridView::widget([
                 'id' => 'testbid-grid',
@@ -123,3 +156,16 @@ use yii\helpers\Url;
                     //        ]),
                 ],
             ]);
+?>
+
+
+<script type="text/javascript">
+    //placing bid
+    function updateBid(url,title){
+        alert(url);
+        $('.modal-title').html(title);
+        $('#modal').modal('show')
+            .find('#modalContent')
+            .load(url);
+    }
+</script>
