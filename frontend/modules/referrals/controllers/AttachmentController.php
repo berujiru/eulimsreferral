@@ -277,10 +277,12 @@ class AttachmentController extends Controller
     }
 
 	//upload Test Result
-    public function actionUpload_result()
+    public function actionUpload_result($referralid)
     {
-        if(Yii::$app->request->get('referral_id')){
-            $referralId = (int) Yii::$app->request->get('referral_id');
+        //echo $referralid;
+        //exit;
+        if(!empty($referralid)){
+            $referralId = (int) $referralid;
             $referral = $this->findReferral($referralId);
         } else {
             Yii::$app->session->setFlash('error', "Referral ID not valid!");

@@ -502,11 +502,11 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                     'value'=>function($model){
                         switch($model->notification_type_id){
                             case 1:
-                                return 'Notification sent to '.$model->recipient_id;
+                                return 'Notification sent to '.$model->agencyrecipient->name.' by '.$model->agencysender->name;
                             case 2:
-                                return $model->sender_id.' confirmed the notification for Referral.';
+                                return $model->agencysender->name.' confirmed the notification for Referral.';
                             case 3:
-                                return 'Referral sent to '.$model->recipient_id;
+                                return 'Referral sent to '.$model->agencyrecipient->name;
                             default:
 
                         }
@@ -514,7 +514,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                 ],
             ],
         ])."</div></div>";
-         $gridColumn1="abcdefh123456";
+         
          //$display=true;
          $trackreceiving=DetailView::widget([
                 'model' =>$modelRefTrackreceiving,
@@ -675,6 +675,46 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                     ],
                 ],
             ]);
+        
+       /* $gridColumnsResults = 
+      function($data) use ($testresult,$model,$rstlId){
+                    $link = '';
+                    $link .= Html::button('<span class="glyphicon glyphicon-upload"></span> Upload Result', ['value'=>"/referrals/attachment/upload_result?referralid=$model->referral_id", 'class' => 'btn btn-success','title' => Yii::t('app', "Upload Result"),'id'=>'btnuploadresult','onclick'=>'addresult(this.value,this.title)']);
+                    if($testresult > 0){
+                        foreach ($testresult as $test) {
+                            $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$test['filename'],'/referrals/attachment/download?referral_id='.$model->referral_id.'&file='.$test['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Result','target'=>'_self'])."<br>";
+                        }
+                    }
+                    return $link;
+                
+          }   
+        ;*/
+        $gridColumnsResults="<div class='row'><div class='col-md-12'>". GridView::widget([
+           'dataProvider' => $testresult,
+            'id'=>'Grid',
+            'tableOptions'=>['class'=>'table table-hover table-stripe table-hand'],
+            'pjax'=>true,
+            'pjaxSettings' => [
+                    'options' => [
+                        'enablePushState' => false,
+                    ],
+            ],
+            'toolbar'=>[],
+            'panel' => [
+                'type' => GridView::TYPE_PRIMARY,
+                'heading' => '<i class="fa fa-columns"></i> List',
+             ],
+            'columns' => [
+                [
+                    'label' => 'Result',
+                    'format'=>'raw',
+                    'value' =>  function($testresult){
+                        return Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$testresult['filename'],'/referrals/attachment/download?referral_id='.$testresult['referral_id'].'&file='.$testresult['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Result','target'=>'_self'])."<br>";
+                    }
+                ],
+                
+            ],
+        ])."</div></div>";
                 
         if($model->receiving_agency_id == $rstl_id){
             $Func="LoadModal('Update Tracking','/referrals/referraltrackreceiving/update?id=".$modelRefTrackreceiving->referraltrackreceiving_id."',true,500)";
@@ -686,8 +726,10 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                 $gridColumn2=Html::button('<span class="glyphicon glyphicon-plus"></span> Add Referral Track', ['value'=>"/referrals/referraltrackreceiving/create?referralid=$model->referral_id", 'class' => 'btn btn-success','title' => Yii::t('app', "Referral Track Receiving Lab"),'id'=>'btnreceivedtrack','onclick'=>'addreceivedtrack(this.value,this.title)']);
             }
             
+            $gridColumnResult=$gridColumnsResults;
          }
          else{
+            $Uploadbtn=Html::button('<span class="glyphicon glyphicon-upload"></span> Upload Result', ['value'=>"/referrals/attachment/upload_result?referralid=$model->referral_id", 'class' => 'btn btn-success','title' => Yii::t('app', "Upload Result"),'id'=>'btnuploadresult','onclick'=>'addresult(this.value,this.title)']).'<br><br>'; 
             $Func="LoadModal('Update Tracking','/referrals/referraltracktesting/update?id=".$modelRefTracktesting->referraltracktesting_id."',true,500)";
             $UpdateButton='<button id="btnUpdate" onclick="'.$Func.'" type="button" style="float: left;padding-right:5px;margin-left: 5px" class="btn btn-primary"><i class="fa fa-pencil"></i> Update Tracking</button><br><br>';
 
@@ -696,8 +738,10 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
             } else{
                 $gridColumn2=Html::button('<span class="glyphicon glyphicon-plus"></span> Add Referral Track', ['value'=>'/referrals/referraltracktesting/create?referralid='.$model->referral_id.'&receivingid='.$model->receiving_agency_id, 'class' => 'btn btn-success','title' => Yii::t('app', "Referral Track Testing/Calibration Lab"),'id'=>'btntestingtrack','onclick'=>'addtestingtrack(this.value,this.title)']);
             }
+            $gridColumnResult=$Uploadbtn.$gridColumnsResults;
             
-         }                   
+         } 
+         
         echo TabsX::widget([
             'position' => TabsX::POS_ABOVE,
             'align' => TabsX::ALIGN_LEFT,
@@ -713,7 +757,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                 ],
                 [
                     'label' => '<i class="fa fa-users"></i> Results',
-                    'content' => $gridColumn1,//$ResultContent,
+                    'content' => $gridColumnResult,//$ResultContent,
                     'active' => $ResultActive,
                     'options' => ['id' => 'result'],
                    // 'visible' => Yii::$app->user->can('access-terminal-configurations')
@@ -743,7 +787,10 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
     function addtestingtrack(url,title){
        LoadModal(title,url,'true','600px');
    }
-
+    
+   function addresult(url,title){
+       LoadModal(title,url,'true','600px');
+   } 
    //upload slip
     function upload(url,title){
         $('.modal-title').html(title);

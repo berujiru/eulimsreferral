@@ -3,6 +3,7 @@
 namespace common\models\referral;
 
 use Yii;
+use common\models\referral\Agency;
 
 /**
  * This is the model class for table "tbl_notification".
@@ -75,5 +76,14 @@ class Notification extends \yii\db\ActiveRecord
     public function getReferral()
     {
         return $this->hasOne(Referral::className(), ['referral_id' => 'referral_id']);
+    }
+    
+    public function getAgencysender()
+    {
+        return $this->hasOne(Agency::className(), ['agency_id' => 'sender_id']);
+    }
+    public function getAgencyrecipient()
+    {
+        return $this->hasOne(Agency::className(), ['agency_id' => 'recipient_id']);
     }
 }
