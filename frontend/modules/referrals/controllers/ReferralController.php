@@ -90,7 +90,15 @@ class ReferralController extends Controller
                 $or = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
                 //set third parameter to 3 for attachment type test result
                 $testresult = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,3),true);
-
+              /*echo "<pre>";
+                print_r($testresult);
+                echo "</pre>"; */
+                $testresultDataProvider = new ArrayDataProvider([
+                    'allModels' => $testresult,
+                    'pagination'=> [
+                        'pageSize' => 10,
+                    ],
+                ]);
                 $sampleDataProvider = new ArrayDataProvider([
                     'allModels' => $samples,
                     'pagination'=> [
@@ -125,12 +133,13 @@ class ReferralController extends Controller
                     ->sum('analysis_fee');*/
 
                 $rate = $model->discount_rate;
+                
                 $discounted = $subtotal * ($rate/100);
                 $total = $subtotal - $discounted;
                 
                 $countreceiving=Referraltrackreceiving::find()->where('referral_id =:referralId',[':referralId'=>$id])->count();
                 $counttesting=Referraltracktesting::find()->where('referral_id =:referralId',[':referralId'=>$id])->count();
-               
+                 
                 return $this->render('view', [
                     'model' => $model,
                     //'request' => $request,
@@ -144,7 +153,7 @@ class ReferralController extends Controller
                     //'notification' => $noticeDetails,
                     'depositslip' => $deposit,
                     'officialreceipt' => $or,
-                    'testresult' => $testresult,
+                    'testresult' => $testresultDataProvider,
                     'notificationDataProvider' => $notificationDataProvider,
                     'logs'=>$statuslogs,
                     'modelRefTracktesting'=>$this->findModeltestingtrack($id),

@@ -43,21 +43,21 @@ ul.progress-track li .progress-icon-wrap {
   color: #fff;
   display: block;
   /*height: 2.5em;*/
-  height: 2em;
+  height: 3em;
   margin: 0 auto;
   left: 0;
   right: 0;
   position: absolute;
   /*width: 2.5em;*/
-  width: 2em;
+  width: 3em;
 }
 /****modify******/
 ul.progress-track li .progress-icon-wrap .to-fit-icon{
     font-size:1.2em;
     position:relative;
     bottom:10px;
-    margin-left: 0.1em;
-    margin-right: 0.1em;
+    margin-left: 0.2em;
+    margin-right: 0.3em;
 }
 
 @media screen and (-webkit-min-device-pixel-ratio:0) {
@@ -101,7 +101,7 @@ ul.progress-track li.progress-done .progress-icon-wrap {
     border: 2px solid #87ba51;
     display: block;
     height: 2em;
-    margin: 0 auto -2em;
+    margin: 0 auto;
     position: relative;
     width: 2em;
 }
@@ -124,11 +124,11 @@ ul.progress-track li.progress-todo .progress-icon-wrap {
   color: #fff;
   display: block;
   /*height: 2.5em;*/
-  height: 2em;
-  margin: 0 auto -2em;
+  height: 2.5em;
+  margin: 0 auto;
   position: relative;
   /*width: 2.5em;*/
-  width: 2em;
+  width: 2.5em;
 }
 ul.progress-track li.progress-todo .progress-icon-wrap .icon-check-mark,
 ul.progress-track li.progress-todo .progress-icon-wrap .icon-down-arrow {
