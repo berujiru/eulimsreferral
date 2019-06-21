@@ -12,6 +12,8 @@ use common\models\referral\Sample;
 use common\models\referral\Analysis;
 use common\models\referral\Notification;
 use common\models\referral\Service;
+use common\models\referral\Testbid;
+use common\models\referral\Bid;
 
 /**
  * Referral User Defined Functions
@@ -142,5 +144,15 @@ class ReferralFunctions extends Component
         } else {
             return 'false';
         }
+    }
+
+    //check if test bid added
+    function checkTestbid($referralId,$analysisId,$bidderAgencyId){
+    	if($referralId > 0 && $analysisId > 0 && $bidderAgencyId > 0) {
+    		$testBid = Testbid::find()->where('referral_id =:referralId AND analysis_id =:analysisId AND bidder_agency_id =:bidderAgencyId',[':referralId'=>$referralId,':analysisId'=>$analysisId,':bidderAgencyId'=>$bidderAgencyId])->count();
+    		return $testBid;
+    	} else {
+    		return 'false';
+    	}
     }
 }

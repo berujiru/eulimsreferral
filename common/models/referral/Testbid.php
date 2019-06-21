@@ -50,4 +50,12 @@ class Testbid extends \yii\db\ActiveRecord
             'fee' => 'Fee',
         ];
     }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAnalysis()
+    {
+        return $this->hasOne(Analysis::className(), ['analysis_id' => 'analysis_id']);
+    }
 }

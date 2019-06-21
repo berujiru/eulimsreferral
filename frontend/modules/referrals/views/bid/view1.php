@@ -4,6 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use kartik\grid\GridView;
 use yii\helpers\Url;
+use common\components\ReferralFunctions;
 //use kartik\editable\Editable;
 
 /* @var $this yii\web\View */
@@ -14,6 +15,8 @@ use yii\helpers\Url;
 <?php //$form = ActiveForm::begin(); ?>
 <div class="container">
     <?php
+	$component = new ReferralFunctions();
+	$rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
 	
 	//if(!isset($_SESSION['test_bid'])){
 	//	$_SESSION['test_bid'] = [];
@@ -29,6 +32,58 @@ use yii\helpers\Url;
     'inputType' => Editable::INPUT_RATING,
     'editableValueOptions' => ['class' => 'text-success h3']
 ]);*/
+            $gridColumns = [
+                [
+                    'attribute'=>'sample_code',
+                    'enableSorting' => false,
+                    'contentOptions' => [
+                        'style'=>'max-width:70px; overflow: auto; white-space: normal; word-wrap: break-word;'
+                    ],
+                ],
+                [
+                    'attribute'=>'sample_name',
+                    'enableSorting' => false,
+                ],
+                [
+                    'attribute'=>'description',
+                    'format' => 'raw',
+                    'enableSorting' => false,
+                    'value' => function($data){
+                        return ($data->referral->lab_id == 2) ? "Sampling Date: <span style='color:#000077;'><b>".date("Y-m-d h:i A",strtotime($data->sampling_date))."</b></span>,&nbsp;".$data->description : $data->description;
+                    },
+                   'contentOptions' => [
+                        'style'=>'max-width:180px; overflow: auto; white-space: normal; word-wrap: break-word;'
+                    ],
+                ],
+            ];
+
+            echo GridView::widget([
+                'id' => 'sample-grid',
+                'dataProvider'=> $sampleDataProvider,
+                'pjax'=>true,
+                'pjaxSettings' => [
+                    'options' => [
+                        'enablePushState' => false,
+                    ]
+                ],
+                'responsive'=>true,
+                'striped'=>true,
+                'hover'=>true,
+                'panel' => [
+                    'heading'=>'<h3 class="panel-title">Samples</h3>',
+                    'type'=>'primary',
+                    'before'=>null,
+                    'after'=>false,
+                ],
+                'columns' => $gridColumns,
+                'toolbar' => [
+                    //'content'=> Html::a('<i class="glyphicon glyphicon-repeat"></i> Refresh Grid', [Url::to(['/referrals/referral/bid/temporary','referral_id'=>$referralId])], [
+                    //            'class' => 'btn btn-default', 
+                    //            'title' => 'Refresh Grid'
+                    //        ]),
+                ],
+            ]);
+		
         $analysisgridColumns = [
 			[
 				'class' => 'kartik\grid\SerialColumn',
@@ -195,9 +250,9 @@ use yii\helpers\Url;
 				'width' => '5%',
 				//'format'=>['decimal', 2],
 				'buttons' => [
-					'addfee' => function ($url, $data) use ($referralId) {
+					'addfee' => function ($url, $data) use ($referralId,$component,$rstlId) {
 						$testbidRefId = 'test_bids_'.$referralId;
-						if(isset($_SESSION[$testbidRefId]) && array_key_exists($data->analysis_id,$_SESSION[$testbidRefId])){
+						if((isset($_SESSION[$testbidRefId]) && array_key_exists($data->analysis_id,$_SESSION[$testbidRefId]))){
 							//return number_format();
 							//if (array_key_exists($data->analysis_id,$_SESSION[$testbidRefId])){
 								//foreach($_SESSION[$testbidRefId] as $item) {
@@ -207,7 +262,12 @@ use yii\helpers\Url;
 								return 'Done';
 							//}
 						} else {
-							return Html::button('<span class="glyphicon glyphicon-plus"></span> Add Fee', ['value'=>Url::to(['/referrals/bid/inserttest_bid','referral_id'=>$referralId,'analysis_id'=>$data->analysis_id]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-xs btn-primary','title' => 'Add Fee']);
+							$checkTestbid = $component->checkTestbid($referralId,$data->analysis_id,$rstlId);
+							if($checkTestbid > 0){
+								return 'Done';
+							} else {
+								return Html::button('<span class="glyphicon glyphicon-plus"></span> Add Fee', ['value'=>Url::to(['/referrals/bid/inserttest_bid','referral_id'=>$referralId,'analysis_id'=>$data->analysis_id]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-xs btn-primary','title' => 'Add Fee']);
+							}
 						}
 					},
 				],
@@ -216,7 +276,7 @@ use yii\helpers\Url;
             echo GridView::widget([
                 'id' => 'analysis-grid',
                 'responsive'=>true,
-                'dataProvider'=> $analysisdataprovider,
+                'dataProvider'=> $analysisDataProvider,
                 'pjax'=>true,
                 'pjaxSettings' => [
                     'options' => [
@@ -232,7 +292,7 @@ use yii\helpers\Url;
                 'panel' => [
                     'heading'=>'<h3 class="panel-title">Analysis</h3>',
                     'type'=>'primary',
-                    'before'=> $countBid == 0 && !isset($_SESSION['addbid_requirement_'.$referralId]) ? Html::button('<span class="glyphicon glyphicon-plus"></span> Add Sample Requirements', ['value'=>Url::to(['/referrals/bid/addbid_requirement','referral_id'=>$referralId]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-primary','title' => 'Add Sample Requirements']) : Html::button('<span class="glyphicon glyphicon-eye-open"></span> View your sample requirement', ['value'=>Url::to(['/referrals/bid/viewbid_requirement','referral_id'=>$referralId]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-success','title' => 'View your sample requirement']).'&nbsp;'.Html::button('<span class="glyphicon glyphicon-edit"></span>', ['value'=>Url::to(['/referrals/bid/updatebid_requirement','referral_id'=>$referralId]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-primary','title' => 'Edit sample requirement']),
+                    'before'=> ($countBid == 0 && !isset($_SESSION['addbid_requirement_'.$referralId]) ? Html::button('<span class="glyphicon glyphicon-plus"></span> Add Sample Requirements', ['value'=>Url::to(['/referrals/bid/addbid_requirement','referral_id'=>$referralId]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-primary','title' => 'Add Sample Requirements']) : Html::button('<span class="glyphicon glyphicon-eye-open"></span> View your sample requirement', ['value'=>Url::to(['/referrals/bid/viewbid_requirement','referral_id'=>$referralId]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-success','title' => 'View your sample requirement'])).'&nbsp;'.($countBid > 0 || !isset($_SESSION['addbid_requirement_'.$referralId]) ? '' : Html::button('<span class="glyphicon glyphicon-edit"></span>', ['value'=>Url::to(['/referrals/bid/updatebid_requirement','referral_id'=>$referralId]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-primary','title' => 'Edit sample requirement'])),
                    'after'=> false,
                    //'footer'=>$actionButtonConfirm.$actionButtonSaveLocal,
                 ],
@@ -255,12 +315,15 @@ use yii\helpers\Url;
 				<?php			
 			$testbidgridColumns = [
             [
-                'attribute'=>'sample_name',
+                //'attribute'=>'sample_name',
                 'header'=>'Sample',
                 'format' => 'raw',
                 'enableSorting' => false,
                 'contentOptions' => ['style' => 'width:10%; white-space: normal;'],
                 'width' => '30%',
+				'value' => function($data){
+					return !empty($data->analysis->sample->sample_name) ? $data->analysis->sample->sample_name : $data['sample_name'];
+				},
             ],
             /*[
                 'attribute'=>'sample_code',
@@ -270,21 +333,27 @@ use yii\helpers\Url;
                 'contentOptions' => ['style' => 'width:10%; white-space: normal;'],
             ],*/
             [
-                'attribute'=>'test_name',
+                //'attribute'=>'test_name',
                 'format' => 'raw',
                 'header'=>'Test/ Calibration Requested',
                 'contentOptions' => ['style' => 'width: 15%;word-wrap: break-word;white-space:pre-line;'],
                 'enableSorting' => false,
                 'width' => '30%',
+				'value' => function($data){
+					return !empty($data->analysis->testname->test_name) ? $data->analysis->testname->test_name : $data['test_name'];
+				},
             ],
             [
-                'attribute'=>'method',
+                //'attribute'=>'method',
                 'format' => 'raw',
                 'header'=>'Test Method',
                 'enableSorting' => false,  
                 'contentOptions' => ['style' => 'width: 50%;word-wrap: break-word;white-space:pre-line;'],
                 'pageSummary' => '<span style="float:right";>SUBTOTAL<BR>DISCOUNT<BR><B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TOTAL</B></span>',
                 'width' => '30%',
+				'value' => function($data){
+					return !empty($data->analysis->methodreference->method) ? $data->analysis->methodreference->method : $data['method'];
+				},
             ],
 			[
 				'class' => 'kartik\grid\EditableColumn',
@@ -306,6 +375,19 @@ use yii\helpers\Url;
                     //    } // close while loop
                     //} // close foreach loop
                 //},
+				'readonly' => function($model, $key, $index, $widget) use ($referralId) {
+					//$checkTestbid = $component->checkTestbid($referralId,$model->analysis_id,$rstlId);
+					/*if($checkTestbid > 0){
+						return true;
+					}else{
+						return false;
+					}*/
+					if(isset($_SESSION['test_bids_'.$referralId])){
+						return false;
+					} else {
+						return true;
+					}
+				},
 				'editableOptions' => [
 					'header' => 'Analysis Fee', 
 					'size'=>'s',
@@ -324,11 +406,13 @@ use yii\helpers\Url;
 				//'format' => ['decimal', 2],
 				//'pageSummary' => true
                 //'pageSummary'=> function () use ($subtotal,$discounted,$total,$countSample) {
-                'pageSummary'=> function () use ($subtotal,$referralId,$discounted,$total) {
+                'pageSummary'=> function () use ($subtotal,$referralId,$discounted,$total,$countBid) {
                     $testbidRefId = 'test_bids_'.$referralId;
-                    if(isset($_SESSION[$testbidRefId])){
+                    if(isset($_SESSION[$testbidRefId]) && $countBid == 0){
                         return  '<div id="subtotal">₱'.number_format($subtotal, 2).'</div><div id="discount">₱'.number_format($discounted, 2).'</div><div id="total"><b>₱'.number_format($total, 2).'</b></div>';
-                    } else {
+                    } elseif($countBid > 0){
+						return  '<div id="subtotal">₱'.number_format($subtotal, 2).'</div><div id="discount">₱'.number_format($discounted, 2).'</div><div id="total"><b>₱'.number_format($total, 2).'</b></div>';
+					} else {
                         return '';
                     }
                 },
@@ -361,7 +445,7 @@ use yii\helpers\Url;
                             return Html::button('<span class="glyphicon glyphicon-remove"></span> Remove', ['value'=>Url::to(['/referrals/bid/remove_testbid','analysis_id'=>$data['analysis_id'],'referral_id'=>$referralId]),'onclick'=>'bid(this.value,this.title)','class' => 'btn btn-xs btn-danger','title' => 'Remove Bid']);
                             //return Html::button('<span class="glyphicon glyphicon-remove"></span> Remove', ['value'=>Url::to(['/referrals/bid/redirect','analysis_id'=>$data['analysis_id'],'referral_id'=>$referralId]),'onclick'=>'updateBid(this.value,this.title)','class' => 'btn btn-xs btn-danger','title' => 'Remove Bid']);
                         } else {
-                            return '';
+                            return 'Submitted';
                         }
                     },
                 ],
@@ -401,7 +485,7 @@ use yii\helpers\Url;
 ?>
 			</div>
 		<?php
-			echo Html::button('<span class="glyphicon glyphicon-check"></span> Place Bid', ['value'=>Url::toRoute(['/referrals/bid/inserttest_bid','referral_id'=>Yii::$app->request->get('referral_id'),'analysis_id'=>2]), 'onclick'=>'insertbid(this.value,this.title)', 'class' => 'btn btn-primary','title' => 'Place Bid'])."<br>"; 
+			echo $countBid > 0 ? '' : Html::button('<span class="glyphicon glyphicon-check"></span> Place Bid', ['value'=>Url::toRoute(['/referrals/bid/placebid','referral_id'=>$referralId]), 'onclick'=>'bid(this.value,this.title)', 'class' => 'btn btn-primary','title' => 'Place Bid']); 
 		?>
     </div>
 		
@@ -429,37 +513,6 @@ use yii\helpers\Url;
             .find('#modalContent')
             .load(url);
     }
-	
-	$('#btn-addbid').on('keypress click', function(e){
-		//var key_id = $('#sample-analysis-grid').yiiGridView('getSelectedRows');
-		//if(key_id.length > 0) {
-		//e.preventDefault();
-		
-		var analysisId = $("input[name='analysis_id']").val();
-		var fee = $("input[name='analysis_fee']").val();
-		// var analysisId = <?php echo isset($_POST['editableKey']) ? $_POST['editableKey'] : 0; ?>;
-		// var fee = <?php echo isset($_POST['analysis_fee']) ? $_POST['analysis_fee'] : 0; ?>;
-		if (e.which === 13 || e.type === 'click') {
-			alert(analysisId+'---'+fee);
-			$.ajax({
-				url: '/referrals/bid/inserttest_bid0',
-				//data: $('.kv-editable-form').serialize(),
-				data: $('#test-bid-form').serialize(),
-				//data: 'analysis_id=',
-				type: 'POST',
-				success: function (data) {
-					$('#show-testbids').html(data);
-					$('.image-loader').removeClass("img-loader");
-				},
-				beforeSend: function (xhr) {
-					$('.image-loader').addClass("img-loader");
-				}
-			});
-		}
-		//} else {
-		//	alertWarning.alert(\"<p class='text-danger' style='font-weight:bold;'>No sample selected!</p>\");
-		//}
-	});
 </script>
 <?php
 //$id = isset($_POST['editableKey']) ? $_POST['editableKey'] : 0;

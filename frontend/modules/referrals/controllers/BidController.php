@@ -6,6 +6,7 @@ use Yii;
 use common\models\referral\Bid;
 use common\models\referral\BidSearch;
 use common\models\referral\Referral;
+use common\models\referral\Sample;
 use common\models\referral\Analysis;
 use common\models\referral\Testbid;
 use yii\web\Controller;
@@ -172,18 +173,87 @@ class BidController extends Controller
             return $this->redirect(['/referrals/notification']);
         }
 
-        $model = new Bid();
+        if($referralId > 0){
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            $analysisCount = Analysis::find()
+                ->joinWith('sample',false)
+                ->where('tbl_sample.referral_id =:referralId',[':referralId'=>$referralId])
+                //->orderBy('sample_id')
+                ->count();
+
+            $test_bids = Yii::$app->session->get('test_bids_'.$referralId);
+            $sample_requirements = Yii::$app->session->get('addbid_requirement_'.$referralId);
+
+            if(count($sample_requirements) > 0 && !empty($sample_requirements)){
+                if($analysisCount == count($test_bids) ){
+                    $connection= Yii::$app->db;
+                    $transaction = $connection->beginTransaction();
+                    $saveBid = 0;
+                    $saveTestbid = 0;
+
+                    $modelBid = new Bid();
+                    $modelBid->referral_id = $referralId;
+                    $modelBid->bidder_agency_id = (int) Yii::$app->user->identity->profile->rstl_id;
+                    $modelBid->sample_requirements = $sample_requirements['sample_requirements'];
+                    $modelBid->remarks = $sample_requirements['remarks'];
+                    $modelBid->estimated_due = $sample_requirements['estimated_due'];
+                    $modelBid->created_at = date('Y-m-d H:i:s');
+                    $modelBid->updated_at = date('Y-m-d H:i:s');
+
+
+                    if($modelBid->save()){
+                        foreach ($test_bids as $bid) {
+                            $modelTestbid = new Testbid();
+                            $modelTestbid->bidder_agency_id = (int) Yii::$app->user->identity->profile->rstl_id;
+                            $modelTestbid->referral_id = $referralId;
+                            $modelTestbid->bid_id = $modelBid->bid_id;
+                            $modelTestbid->analysis_id = $bid['analysis_id'];
+                            $modelTestbid->fee = $bid['analysis_fee'];
+
+                            if($modelTestbid->save()){
+                                $saveTestbid = 1;
+                            } else {
+                                $saveTestbid = 0;
+                                $transaction->rollBack();
+                            }
+                        }
+                        $saveBid = 1;
+                    } else {
+                        $saveBid = 0;
+                        $transaction->rollBack();
+                    }
+
+                    if($saveBid == 1 && $saveTestbid == 1){
+                        $transaction->commit();
+                        unset($_SESSION['test_bids_'.$referralId]);
+                        unset($_SESSION['addbid_requirement_'.$referralId]);
+                        Yii::$app->session->setFlash('success', "Placing bid successful!");
+                        return $this->redirect(['/referrals/referral/temporary','referral_id'=>$referralId]);
+                    } else {
+                        $transaction->rollBack();
+                        Yii::$app->session->setFlash('error', "Saving not successful!");
+                        return $this->redirect(['/referrals/bid/temporary','referral_id'=>$referralId]);
+                    }
+                } else {
+                    Yii::$app->session->setFlash('error', "Make sure all analyses have bidding fee!");
+                    return $this->redirect(['/referrals/bid/temporary','referral_id'=>$referralId]);
+                }
+            } else {
+                Yii::$app->session->setFlash('error', "Please add sample requirements!");
+                return $this->redirect(['/referrals/bid/temporary','referral_id'=>$referralId]);
+            }
+        }
+
+        /*if ($model->load(Yii::$app->request->post()) && $model->save()) {
             //return $this->redirect(['view', 'id' => $model->bid_id]);
             return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
-        }
+        }*/
 
         /*return $this->render('create', [
             'model' => $model,
         ]);*/
 
-        if(Yii::$app->request->isAjax){
+        /*if(Yii::$app->request->isAjax){
             return $this->renderAjax('_form', [
                 'model' => $model,
             ]);
@@ -191,7 +261,7 @@ class BidController extends Controller
             return $this->renderAjax('create', [
                 'model' => $model,
             ]);
-        }
+        }*/
     }
 
     public function actionTemporary()
@@ -201,11 +271,12 @@ class BidController extends Controller
         $transaction = $connection->beginTransaction();
 
         $agencyId = (int) Yii::$app->user->identity->profile->rstl_id;
+        $referralId = (int) Yii::$app->request->get('referral_id');
 
-        if(Yii::$app->request->get('referral_id')){
-            $referralId = (int) Yii::$app->request->get('referral_id');
+        if($referralId > 0){
             $referral = $this->findReferral($referralId);
             $bid = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:agencyId',[':referralId'=>$referralId,':agencyId'=>$agencyId])->count();
+            $samples = Sample::find()->where('referral_id =:referralId',[':referralId'=>$referralId]);
         } else {
             Yii::$app->session->setFlash('error', "Referral ID not valid!");
             return $this->redirect(['/referrals/notification']);
@@ -340,6 +411,13 @@ class BidController extends Controller
             ],
         ]);
 
+        $sampleDataprovider = new ActiveDataProvider([
+            'query' => $samples,
+            'pagination' => [
+                'pageSize' => 20,
+            ],
+        ]);
+
         /*$analysisDataprovider = new ArrayDataProvider([
                 'key'=>'analysis_id',
                 'allModels' => $analysis,
@@ -355,14 +433,26 @@ class BidController extends Controller
         $discounted = 0;
         $total = 0;
         if(!isset($_SESSION[$list_testbid]) || empty($_SESSION[$list_testbid])){
-            $testbidDataProvider = new ArrayDataProvider([
-                //'key'=>'analysis_id',
-                'allModels' => [],
-                'pagination' => [
-                    'pageSize' => 10,
-                ],
-            ]);
-           // print_r($_SESSION['test_bid']);
+            if($bid > 0){
+                $testBids = Testbid::find()->where('referral_id =:referralId AND bidder_agency_id =:bidderAgencyId',[':referralId'=>$referralId,':bidderAgencyId'=>$agencyId]);
+
+                $testbidDataProvider = new ActiveDataProvider([
+                    'query' => $testBids,
+                    'pagination' => false,
+                ]);
+                
+                $subtotal = $testBids->sum('fee');
+                $discounted = $subtotal * ($referral->discount_rate/100);
+                $total = $subtotal - $discounted;
+            } else {
+                $testbidDataProvider = new ArrayDataProvider([
+                    //'key'=>'analysis_id',
+                    'allModels' => [],
+                    'pagination' => [
+                        'pageSize' => 10,
+                    ],
+                ]);
+            }
         } else {
             //$session = Yii::$app->session;
             $listTestbid = [];
@@ -399,9 +489,10 @@ class BidController extends Controller
             $testbidDataProvider = new ArrayDataProvider([
                 'key'=>'analysis_id',
                 'allModels' => $listTestbid,
-                'pagination' => [
+                /*'pagination' => [
                     'pageSize' => 10,
-                ],
+                ],*/
+                'pagination' => false,
             ]);
         }
 
@@ -422,7 +513,8 @@ class BidController extends Controller
             //'model' => $model,
             'countBid' => $bid,
             'referralId' => $referralId,
-            'analysisdataprovider'=> $analysisDataprovider,
+            'sampleDataProvider'=> $sampleDataprovider,
+            'analysisDataProvider'=> $analysisDataprovider,
             'testbidDataProvider'=> $testbidDataProvider,
             'subtotal' => $subtotal,
             'discounted' => $discounted,

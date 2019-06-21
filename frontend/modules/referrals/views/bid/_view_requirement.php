@@ -22,12 +22,12 @@ use yii\widgets\DetailView;
 			[
 				'label' => 'Sample Requirements',
 				//'attribute' => 'sample_requirements:ntext',
-				'value' => $count == 0 ? nl2br($_SESSION['addbid_requirement_'.$referralId]['sample_requirements']) : $model->sample_requirements,
+				'value' => $count == 0 ? nl2br($_SESSION['addbid_requirement_'.$referralId]['sample_requirements']) : nl2br($model->sample_requirements),
 				'format' => 'raw',
 			],
 			[
 				'label' => 'Remarks',
-				'value' => $count == 0 ? nl2br($_SESSION['addbid_requirement_'.$referralId]['remarks']) : $model->remarks,
+				'value' => $count == 0 ? nl2br($_SESSION['addbid_requirement_'.$referralId]['remarks']) : nl2br($model->remarks),
 				'format' => 'raw',
 			],
 			['attribute' => 'estimated_due', 
