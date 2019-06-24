@@ -14,6 +14,7 @@ use common\models\referral\Notification;
 use common\models\referral\Service;
 use common\models\referral\Testbid;
 use common\models\referral\Bid;
+use common\models\referral\Bidnotification;
 
 /**
  * Referral User Defined Functions
@@ -86,7 +87,8 @@ class ReferralFunctions extends Component
 	}
 
 	//check if service is already offered
-    function checkOffered($methodrefId,$rstlId){
+    function checkOffered($methodrefId,$rstlId)
+    {
         if($rstlId > 0 && $methodrefId > 0) {
 			$service = Service::find()->where(['method_ref_id'=>$methodrefId,'agency_id'=>$rstlId])->count();
 			
@@ -102,7 +104,8 @@ class ReferralFunctions extends Component
     }
 
     //return method reference offered by
-    function offeredBy($methodrefId){
+    function offeredBy($methodrefId)
+    {
         if($methodrefId > 0){
 			$service = Service::find()
 				->joinWith('agency',true)
@@ -123,7 +126,8 @@ class ReferralFunctions extends Component
     }
 
     //get attachments
-    function getAttachment($referralId,$rstlId,$type){
+    function getAttachment($referralId,$rstlId,$type)
+    {
         if($referralId > 0 && $rstlId > 0 && $type > 0) {
             $apiUrl=$this->source.'/api/web/referral/attachments/show_upload?referral_id='.$referralId.'&rstl_id='.$rstlId.'&type='.$type;
             $curl = new curl\Curl();
@@ -137,7 +141,8 @@ class ReferralFunctions extends Component
     }
 
     //download attachment
-    function downloadAttachment($referralId,$rstlId,$fileId){
+    function downloadAttachment($referralId,$rstlId,$fileId)
+    {
         if($referralId > 0 && $rstlId > 0 && $fileId > 0) {
             $apiUrl=$this->source.'/api/web/referral/attachments/download?referral_id='.$referralId.'&rstl_id='.$rstlId.'&file='.$fileId;
             return $apiUrl;
@@ -147,10 +152,26 @@ class ReferralFunctions extends Component
     }
 
     //check if test bid added
-    function checkTestbid($referralId,$analysisId,$bidderAgencyId){
+    function checkTestbid($referralId,$analysisId,$bidderAgencyId)
+    {
     	if($referralId > 0 && $analysisId > 0 && $bidderAgencyId > 0) {
     		$testBid = Testbid::find()->where('referral_id =:referralId AND analysis_id =:analysisId AND bidder_agency_id =:bidderAgencyId',[':referralId'=>$referralId,':analysisId'=>$analysisId,':bidderAgencyId'=>$bidderAgencyId])->count();
     		return $testBid;
+    	} else {
+    		return 'false';
+    	}
+    }
+
+    //function count all both unresponded referral and unseen bid notifications
+    function countAllNotification($agencyId)
+    {
+    	if($agencyId > 0){
+    		$countBidNotification = Bidnotification::find()->where('recipient_agency_id =:recipientAgencyId AND seen =:seen', [':recipientAgencyId'=>$agencyId,':seen'=>0])->count();
+
+			$countReferralNotification = Notification::find()->where('recipient_id =:recipientId AND responded =:responded', [':recipientId'=>$agencyId,':responded'=>0])->count();
+			$allNotification = $countReferralNotification + $countBidNotification;
+
+			return $allNotification;
     	} else {
     		return 'false';
     	}

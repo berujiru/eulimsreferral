@@ -31,8 +31,6 @@ if(isset($bid_requirement) && count($bid_requirement) > 0){
 
     <?= $form->field($model, 'sample_requirements')->textarea(['rows' => 3, 'value'=>$sample_requirements,'placeholder'=>'Enter sample requirement']) ?>
 
-    <?= $form->field($model, 'bid_amount')->textInput(['value'=>0]) ?>
-
     <?= $form->field($model, 'remarks')->textarea(['maxlength' => true, 'value'=>$remarks, 'placeholder'=>'Enter remarks']) ?>
 
     <?= $form->field($model, 'estimated_due')->widget(DatePicker::classname(), [

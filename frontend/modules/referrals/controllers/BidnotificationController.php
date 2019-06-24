@@ -10,6 +10,9 @@ use common\models\referral\Agency;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\helpers\Json;
+use common\components\ReferralFunctions;
+use yii\data\ArrayDataProvider;
 
 /**
  * BidnotificationController implements the CRUD actions for Bidnotification model.
@@ -37,13 +40,64 @@ class BidnotificationController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new BidnotificationSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        if(isset(Yii::$app->user->identity->profile->rstl_id)){
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+            $function= new ReferralFunctions();
+            $query = Bidnotification::find()->where('recipient_agency_id =:recipientAgencyId', [':recipientAgencyId'=>$rstlId]);
+            $bidnotification = $query->orderBy('posted_at DESC')->all();
+            $count = $query->count();
 
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
+        } else {
+            //return 'Session time out!';
+            return $this->redirect(['/site/login']);
+        }
+
+        $list = [];
+        if($count > 0){
+            foreach ($bidnotification as $data) {
+                $bid_notification_type = $data->bid_notification_type_id;
+                switch($data->bid_notification_type_id){
+                    case 1:
+                        $agencyName = $this->getAgency($data->postedby_agency_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> notified referral request for bidding.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'seen'=>$data->seen];
+                    break;
+                    case 2:
+                        $agencyName = $this->getAgency($data->postedby_agency_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> placed bids to your referral request.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'seen'=>$data->seen];
+                    break;
+                }
+                array_push($list, $arr_data);
+            }
+        } else {
+            $list = [];
+        }
+
+        $notificationDataProvider = new ArrayDataProvider([
+            //'key'=>'notification_id',
+            //'allModels' => $notification['notification'],
+            'allModels' => $list,
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+            //'pagination'=>false,
         ]);
+
+
+        if(\Yii::$app->request->isAjax){
+            return $this->renderAjax('bidnotifications_all', [
+                'notifications' => $list,
+                'count_notice' => $count,
+                'notificationProvider' => $notificationDataProvider,
+            ]);
+        } else {
+            return $this->render('bidnotifications_all', [
+                'notifications' => $list,
+                'count_notice' => $count,
+                'notificationProvider' => $notificationDataProvider,
+            ]);
+        }
     }
 
     /**
@@ -147,6 +201,71 @@ class BidnotificationController extends Controller
         }
     }
 
+    //get unseen bid notifications
+    public function actionCount_unseen_bidnotification()
+    {   
+        if(isset(Yii::$app->user->identity->profile->rstl_id)){
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+
+            $function= new ReferralFunctions();
+            $count_all_notifications = $function->countAllNotification($rstlId);
+
+            $bidNotificationCount = Bidnotification::find()
+                ->where('recipient_agency_id =:recipientAgencyId', [':recipientAgencyId'=>$rstlId])
+                ->andWhere('seen =:seen',[':seen'=>0])
+                ->count();
+
+            return Json::encode(['bid_notification'=>$bidNotificationCount,'all_notifications'=>$count_all_notifications]);
+        } else {
+            //return 'Session time out!';
+            return $this->redirect(['/site/login']);
+        }
+    }
+
+    //get list of unresponded notifications
+    public function actionList_unseen_bidnotification()
+    {
+        if(isset(Yii::$app->user->identity->profile->rstl_id)){
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+            $function= new ReferralFunctions();
+            $query = Bidnotification::find()->where('recipient_agency_id =:recipientAgencyId AND seen =:seen', [':recipientAgencyId'=>$rstlId,':seen'=>0]);
+            $bidnotification = $query->limit(10)->orderBy('posted_at DESC')->all();
+            $count = $query->count();
+        } else {
+            //return 'Session time out!';
+            return $this->redirect(['/site/login']);
+        }
+
+        $notice_list = [];
+        if(count($count) > 0) {
+            foreach ($bidnotification as $data) {
+                //$bid_notification_type = $data->bid_notification_type_id;
+                switch($data['bid_notification_type_id']){
+                    case 1:
+                        $agencyName = $this->getAgency($data->postedby_agency_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> notified referral request for bidding.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
+                    break;
+                    case 2:
+                        $agencyName = $this->getAgency($data->postedby_agency_id);
+                        $checkOwner = $function->checkowner($data->referral_id,$rstlId);
+                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> placed bids to your referral request.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
+                    break;
+                }
+                array_push($notice_list, $arr_data);
+            }
+        } else {
+            $notice_list = [];
+        }
+
+        if(\Yii::$app->request->isAjax){
+            return $this->renderAjax('list_unseen_bidnotification', [
+                //'notifications' => $unseen_notification,
+                'notifications' => $notice_list,
+            ]);
+        }
+    }
+
     //find referral request
     protected function findReferral($id)
     {
@@ -155,6 +274,31 @@ class BidnotificationController extends Controller
             return $model;
         } else {
             throw new NotFoundHttpException('The requested Request its either does not exist or you have no permission to view it.');
+        }
+    }
+
+    //get list agencies
+    private function getAgency($agencyId)
+    {
+        $agency = Agency::findOne($agencyId);
+
+        if($agency !== null){
+            return $agency->name;
+        } else {
+            return null;
+        }
+    }
+
+    //get referral code
+    private function getReferral($referralId)
+    {
+        $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+        $referral = Referral::findOne($referralId);
+
+        if($referral !==  null){
+            return $referral;
+        } else {
+            return null;
         }
     }
 }

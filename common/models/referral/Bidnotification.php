@@ -52,4 +52,12 @@ class Bidnotification extends \yii\db\ActiveRecord
             'seen_date' => 'Seen Date',
         ];
     }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getReferral()
+    {
+        return $this->hasOne(Referral::className(), ['referral_id' => 'referral_id']);
+    }
 }

@@ -54,6 +54,25 @@ $Host= "//".Yii::$app->getRequest()->serverName;
     //echo "<div>&nbsp;</div>";
     //echo "</div>";
     Modal::end();
+
+    Modal::begin([
+        'clientOptions' => ['backdrop' => 'static', 'keyboard' => false],
+        'bodyOptions'=>[
+            'class' => 'modal-body',
+            //'style'=>'padding-bottom: 20px',
+            'style'=>'padding: 0',
+        ],
+        'options' => [
+            'id' => 'modalBidNotification',
+            'tabindex' => false, // important for Select2 to work properly
+        ],
+        'header' => '<h4 style="padding-top: 0px;margin-top: 0px;padding-bottom:0px;margin-bottom: 0px"><span class="glyphicon glyphicon-bell" style="margin-right:7px;"></span><span class="modal-title" style="font-size: 16px;font-family: \'Source Sans Pro\',sans-serif;"></span></h4>'
+    ]);
+    //echo "<div>";
+    echo "<div id='modalBody' style='margin: 0;'><div style='text-align:center;padding:20px;'><img src='/images/img-loader64.gif' alt=''></div></div>";
+    //echo "<div>&nbsp;</div>";
+    //echo "</div>";
+    Modal::end();
     
     echo Breadcrumbs::widget([
       'itemTemplate' => "<li><i>{link}</i></li>\n", // template for all links

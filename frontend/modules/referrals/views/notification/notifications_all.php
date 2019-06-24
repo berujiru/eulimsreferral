@@ -6,7 +6,7 @@ use yii\widgets\Pjax;
 
 <div class="notification-view notification-display">
   <div class="alert alert-info" style="border-bottom: 2px solid #555;margin-bottom:2px;">
-    <strong style="color:#000000;">List of Notifications</strong>
+    <strong style="color:#000000;">List of Referral Notifications</strong>
   </div>
   <?php
     echo ListView::widget([

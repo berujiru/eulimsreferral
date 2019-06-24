@@ -12,7 +12,6 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use common\models\lab\exRequestreferral;
 use yii\helpers\Json;
-use common\components\ReferralComponent;
 use common\components\ReferralFunctions;
 use yii\data\ArrayDataProvider;
 
@@ -116,12 +115,16 @@ class NotificationController extends Controller
     {   
         if(isset(Yii::$app->user->identity->profile->rstl_id)){
             $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+
+            $function= new ReferralFunctions();
+            $count_all_notifications = $function->countAllNotification($rstlId);
+            
             $notificationCount = Notification::find()
                 ->where('recipient_id =:recipientId', [':recipientId'=>$rstlId])
                 ->andWhere('responded =:responded',[':responded'=>0])
                 ->count();
 
-            return Json::encode(['num_notification'=>$notificationCount]);
+            return Json::encode(['num_notification'=>$notificationCount,'all_notifications'=>$count_all_notifications]);
         } else {
             //return 'Session time out!';
             return $this->redirect(['/site/login']);

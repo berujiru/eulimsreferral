@@ -21,6 +21,7 @@ if(Yii::$app->user->isGuest){
     $CurrentUserDesignation='Guest';
     $UsernameDesignation=$CurrentUserName;
 	$unresponded = '';
+	$unseen = '';
 }else{
     $CurrentUser= User::findOne(['user_id'=> Yii::$app->user->identity->user_id]);
     $CurrentUserName=$CurrentUser->profile ? $CurrentUser->profile->fullname : $CurrentUser->username;
@@ -36,8 +37,10 @@ if(Yii::$app->user->isGuest){
        $UsernameDesignation=$CurrentUserName.'<br>'.$CurrentUserDesignation;
     }
 	$unresponded_notification = json_decode(Yii::$app->runAction('/referrals/notification/count_unresponded_notification'),true);
-	
 	$unresponded = $unresponded_notification['num_notification'] > 0 ? $unresponded_notification['num_notification'] : '';
+
+	$unseen_bid_notification = json_decode(Yii::$app->runAction('/referrals/bidnotification/count_unseen_bidnotification'),true);
+	$unseen = $unseen_bid_notification['bid_notification'] > 0 ? $unseen_bid_notification['bid_notification'] : '';
 	//notification will run if the user is already logged in
 	$this->registerJs("
 		setInterval(function(e){
@@ -45,29 +48,11 @@ if(Yii::$app->user->isGuest){
 		}, 30000);
 	");
 
-	/*	function get_unseen_notifications()
-		{
-			$.ajax({
-				url: '/referrals/referral/unseen_notification',
-				dataType: 'json',
-				method: 'GET',
-				success: function (data) {
-					if (data.data_notification.count_notification > 0){
-						$('#count_noti_sub').html(data.data_notification.count_notification);
-						$('#count_noti_menu').html(data.data_notification.count_notification);
-					} else if(data.data_notification.count_notification == 0) {
-						$('#count_noti_sub').html('');
-						$('#count_noti_menu').html('');
-					} else {
-						alert(data.data_notification.count_notification);
-					}
-				},
-				error: function (jqXHR, textStatus, errorThrown) {
-					console.log('error occured!');
-				}
-			});
-		}
-	");*/
+	$this->registerJs("
+		setInterval(function(e){
+			get_unseen_bidnotifications();
+		}, 30000);
+	");
 }
 ?>
 <aside class="main-sidebar">
@@ -116,9 +101,13 @@ if(Yii::$app->user->isGuest){
                 $pkgdetails2=str_replace(" ","-",$pkgdetails1);
                 $SubmodulePermission="access-".$pkgdetails2; //access-Order of Payment
 				if($mItem->extra_element == 1){
-					$numNotification = '&nbsp;&nbsp;<span class="label label-danger" id="count_noti_sub">'.$unresponded.'</span>';
+					$numNotification = '&nbsp;&nbsp;<span class="label label-danger" id="count_noti_sub_referral">'.$unresponded.'</span>';
 					$showURL = '#';
-					$template = '<a href="{url}" onclick="showNotifications()" id="btn_unresponded">{label}</a>';
+					$template = '<a href="{url}" onclick="showNotifications()" id="btn_unresponded_referral">{label}</a>';
+				} elseif ($mItem->extra_element == 2) {
+					$numNotification = '&nbsp;&nbsp;<span class="label label-danger" id="count_noti_sub_bid">'.$unseen.'</span>';
+					$showURL = '#';
+					$template = '<a href="{url}" onclick="showBidNotifications()" id="btn_unseen_bid">{label}</a>';
 				} else {
 					$numNotification = '';
 					$template = '<a href="{url}">{label}</a>';
@@ -133,8 +122,19 @@ if(Yii::$app->user->isGuest){
                 ];
                 array_push($ItemSubMenu, $ItemS);
             }
+            
+            if($unresponded > 0 && $unseen > 0){
+            	$all_notification = $unresponded + $unseen;
+            } elseif($unresponded > 0 && $unseen == ''){
+            	$all_notification = $unresponded;
+            } elseif($unresponded == '' && $unseen > 0){
+            	$all_notification = $unseen;
+            } else {
+            	$all_notification = '';
+            }
+            
             $MainIcon=substr($Item->icon,6,strlen($Item->icon)-6);
-			$showNotification = (stristr($Item->PackageName, 'referral')) ? '&nbsp;&nbsp;<span class="label label-danger" id="count_noti_menu">'.$unresponded.'</span>' : '';
+			$showNotification = (stristr($Item->PackageName, 'referral')) ? '&nbsp;&nbsp;<span class="label label-danger" id="count_noti_menu">'.$all_notification.'</span>' : '';
             $ItemMenu[]=[
                 'label' => '<img src="/images/icons/' .$Item->icon. '.png" style="width:20px">  <span>' . ucwords($Item->PackageName) . $showNotification . '</span>', 
                 'icon'=>' " style="display:none;width:0px"',
@@ -191,12 +191,13 @@ if(Yii::$app->user->isGuest){
 
 </aside>
 <script type="text/javascript">
+	//referral notifications
 	function showNotifications(){
 		$.ajax({
 			url: '/referrals/notification/list_unresponded_notification',
 			//url: '',
 			success: function (data) {
-				$(".modal-title").html('Notifications');
+				$(".modal-title").html('Referral Notifications');
 				$('#modalNotification').modal('show')
 					.find('#modalBody')
 					.load('/referrals/notification/list_unresponded_notification');
@@ -210,7 +211,30 @@ if(Yii::$app->user->isGuest){
 			}
 		});
 	}
-	$("#btn_unresponded").on('click', function(e) {
+	//bid notifications
+	function showBidNotifications(){
+		$.ajax({
+			url: '/referrals/bidnotification/list_unseen_bidnotification',
+			//url: '',
+			success: function (data) {
+				$(".modal-title").html('Bid Notifications');
+				$('#modalBidNotification').modal('show')
+					.find('#modalBody')
+					.load('/referrals/bidnotification/list_unseen_bidnotification');
+					get_unseen_bidnotifications();
+				$(".content-image-loader").css("display", "none");
+				$('.content-image-loader').removeClass('content-img-loader');
+			},
+			beforeSend: function (xhr) {
+				$(".content-image-loader").css("display", "block");
+				$('.content-image-loader').addClass('content-img-loader');
+			}
+		});
+	}
+	$("#btn_unresponded_referral").on('click', function(e) {
+		e.preventDefault();
+	});
+	$("#btn_unseen_bid").on('click', function(e) {
 		e.preventDefault();
 	});
 </script>
