@@ -60,12 +60,12 @@ class BidnotificationController extends Controller
                     case 1:
                         $agencyName = $this->getAgency($data->postedby_agency_id);
                         $checkOwner = $function->checkowner($data->referral_id,$rstlId);
-                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> notified referral request for bidding.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'seen'=>$data->seen];
+                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> notified a referral request for bidding.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'seen'=>$data->seen];
                     break;
                     case 2:
                         $agencyName = $this->getAgency($data->postedby_agency_id);
                         $checkOwner = $function->checkowner($data->referral_id,$rstlId);
-                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> placed bids to your referral request.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'seen'=>$data->seen];
+                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> placed bids to the notified referral request.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id,'seen'=>$data->seen];
                     break;
                 }
                 array_push($list, $arr_data);
@@ -244,12 +244,12 @@ class BidnotificationController extends Controller
                     case 1:
                         $agencyName = $this->getAgency($data->postedby_agency_id);
                         $checkOwner = $function->checkowner($data->referral_id,$rstlId);
-                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> notified referral request for bidding.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
+                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> notified a referral request for bidding.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                     case 2:
                         $agencyName = $this->getAgency($data->postedby_agency_id);
                         $checkOwner = $function->checkowner($data->referral_id,$rstlId);
-                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> placed bids to your referral request.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
+                        $arr_data = ['notice_sent'=>"<b>".$agencyName."</b> placed bids to the notified referral request.",'notice_id'=>$data->bid_notification_id,'notification_date'=>$data->posted_at,'referral_id'=>$data->referral_id,'owner'=>$checkOwner,'local_request_id'=>$data->referral->local_request_id];
                     break;
                 }
                 array_push($notice_list, $arr_data);
