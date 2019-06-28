@@ -31,8 +31,8 @@ class Bidnotification extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['referral_id', 'postedby_agency_id', 'posted_at', 'recipient_agency_id'], 'required'],
-            [['referral_id', 'postedby_agency_id', 'recipient_agency_id', 'seen'], 'integer'],
+            [['referral_id', 'postedby_agency_id', 'posted_at', 'recipient_agency_id','sender_user_id'], 'required'],
+            [['referral_id', 'postedby_agency_id', 'recipient_agency_id', 'sender_user_id', 'seen'], 'integer'],
             [['posted_at', 'seen_date'], 'safe'],
         ];
     }
@@ -48,6 +48,7 @@ class Bidnotification extends \yii\db\ActiveRecord
             'postedby_agency_id' => 'Postedby Agency ID',
             'posted_at' => 'Posted At',
             'recipient_agency_id' => 'Recipient Agency ID',
+			'sender_user_id' => 'Sender User ID',
             'seen' => 'Seen',
             'seen_date' => 'Seen Date',
         ];

@@ -15,6 +15,7 @@ use common\models\referral\Service;
 use common\models\referral\Testbid;
 use common\models\referral\Bid;
 use common\models\referral\Bidnotification;
+use common\models\referral\Agency;
 
 /**
  * Referral User Defined Functions
@@ -172,6 +173,21 @@ class ReferralFunctions extends Component
 			$allNotification = $countReferralNotification + $countBidNotification;
 
 			return $allNotification;
+    	} else {
+    		return 'false';
+    	}
+    }
+
+    //check bidder
+    function checkBidder($referralId,$agencyId)
+    {
+    	if($agencyId > 0 && $referralId > 0){
+    		$bid = Bid::find()->where('bidder_agency_id =:bidderAgencyId AND referral_id =:referralId',[':bidderAgencyId'=>$agencyId,':referralId'=>$referralId])->count();
+    		if($bid > 0){
+    			return 1; 
+    		} else {
+    			return 0;
+    		}
     	} else {
     		return 'false';
     	}

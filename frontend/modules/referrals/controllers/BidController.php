@@ -10,6 +10,7 @@ use common\models\referral\Sample;
 use common\models\referral\Analysis;
 use common\models\referral\Testbid;
 use common\models\referral\Bidnotification;
+use common\models\referral\Agency;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -163,6 +164,17 @@ class BidController extends Controller
         }
     }
 
+    //find agency
+    protected function findAgency($id)
+    {
+        $agency = Agency::find()->where(['agency_id'=>$id])->one();
+        if($agency !== null){
+            return $agency;
+        } else {
+            throw new NotFoundHttpException('The requested Request its either does not exist or you have no permission to view it.');
+        }
+    }
+
     //place bid
     public function actionPlacebid()
     {
@@ -271,6 +283,7 @@ class BidController extends Controller
             $referral = $this->findReferral($referralId);
             $bid = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:agencyId',[':referralId'=>$referralId,':agencyId'=>$agencyId])->count();
             $samples = Sample::find()->where('referral_id =:referralId',[':referralId'=>$referralId]);
+            $agency = $this->findAgency($agencyId);
         } else {
             Yii::$app->session->setFlash('error', "Not a valid referral request!");
             return $this->redirect(['/referrals/bidnotification']);
@@ -363,6 +376,7 @@ class BidController extends Controller
             'subtotal' => $subtotal,
             'discounted' => $discounted,
             'total' => $total,
+            'agencyCode' => $agency->code,
         ]);
     }
 
@@ -378,6 +392,7 @@ class BidController extends Controller
             $referral = $this->findReferral($referralId);
             $bid = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:agencyId',[':referralId'=>$referralId,':agencyId'=>$agencyId])->count();
             $samples = Sample::find()->where('referral_id =:referralId',[':referralId'=>$referralId]);
+            $agency = $this->findAgency($agencyId);
 
             $modelBidNotification = Bidnotification::findOne($noticeId);
 
@@ -482,6 +497,7 @@ class BidController extends Controller
             'subtotal' => $subtotal,
             'discounted' => $discounted,
             'total' => $total,
+            'agencyCode' => $agency->code,
         ]);
     }
 
