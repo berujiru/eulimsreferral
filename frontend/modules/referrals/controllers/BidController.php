@@ -196,6 +196,7 @@ class BidController extends Controller
 
             $test_bids = Yii::$app->session->get('test_bids_'.$referralId);
             $sample_requirements = Yii::$app->session->get('addbid_requirement_'.$referralId);
+            $bidding_fee = Yii::$app->session->get('bid_total_fee_'.$referralId);
 
             if(count($sample_requirements) > 0 && !empty($sample_requirements)){
                 if($analysisCount == count($test_bids) ){
@@ -210,10 +211,11 @@ class BidController extends Controller
                     $modelBid->sample_requirements = $sample_requirements['sample_requirements'];
                     $modelBid->remarks = $sample_requirements['remarks'];
                     $modelBid->estimated_due = $sample_requirements['estimated_due'];
+                    $modelBid->bid_amount = $bidding_fee['bid_total_fee'];
+                    $modelBid->bidder_user_id = (int) Yii::$app->user->identity->profile->user_id;
                     $modelBid->created_at = date('Y-m-d H:i:s');
                     $modelBid->updated_at = date('Y-m-d H:i:s');
-
-
+					
                     if($modelBid->save()){
                         foreach ($test_bids as $bid) {
                             $modelTestbid = new Testbid();
@@ -237,17 +239,20 @@ class BidController extends Controller
                     }
 
                     if($saveBid == 1 && $saveTestbid == 1){
+                        
                         $modelBidNotification = new Bidnotification();
                         $modelBidNotification->referral_id = $referralId;
                         $modelBidNotification->bid_notification_type_id = 2;
                         $modelBidNotification->postedby_agency_id = (int) Yii::$app->user->identity->profile->rstl_id;
                         $modelBidNotification->posted_at = date('Y-m-d H:i:s');
                         $modelBidNotification->recipient_agency_id = $referral->receiving_agency_id;
-
+                        $modelBidNotification->sender_user_id = (int) Yii::$app->user->identity->profile->user_id;
+						
                         if($modelBidNotification->save()){
                             $transaction->commit();
                             unset($_SESSION['test_bids_'.$referralId]);
                             unset($_SESSION['addbid_requirement_'.$referralId]);
+                            unset($_SESSION['bid_total_fee_'.$referralId]);
                             Yii::$app->session->setFlash('success', "Placing bid successful!");
                             return $this->redirect(['/referrals/bid/referralbidding','referral_id'=>$referralId]);
                         } else {
@@ -325,6 +330,8 @@ class BidController extends Controller
                 $discounted = $subtotal * ($referral->discount_rate/100);
                 $total = $subtotal - $discounted;
             } else {
+                unset($_SESSION['bid_total_fee_'.$referralId]);
+                unset($_SESSION['test_bids_'.$referralId]);
                 $testbidDataProvider = new ArrayDataProvider([
                     //'key'=>'analysis_id',
                     'allModels' => [],
@@ -358,6 +365,13 @@ class BidController extends Controller
             $subtotal = array_sum($sum_fees);
             $discounted = $subtotal * ($referral->discount_rate/100);
             $total = $subtotal - $discounted;
+
+            $session_totalfee= Yii::$app->session;
+            $bid_total_fee = 'bid_total_fee_'.$referralId;
+            $bidfee = $session_totalfee[$bid_total_fee];
+            //$testBids[$analysisId] = ['analysis_id'=>$analysisId,'analysis_fee'=> $fee];
+            $bidfee['bid_total_fee'] = $total;
+            $_SESSION[$bid_total_fee] = $bidfee;
 
             $testbidDataProvider = new ArrayDataProvider([
                 'key'=>'analysis_id',
@@ -633,6 +647,7 @@ class BidController extends Controller
         $analysisId = (int) Yii::$app->request->get('analysis_id');
         $testbidRefId = 'test_bids_'.$referralId;
         $test_bids = Yii::$app->session->get($testbidRefId);
+        $bid_total_fee = Yii::$app->session->get('bid_total_fee_'.$referralId);
 
         if($analysisId > 0 && $referralId > 0 && count($test_bids) > 0){
             foreach ($test_bids as $key => $value) {
@@ -640,6 +655,7 @@ class BidController extends Controller
                     unset($_SESSION[$testbidRefId][$key]);
                     if(count($test_bids) == 0 && empty($test_bids)){
                         unset($_SESSION[$testbidRefId]);
+                        unset($_SESSION['bid_total_fee_'.$referralId]);
                         //Yii::$app->session->remove($testbidRefId);
                     }
                     Yii::$app->session->setFlash('success', 'Successfully removed.');

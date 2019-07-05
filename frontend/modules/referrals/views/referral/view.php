@@ -93,7 +93,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
             'hover'=>true,
             'mode'=>DetailView::MODE_VIEW,
             'panel'=>[
-                'heading'=>'<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code .' '.$btnPrint,
+                'heading'=>$labelpanel,
                 'type'=>DetailView::TYPE_PRIMARY,
             ],
             'buttons1' => '',

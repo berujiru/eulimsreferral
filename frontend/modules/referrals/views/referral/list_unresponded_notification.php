@@ -20,7 +20,7 @@ use yii\helpers\Html;
 	<li class="label-action">Action is needed</li>
 		<?php foreach($notifications as $notification): ?>
 		<li>
-			<a href='<?= "/referrals/referral/view?id=".$notification['referral_id']."&notice_id=".$notification['notice_id'] ?>'><?= $notification['notice_sent'] ?><br>
+			<a href='<?= "/referrals/referral/viewnotice?id=".$notification['referral_id']."&notice_id=".$notification['notice_id'] ?>'><?= $notification['notice_sent'] ?><br>
 			<span class="notification-date"><?= date("d-M-Y g:i A", strtotime($notification['notification_date'])) ?></span>
 			</a>
 		</li>

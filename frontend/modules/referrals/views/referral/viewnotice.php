@@ -16,9 +16,15 @@ $this->params['breadcrumbs'][] = $this->title;
 
 
 if(count($notification) > 0 && $notification->notification_type_id == 1 && $notification->responded == 0 && empty(trim($model->referral_code))){
-    $actionButtonConfirm = "<div class='row' style='margin-left: 2px;padding-top: 5px'>".Html::button('<span class="glyphicon glyphicon-ok"></span> Confirm Referral Notification', ['value'=>Url::to(['/referrals/referral/confirm','local_request_id'=>$model->local_request_id,'referral_id'=>$model->referral_id,'notice_id'=>$notification->notification_id,'sender_id'=>$notification->sender_id]),'onclick'=>'confirmNotification(this.value,this.title)','class' => 'btn btn-primary','title' => 'Confirm Referral of '.$model->agencyreceiving->name]);
+    $actionButtonConfirm = "<div class='row' style='margin-left: 2px;padding-top: 5px'>".Html::button('<span class="glyphicon glyphicon-ok"></span> Confirm Referral Notification', ['value'=>Url::to(['/referrals/referral/confirm','local_request_id'=>$model->local_request_id,'referral_id'=>$model->referral_id,'notice_id'=>$notification->notification_id,'sender_id'=>$notification->sender_id]),'onclick'=>'confirmNotification(this.value,this.title)','class' => 'btn btn-primary','title' => 'Confirm Referral of '.$model->agencyreceiving->name])."</div>";
 } else {
     $actionButtonConfirm = "";
+}
+
+if(count($notification) > 0 && $notification->notification_type_id == 3 && $notification->responded == 0){
+    $actionButtonGenerateSamplecode = "<div class='row' style='margin-left: 2px;padding-top: 5px'>".Html::button('<span class="glyphicon glyphicon-ok"></span> Confirm Referral Notification', ['value'=>Url::to(['/referrals/referral/confirm','local_request_id'=>$model->local_request_id,'referral_id'=>$model->referral_id,'notice_id'=>$notification->notification_id,'sender_id'=>$notification->sender_id]),'onclick'=>'confirmNotification(this.value,this.title)','class' => 'btn btn-primary','title' => 'Confirm Referral of '.$model->agencyreceiving->name])."</div>";
+} else {
+    $actionButtonGenerateSamplecode = "";
 }
 
 /*if(count($notification) > 0 && $notification->notification_type_id == 3 && $notification->responded == 0){
@@ -349,8 +355,8 @@ if(count($notification) > 0 && $notification->notification_type_id == 1 && $noti
                     'type'=>'primary',
                     'before'=> null,
                     'after'=> false,
-                    //'footer'=>$actionButtonConfirm.$actionButtonSaveLocal,
-                    'footer'=>$actionButtonConfirm,
+                    'footer'=>$actionButtonConfirm.$actionButtonGenerateSamplecode,
+                    //'footer'=>$actionButtonConfirm,
                 ],
                 'columns' => $analysisgridColumns,
                 'toolbar' => [
