@@ -93,12 +93,16 @@ class ReferralController extends Controller
               /*echo "<pre>";
                 print_r($testresult);
                 echo "</pre>"; */
-                $testresultDataProvider = new ArrayDataProvider([
-                    'allModels' => $testresult,
-                    'pagination'=> [
-                        'pageSize' => 10,
-                    ],
-                ]);
+                if($testresult <> 0){
+                    $testresultDataProvider = new ArrayDataProvider([
+                        'allModels' => $testresult,
+                        'pagination'=> [
+                            'pageSize' => 10,
+                        ],
+                    ]); 
+                }else{
+                    $testresultDataProvider = new ArrayDataProvider([]);
+                }
                 $sampleDataProvider = new ArrayDataProvider([
                     'allModels' => $samples,
                     'pagination'=> [
