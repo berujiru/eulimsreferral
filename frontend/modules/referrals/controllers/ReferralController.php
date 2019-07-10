@@ -9,6 +9,7 @@ use common\models\referral\Sample;
 use common\models\referral\Analysis;
 use common\models\referral\Notification;
 use common\models\referral\Customer;
+use common\models\referral\Samplecode;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -65,13 +66,23 @@ class ReferralController extends Controller
      */
     public function actionView($id)
     {
-        $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+        if(isset(Yii::$app->user->identity->profile->rstl_id)){
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+        } else {
+            //return 'Session time out!';
+            return $this->redirect(['/site/login']);
+        }
 
         if($rstlId > 0)
         {
             $function = new ReferralFunctions();
-          
-            $checknotified = $function->checkNotified($id,$rstlId);
+			
+			$checknotified = Notification::find()
+				->where('referral_id =:referralId', [':referralId'=>$id])
+				->andWhere('recipient_id =:recipientId', [':recipientId'=>$rstlId])
+				->andWhere(['in', 'notification_type_id', [1,3]])
+				->count();
+				
             $checkOwner = $function->checkOwner($id,$rstlId);
 
             if($checknotified > 0 || $checkOwner > 0)
@@ -182,14 +193,19 @@ class ReferralController extends Controller
     //view notification
     public function actionViewnotice($id)
     {
-        $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+		if(isset(Yii::$app->user->identity->profile->rstl_id)){
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+        } else {
+            //return 'Session time out!';
+            return $this->redirect(['/site/login']);
+        }
         $noticeId = (int) Yii::$app->request->get('notice_id');
 
         if($rstlId > 0 && $noticeId > 0)
         {
             $function = new ReferralFunctions();
 
-            $checknotified = $function->checkNotified($id,$rstlId);
+            $checknotified = $function->checkNotified($id,$rstlId,$noticeId);
             $checkOwner = $function->checkOwner($id,$rstlId);
 
             $noticeDetails = Notification::find()
@@ -326,6 +342,99 @@ class ReferralController extends Controller
             return $this->renderAjax('_confirm');
         }
     }
+	
+	//generate sample code for Non-DOST
+	public function actionGeneratesamplecode()
+	{
+		if(isset(Yii::$app->user->identity->profile->rstl_id)){
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+            $referralId = (int) Yii::$app->request->get('referral_id');
+            $noticeId = (int) Yii::$app->request->get('notice_id');
+        } else {
+            //return 'Session time out!';
+            return $this->redirect(['/site/login']);
+        }
+        $noticeId = (int) Yii::$app->request->get('notice_id');
+		
+		if($rstlId > 0 && $referralId > 0 && $noticeId > 0){
+			$referral = Referral::findOne($referralId);
+			$year = date('Y', strtotime($referral->referral_date_time));
+			$connection= Yii::$app->db;
+			
+			foreach ($referral->samples as $samp){
+				$transaction = $connection->beginTransaction();
+				$return="false";
+				try {
+					$query = 'CALL spGetNextGenerateSampleCode(:agencyId,:labId,:referralId)';
+					$params = [':agencyId'=>$rstlId,':labId'=>$referral->lab_id,':referralId'=>$referralId];
+					$row = Yii::$app->db->createCommand($query)
+							->bindValues($params)
+							->queryOne();
+					$samplecodeGenerated = $row['GeneratedSampleCode'];
+					$samplecodeIncrement = $row['SampleIncrement'];
+
+					$sampleId = $samp->sample_id;
+					$sample= Sample::find()->where(['sample_id'=>$sampleId])->one();
+					
+					//insert to tbl_samplecode
+					$samplecode = new Samplecode();
+					$samplecode->referral_id = $referralId;
+					$samplecode->referral_code = $referral->referral_code;
+					$samplecode->sample_id = $sampleId;
+					$samplecode->lab_id = $referral->lab_id;
+					$samplecode->number = $samplecodeIncrement;
+					$samplecode->year = $year;
+					$samplecode->agency_id = $rstlId;
+					
+					if($samplecode->save())
+					{
+						//update samplecode to tbl_sample
+						$sample->sample_code = $samplecodeGenerated;
+						$sample->sample_month = date('m', strtotime($referral->referral_date_time));
+						$sample->sample_year = date('Y', strtotime($referral->referral_date_time));
+						if($sample->save(false)){ //skip validation since only update of sample code is performed
+							$notice = Notification::find()->where('notification_id =:notificationId AND notification_type_id =:notificationType',[':notificationId'=>$noticeId,':notificationType'=>3])->one();
+							$notice->responded = 1;
+							if($notice->save()){
+								$transaction->commit();
+								$return = 1;
+							} else {
+								$transaction->rollBack();
+								$return = 0;
+							}
+						} else {
+							//error
+							$transaction->rollBack();
+							$return = 0;
+						}
+					} else {
+						//error
+						$transaction->rollBack();
+						//$samplecode->getErrors();
+						$return = 0;
+					}
+				} catch (\Exception $e) {
+				   $transaction->rollBack();
+				   echo $e->getMessage();
+				   $return = 0;
+				} catch (\Throwable $e) {
+				   $transaction->rollBack();
+				   $return = 0;
+				   echo $e->getMessage();
+				}
+			}
+		} else {
+			$return = 0;
+		}
+		
+		if($return > 0){
+			Yii::$app->session->setFlash('success', "Sample code successfully generated.");
+            return $this->redirect(['/referrals/referral']);
+		} else {
+			Yii::$app->session->setFlash('error', "Failed to generate sample code!");
+            return $this->redirect(['/referrals/referral/viewnotice','id'=>$referralId,'notice_id'=>$noticeId]);
+		}
+	}
 
     /**
      * Creates a new Referral model.

@@ -22,7 +22,7 @@ if(count($notification) > 0 && $notification->notification_type_id == 1 && $noti
 }
 
 if(count($notification) > 0 && $notification->notification_type_id == 3 && $notification->responded == 0){
-    $actionButtonGenerateSamplecode = "<div class='row' style='margin-left: 2px;padding-top: 5px'>".Html::button('<span class="glyphicon glyphicon-ok"></span> Confirm Referral Notification', ['value'=>Url::to(['/referrals/referral/confirm','local_request_id'=>$model->local_request_id,'referral_id'=>$model->referral_id,'notice_id'=>$notification->notification_id,'sender_id'=>$notification->sender_id]),'onclick'=>'confirmNotification(this.value,this.title)','class' => 'btn btn-primary','title' => 'Confirm Referral of '.$model->agencyreceiving->name])."</div>";
+    $actionButtonGenerateSamplecode = Html::button('<span class="glyphicon glyphicon-qrcode"></span> Generate Sample Code', ['value'=>Url::to(['/referrals/referral/generatesamplecode','local_request_id'=>$model->local_request_id,'referral_id'=>$model->referral_id,'notice_id'=>$notification->notification_id,'sender_id'=>$notification->sender_id]),'onclick'=>'generateSampleCode(this.value,this.title)','class' => 'btn btn-primary','title' => 'Generate Sample Code']);
 } else {
     $actionButtonGenerateSamplecode = "";
 }
@@ -256,7 +256,7 @@ if(count($notification) > 0 && $notification->notification_type_id == 3 && $noti
                 'panel' => [
                     'heading'=>'<h3 class="panel-title">Samples</h3>',
                     'type'=>'primary',
-                    'before'=>null,
+                    'before'=>$actionButtonGenerateSamplecode,
                     'after'=>false,
                 ],
                 'columns' => $gridColumns,
@@ -355,8 +355,8 @@ if(count($notification) > 0 && $notification->notification_type_id == 3 && $noti
                     'type'=>'primary',
                     'before'=> null,
                     'after'=> false,
-                    'footer'=>$actionButtonConfirm.$actionButtonGenerateSamplecode,
-                    //'footer'=>$actionButtonConfirm,
+                    //'footer'=>$actionButtonConfirm.$actionButtonGenerateSamplecode,
+                    'footer'=>$actionButtonConfirm,
                 ],
                 'columns' => $analysisgridColumns,
                 'toolbar' => [
@@ -378,6 +378,13 @@ if(count($notification) > 0 && $notification->notification_type_id == 3 && $noti
             .find('#modalContent')
             .load(url);
     }
+	
+	function generateSampleCode(url,title){
+		$('.modal-title').html(title);
+        $('#modal').modal('show')
+            .find('#modalContent')
+            .load(url);
+	}
 
     function confirmNotification(url,title){
         var str = title.slice(19);

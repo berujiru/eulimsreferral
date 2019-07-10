@@ -26,13 +26,16 @@ class ReferralFunctions extends Component
 	public $source = 'https://eulimsapi.onelab.ph';
 
 	//check if the agency is notified
-	function checkNotified($referralId,$recipientId)
+	function checkNotified($referralId,$recipientId,$noticeId)
+	//function checkNotified($referralId,$recipientId)
 	{
-		if($referralId > 0 && $recipientId > 0){
+		if($referralId > 0 && $recipientId > 0 && $noticeId > 0){
+		//if($referralId > 0 && $recipientId > 0){
 			$check = Notification::find()
 				->where('referral_id =:referralId', [':referralId'=>$referralId])
 				->andWhere('recipient_id =:recipientId', [':recipientId'=>$recipientId])
-				->andWhere('notification_type_id =:notice', [':notice'=>1])
+				//->andWhere('notification_type_id =:notice', [':notice'=>$noticetype])
+				->andWhere('notification_id =:notificationId',[':notificationId'=>$noticeId])
 				->count();
 			
 			if($check > 0){
@@ -132,8 +135,8 @@ class ReferralFunctions extends Component
         if($referralId > 0 && $rstlId > 0 && $type > 0) {
             $apiUrl=$this->source.'/api/web/referral/attachments/show_upload?referral_id='.$referralId.'&rstl_id='.$rstlId.'&type='.$type;
             $curl = new curl\Curl();
-            $curl->setOption(CURLOPT_CONNECTTIMEOUT, 120);
-            $curl->setOption(CURLOPT_TIMEOUT, 120);
+            $curl->setOption(CURLOPT_CONNECTTIMEOUT, 180);
+            $curl->setOption(CURLOPT_TIMEOUT, 180);
             $list = $curl->get($apiUrl);
             return $list;
         } else {
