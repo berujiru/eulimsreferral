@@ -49,23 +49,21 @@ foreach($logs as $log){
 }
 
 $haveStatus = "";
-//$Func="LoadModal('Update Received Track','/finance/cancelop/create?op=".$model->orderofpayment_id."',true,500)";
-//$UpdateButton='<button id="btnUpdate" onclick="'.$Func.'" type="button" style="float: right;padding-right:5px;margin-left: 5px" class="btn btn-danger"><i class="fa fa-remove"></i> Cancel Order of Payment</button>';
 if(!isset(\Yii::$app->session['config-item'])){
    \Yii::$app->session['config-item']=1; //Laboratories 
 }
 switch(\Yii::$app->session['config-item']){
-    case 1: //Laboratories
+    case 1: 
         $LogActive=true;
         $ResultActive=false;
         $TrackActive=false;
         break;
-    case 2: // Technical Managers
+    case 2: 
         $LogActive=false;
         $ResultActive=true;
         $TrackActive=false;
         break;
-    case 3: //Discount
+    case 3: 
         $LogActive=false;
         $ResultActive=false;
         $TrackActive=true;
@@ -413,7 +411,6 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                     'type'=>'primary',
                     'before'=> null,
                     'after'=> false,
-                    //'footer'=>$actionButtonConfirm.$actionButtonSaveLocal,
                     'footer'=>null,
                 ],
                 'columns' => $analysisgridColumns,
@@ -472,50 +469,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
         
         <div class="panel-body">
         <?php  
-         $gridColumn="<div class='row'><div class='col-md-12'>". GridView::widget([
-           'dataProvider' => $notificationDataProvider,
-           // 'filterModel' => $searchModel,
-            'id'=>'LaboratoryGrid',
-            'tableOptions'=>['class'=>'table table-hover table-stripe table-hand'],
-            'pjax'=>true,
-            'pjaxSettings' => [
-                    'options' => [
-                        'enablePushState' => false,
-                    ],
-            ],
-            'toolbar'=>[],
-            'panel' => [
-                'type' => GridView::TYPE_PRIMARY,
-                'heading' => '<i class="fa fa-columns"></i> List',
-             ],
-            'columns' => [
-                [
-                    'attribute' => '',
-                    'label' => 'Date and Time',
-                    'value' => function($model) {
-                        return date("F j, Y h:i:s A", strtotime($model->notification_date));
-                    }
-                ],
-                [
-                    'attribute' => '',
-                    'label' => 'Details',
-                    'value'=>function($model){
-                        switch($model->notification_type_id){
-                            case 1:
-                                return 'Notification sent to '.$model->agencyrecipient->name.' by '.$model->agencysender->name;
-                            case 2:
-                                return $model->agencysender->name.' confirmed the notification for Referral.';
-                            case 3:
-                                return 'Referral sent to '.$model->agencyrecipient->name;
-                            default:
-
-                        }
-                    }
-                ],
-            ],
-        ])."</div></div>";
-         
-         //$display=true;
+        
          $trackreceiving=DetailView::widget([
                 'model' =>$modelRefTrackreceiving,
                 'responsive'=>true, 
@@ -533,7 +487,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                             [
                                 'label'=>'Referred to',
                                 'format'=>'raw',
-                                'value'=>!empty($model->agencytesting) ? $model->agencytesting->name : null,//$model->transactionnum,
+                                'value'=>!empty($model->agencytesting) ? $model->agencytesting->name : null,
                                 'valueColOptions'=>['style'=>'width:30%'], 
                                 'displayOnly'=>true
                             ],
@@ -676,21 +630,9 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                 ],
             ]);
         
-       /* $gridColumnsResults = 
-      function($data) use ($testresult,$model,$rstlId){
-                    $link = '';
-                    $link .= Html::button('<span class="glyphicon glyphicon-upload"></span> Upload Result', ['value'=>"/referrals/attachment/upload_result?referralid=$model->referral_id", 'class' => 'btn btn-success','title' => Yii::t('app', "Upload Result"),'id'=>'btnuploadresult','onclick'=>'addresult(this.value,this.title)']);
-                    if($testresult > 0){
-                        foreach ($testresult as $test) {
-                            $link .= Html::a('<span class="glyphicon glyphicon-save-file"></span> '.$test['filename'],'/referrals/attachment/download?referral_id='.$model->referral_id.'&file='.$test['attachment_id'], ['style'=>'font-size:12px;color:#000077;font-weight:bold;','title'=>'Download Result','target'=>'_self'])."<br>";
-                        }
-                    }
-                    return $link;
-                
-          }   
-        ;*/
+      
         $gridColumnsResults="<div class='row'><div class='col-md-12'>". GridView::widget([
-           'dataProvider' => $testresult,
+            'dataProvider' => $testresult,
             'id'=>'Grid',
             'tableOptions'=>['class'=>'table table-hover table-stripe table-hand'],
             'pjax'=>true,
@@ -749,25 +691,22 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
             'id' => 'tab_referral',
             'items' => [
                 [
-                    'label' => '<i class="fa fa-columns"></i> Logs',
-                    'content' => $gridColumn,//$LogContent,
+                    'label' => 'Logs',
+                    'content' => $this->renderAjax('_notification',['notificationDataProvider'=>$notificationDataProvider]),
                     'active' => $LogActive,
                     'options' => ['id' => 'log'],
-                   // 'visible' => Yii::$app->user->can('access-terminal-configurations')
                 ],
                 [
-                    'label' => '<i class="fa fa-users"></i> Results',
-                    'content' => $gridColumnResult,//$ResultContent,
+                    'label' => 'Results',
+                    'content' => $gridColumnResult,
                     'active' => $ResultActive,
                     'options' => ['id' => 'result'],
-                   // 'visible' => Yii::$app->user->can('access-terminal-configurations')
                 ],
                 [
-                    'label' => '<i class="fa-level-down"></i> Referral Track',
-                    'content' =>$gridColumn2,//$TrackContent ,
+                    'label' => 'Referral Track',
+                    'content' =>$gridColumn2,
                     'active' => $TrackActive,
                     'options' => ['id' => 'referral_track'],
-                   // 'visible' => Yii::$app->user->can('access-terminal-configurations')
                 ]
             ],
         ]);

@@ -1,7 +1,7 @@
 <?php
 
 use yii\helpers\Html;
-use yii\grid\GridView;
+use kartik\grid\GridView;
 
 /* @var $this yii\web\View */
 /* @var $searchModel common\models\referral\CourierSearch */
@@ -9,27 +9,35 @@ use yii\grid\GridView;
 
 $this->title = 'Couriers';
 $this->params['breadcrumbs'][] = $this->title;
+$Button="{update}";
 ?>
 <div class="courier-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
-
     <p>
-        <?= Html::a('Create Courier', ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
+        <?=Html::button('<span class="glyphicon glyphicon-plus"></span> Add Courier', ['value'=>"create", 'class' => 'btn btn-success','title' => Yii::t('app', "Courier"),'id'=>'btncourier','onclick'=>'addcourier(this.value,this.title)']);?>
+    </p
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
-
-            'courier_id',
             'name',
             'date_added',
-
-            ['class' => 'yii\grid\ActionColumn'],
+			[
+                'class' => kartik\grid\ActionColumn::className(),
+                'template' => $Button,
+                'buttons' => [
+                   'update' => function ($url, $model) {
+                        return Html::button('<span class="glyphicon glyphicon-pencil"></span>', ['value' => '/referrals/courier/update?id=' . $model->courier_id, 'onclick' => 'LoadModal(this.title, this.value);', 'class' => 'btn btn-success', 'title' => Yii::t('app', "Update Courier")]);
+                    }, 
+                ],
+            ],
         ],
     ]); ?>
 </div>
+<script type="text/javascript">
+function addcourier(url,title){
+   LoadModal(title,url,'true','600px');
+}
+</script>

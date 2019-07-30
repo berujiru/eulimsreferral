@@ -67,10 +67,11 @@ class CourierController extends Controller
         $model = new Courier();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->courier_id]);
+			Yii::$app->session->setFlash('success', 'Successfully Added!');
+            return $this->redirect(['index']);
         }
 
-        return $this->render('create', [
+        return $this->renderAjax('create', [
             'model' => $model,
         ]);
     }
@@ -87,10 +88,11 @@ class CourierController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->courier_id]);
+			Yii::$app->session->setFlash('success', 'Successfully Updated!');
+            return $this->redirect(['index']);
         }
 
-        return $this->render('update', [
+        return $this->renderAjax('update', [
             'model' => $model,
         ]);
     }
