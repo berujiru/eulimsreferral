@@ -23,6 +23,7 @@ use yii\db\Query;
 use common\models\referral\Statuslogs;
 use common\models\referral\Referraltrackreceiving;
 use common\models\referral\Referraltracktesting;
+use frontend\modules\referrals\template\Referralpdf;
 /**
  * ReferralController implements the CRUD actions for Referral model.
  */
@@ -520,4 +521,34 @@ class ReferralController extends Controller
        // throw new NotFoundHttpException('hayiop');
     }
     
+    public function actionPrintReferral($id){
+        $Printing=new Referralpdf();
+        $Printing->Test($id);
+    }
+    
+    public static function Statuslogs($referralid,$statusid) {
+        if($referralid > 0 && $statusid >0){
+           $stat= new Statuslogs();
+            $stat->referral_id=$referralid;
+            $stat->referralstatus_id=$statusid;
+            $stat->date=date('Y-m-d');
+            $stat->save();
+            $val=1;
+            
+        }else{
+            echo "Empty men!";
+            $val=0;
+        }
+        return $val;
+    }
+    //Check if statuslogs exists
+    public static function Checkstatuslogs($referralid,$statusid){
+        $stat=Statuslogs::find()->where(['referral_id'=>$referralid])->andWhere(['referralstatus_id'=>$statusid])->all();
+        if ($stat){
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
 }
