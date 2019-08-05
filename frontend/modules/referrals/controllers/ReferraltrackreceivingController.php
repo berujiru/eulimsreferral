@@ -10,6 +10,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\db\Query;
 use common\models\referral\Referral;
+use frontend\modules\referrals\controllers\ReferralController;
 
 /**
  * ReferraltrackreceivingController implements the CRUD actions for Referraltrackreceiving model.
@@ -78,8 +79,14 @@ class ReferraltrackreceivingController extends Controller
             $model->receiving_agency_id=Yii::$app->user->identity->profile->rstl_id;
             $model->sample_received_date=$model->referral->sample_received_date;
             $model->save();
-            Yii::$app->session->setFlash('success', 'Successfully Created!');
-            return $this->redirect(['/referrals/referral/view', 'id' => $referralid]);      
+            $test=ReferralController::Checkstatuslogs($referralid, 2);
+            if($test == 0){
+                $status=ReferralController::Statuslogs($referralid,2); // #6 means Uploaded
+            }
+            if($status>0){
+                 Yii::$app->session->setFlash('success', 'Successfully Created!');
+                return $this->redirect(['/referrals/referral/view', 'id' => $referralid]);  
+            }   
         }
 
         

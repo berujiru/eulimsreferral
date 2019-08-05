@@ -40,10 +40,10 @@ foreach($logs as $log){
        $statusongoing ="progress-done";
     }
     
-    if($log->referralstatus_id == 4){
+    if($log->referralstatus_id == 5){
        $statuscompleted ="progress-done";
     }
-    if($log->referralstatus_id == 5){
+    if($log->referralstatus_id == 6){
        $statusuploaded ="progress-done";
     }
 }
@@ -74,7 +74,7 @@ $Session= Yii::$app->session;
 if(empty($model->referral_code)){
     $labelpanel = '<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code;
 } else {
-    $btnPrint = "<a href='/reports/preview?url=/lab/request/print-request?id=".$model->referral_id."' class='btn-sm btn-default' style='color:#000000;margin-left:15px;'><i class='fa fa-print'></i> Print</a>";
+    $btnPrint = "<a href='/referrals/referral/print-referral?id=".$model->referral_id."' class='btn-sm btn-default' style='color:#000000;margin-left:15px;'><i class='fa fa-print'></i> Print</a>";
     $labelpanel = '<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code .' '.$btnPrint;
 }
 

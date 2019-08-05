@@ -8,6 +8,7 @@ use common\models\referral\ReferraltracktestingSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use frontend\modules\referrals\controllers\ReferralController;
 
 /**
  * ReferraltracktestingController implements the CRUD actions for Referraltracktesting model.
@@ -72,8 +73,25 @@ class ReferraltracktestingController extends Controller
             $model->date_created=date('Y-m-d H:i:s');
             $model->receiving_agency_id=$receivingid;
             $model->save();
-            Yii::$app->session->setFlash('success', 'Successfully Created!');
-            return $this->redirect(['/referrals/referral/view', 'id' => $referralid]);
+            $status=ReferralController::Statuslogs($referralid,3); // #3 means Accepted
+            
+            if($model->analysis_started <> ""){
+                $test=ReferralController::Checkstatuslogs($refid, 4);
+                if($test == 0){
+                    $analysisstarted=ReferralController::Statuslogs($refid,4); 
+                }
+            }
+            if($model->analysis_completed <> ""){
+                $test=ReferralController::Checkstatuslogs($refid, 5);
+                if($test == 0){
+                    $analysiscompleted=ReferralController::Statuslogs($refid,5); 
+                }
+            }
+            
+            if($status>0){
+                 Yii::$app->session->setFlash('success', 'Successfully Created!');
+                return $this->redirect(['/referrals/referral/view', 'id' => $referralid]);  
+            } 
           
         }
 
@@ -92,11 +110,22 @@ class ReferraltracktestingController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
+        $refid=$model->referral_id;
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            //return $this->redirect(['view', 'id' => $model->referraltracktesting_id]);
+            if($model->analysis_started <> ""){
+                $test=ReferralController::Checkstatuslogs($refid, 4);
+                if($test == 0){
+                    $analysisstarted=ReferralController::Statuslogs($refid,4); 
+                }
+            }
+            if($model->analysis_completed <> ""){
+                $test=ReferralController::Checkstatuslogs($refid, 5);
+                if($test == 0){
+                    $analysiscompleted=ReferralController::Statuslogs($refid,5); 
+                }
+            }
             Yii::$app->session->setFlash('success', 'Successfully Updated!');
-            return $this->redirect(['/referrals/referral/view', 'id' => $model->referral_id]); 
+            return $this->redirect(['/referrals/referral/view', 'id' => $refid]); 
         }
 
         return $this->renderAjax('update', [
