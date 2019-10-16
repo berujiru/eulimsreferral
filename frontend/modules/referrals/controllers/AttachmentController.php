@@ -14,7 +14,7 @@ use common\models\referral\Referral;
 //use common\components\ReferralComponent;
 use common\components\ReferralFunctions;
 use linslin\yii2\curl;
-
+use frontend\modules\referrals\controllers\ReferralController;
 /**
  * AttachmentController implements the CRUD actions for Attachment model.
  */
@@ -325,8 +325,13 @@ class AttachmentController extends Controller
                     $response = curl_exec($ch);
 
                     if($response == 1){
+                        $test=ReferralController::Checkstatuslogs($referralId, 6);
+                        if($test == 0){
+                            $status=ReferralController::Statuslogs($referralId,6); // #6 means Uploaded
+                        }
                         Yii::$app->session->setFlash('success', "Test result successfully uploaded.");
                         return $this->redirect(['/referrals/referral/view','id'=>$referralId]);
+                        
                     } elseif($response == 0) {
                         Yii::$app->session->setFlash('error', "Attachment invalid!");
                         return $this->redirect(['/referrals/referral/view','id'=>$referralId]);

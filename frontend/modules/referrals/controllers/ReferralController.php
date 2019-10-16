@@ -23,6 +23,7 @@ use yii\db\Query;
 use common\models\referral\Statuslogs;
 use common\models\referral\Referraltrackreceiving;
 use common\models\referral\Referraltracktesting;
+use frontend\modules\referrals\template\Referralpdf;
 /**
  * ReferralController implements the CRUD actions for Referral model.
  */
@@ -99,17 +100,13 @@ class ReferralController extends Controller
                 $notification= Notification::find()->where('referral_id =:referralId',[':referralId'=>$id])->orderBy(['notification_type_id' => SORT_ASC])->all();
                 $statuslogs= Statuslogs::find()->where('referral_id =:referralId',[':referralId'=>$id])->all();
                 
-                //$customer = Customer::findOne($model->customer_id);
-
                 //set third parameter to 1 for attachment type deposit slip
                 $deposit = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,1),true);
                 //set third parameter to 2 for attachment type OR
                 $or = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,2),true);
                 //set third parameter to 3 for attachment type test result
                 $testresult = json_decode($function->getAttachment($id,Yii::$app->user->identity->profile->rstl_id,3),true);
-              /*echo "<pre>";
-                print_r($testresult);
-                echo "</pre>"; */
+             
                 if($testresult <> 0){
                     $testresultDataProvider = new ArrayDataProvider([
                         'allModels' => $testresult,
@@ -171,7 +168,6 @@ class ReferralController extends Controller
                     'discounted' => $discounted,
                     'total' => $total,
                     'countSample' => count($samples),
-                    //'notification' => $noticeDetails,
                     'depositslip' => $deposit,
                     'officialreceipt' => $or,
                     'testresult' => $testresultDataProvider,
@@ -191,9 +187,6 @@ class ReferralController extends Controller
             return $this->redirect(['/referrals/referral']);
         }
 
-        /*return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);*/
     }
 
     //view notification
@@ -553,4 +546,34 @@ class ReferralController extends Controller
         return $agency;
     }
     
+    public function actionPrintReferral($id){
+        $Printing=new Referralpdf();
+        $Printing->Test($id);
+    }
+    
+    public static function Statuslogs($referralid,$statusid) {
+        if($referralid > 0 && $statusid >0){
+           $stat= new Statuslogs();
+            $stat->referral_id=$referralid;
+            $stat->referralstatus_id=$statusid;
+            $stat->date=date('Y-m-d');
+            $stat->save();
+            $val=1;
+            
+        }else{
+            echo "Empty men!";
+            $val=0;
+        }
+        return $val;
+    }
+    //Check if statuslogs exists
+    public static function Checkstatuslogs($referralid,$statusid){
+        $stat=Statuslogs::find()->where(['referral_id'=>$referralid])->andWhere(['referralstatus_id'=>$statusid])->all();
+        if ($stat){
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
 }
