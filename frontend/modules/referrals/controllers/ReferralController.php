@@ -10,10 +10,10 @@ use common\models\referral\Analysis;
 use common\models\referral\Notification;
 use common\models\referral\Customer;
 use common\models\referral\Samplecode;
+use common\models\referral\Agency;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use common\components\ReferralComponent;
 use common\components\ReferralFunctions;
 use linslin\yii2\curl;
 use yii\helpers\Json;
@@ -52,9 +52,15 @@ class ReferralController extends Controller
         $searchModel = new ReferralSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
+        $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+        $customers = $this->listCustomers();
+        $agency = $this->listAgency();
+
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'customers' => $customers,
+            'agencies' => $agency,
         ]);
     }
 
@@ -514,7 +520,8 @@ class ReferralController extends Controller
             $model= new Referraltrackreceiving();
             return $model;
         }
-    }  
+    }
+
     protected function findModeltestingtrack($referral_id)
     {
         $tracking = Referraltracktesting::find()->where('referral_id =:referralId',[':referralId'=>$referral_id])->one();
@@ -526,6 +533,24 @@ class ReferralController extends Controller
             return $newModel;
         }
        // throw new NotFoundHttpException('hayiop');
+    }
+
+    protected function listCustomers()
+    {
+        $customer = ArrayHelper::map(Customer::find()->all(), 'customer_id',
+            function($customer, $defaultValue) {
+                return $customer->customer_name;
+        });
+        return $customer;
+    }
+
+    protected function listAgency()
+    {
+        $agency = ArrayHelper::map(Agency::find()->all(), 'agency_id',
+            function($agency, $defaultValue) {
+                return $agency->name;
+        });
+        return $agency;
     }
     
 }

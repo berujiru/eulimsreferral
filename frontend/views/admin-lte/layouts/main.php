@@ -4,6 +4,11 @@ use common\modules\profile\ProfileAsset;
 /* @var $this \yii\web\View */
 /* @var $content string */
 
+/*if(!isset(Yii::$app->user->identity->profile->rstl_id)){
+  //return 'Session time out!';
+  return $this->redirect(['/site/login']);
+}*/
+
 if (Yii::$app->controller->action->id === 'login') { 
 /**
  * Do not use this code in your template. Remove it. 

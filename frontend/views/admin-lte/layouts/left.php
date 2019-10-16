@@ -87,12 +87,13 @@ if(Yii::$app->user->isGuest){
         foreach ($Menu as $MenuItems => $Item) {
             $modulePermission="access-".strtolower($Item->PackageName);
             $MenuItems= PackageDetails::find()->orderBy(['Package_Detail'=>SORT_ASC])->where(['PackageID'=>$Item->PackageID])->all();
-            $ItemSubMenu[]=[
+            /*$ItemSubMenu[]=[
                 'label' => '<img src="/images/icons/dashboard.png" style="width:20px">  <span>' . 'Dashboard' . '</span>', 
                 'icon'=>' " style="display:none;width:0px"',
                 'url'=>["/".strtolower($Item->PackageName)],
                 'visible'=>true
-            ];
+            ];*/
+            $ItemSubMenu[] = [];
           
             //$ItemSubMenu[]=[];
             foreach ($MenuItems as $MenuItem => $mItem){
@@ -135,17 +136,26 @@ if(Yii::$app->user->isGuest){
             
             $MainIcon=substr($Item->icon,6,strlen($Item->icon)-6);
 			$showNotification = (stristr($Item->PackageName, 'referral')) ? '&nbsp;&nbsp;<span class="label label-danger" id="count_noti_menu">'.$all_notification.'</span>' : '';
+
+            if(strpos($Item->PackageName, 'pstc') !== false){
+                $is_pstc_package = strtoupper($Item->PackageName);
+            } else {
+                $is_pstc_package = ucwords($Item->PackageName);
+            }
+
             $ItemMenu[]=[
-                'label' => '<img src="/images/icons/' .$Item->icon. '.png" style="width:20px">  <span>' . ucwords($Item->PackageName) . $showNotification . '</span>', 
+                'label' => '<img src="/images/icons/' .$Item->icon. '.png" style="width:20px">  <span>' . $is_pstc_package . $showNotification . '</span>', 
                 'icon'=>' " style="display:none;width:0px"',
-                'url' => ["/".$Item->PackageName."/index"],
+                //'url' => ["/".$Item->PackageName."/index"],
+                //'url' => ["/".$Item->PackageName."#"],
+                'url' => ["/#"],
                 'items'=>$ItemSubMenu,
                 'visible'=>Yii::$app->user->can($modulePermission)
             ]; 
             unset($ItemSubMenu);
         }
         // Fixed Sub Menu Item
-        $SubItem=[
+        /*$SubItem=[
             'label' => '<img src="/images/icons/admin.png" style="width:20px">  <span>System</span>', 
             'icon'=>' " style="display:none;width:0px"',
             'url' => ["#"],
@@ -176,8 +186,8 @@ if(Yii::$app->user->isGuest){
                 ]
             ],
             'visible'=>Yii::$app->user->can('access-system')
-        ];
-        array_push($ItemMenu, $SubItem);
+        ];*/
+        //array_push($ItemMenu, $SubItem);
         ?>
          <?php echo dmstr\widgets\Menu::widget(
             [

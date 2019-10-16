@@ -7,7 +7,7 @@ use Yii;
 /**
  * This is the model class for table "tbl_pstc".
  *
- * @property int $id
+ * @property int $pstc_id
  * @property int $agency_id
  * @property string $name
  */
@@ -22,21 +22,12 @@ class Pstc extends \yii\db\ActiveRecord
     }
 
     /**
-     * @return \yii\db\Connection the database connection used by this AR class.
-     */
-    public static function getDb()
-    {
-        return Yii::$app->get('referraldb');
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['id'], 'required'],
-            [['id', 'agency_id'], 'integer'],
+            [['agency_id'], 'integer'],
             [['name'], 'string', 'max' => 255],
         ];
     }
@@ -47,7 +38,7 @@ class Pstc extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
+            'pstc_id' => 'Pstc ID',
             'agency_id' => 'Agency ID',
             'name' => 'Name',
         ];

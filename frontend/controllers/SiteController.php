@@ -24,6 +24,7 @@ use common\models\inventory\Producttype;
 use yii\data\ActiveDataProvider;
 use yii\data\SqlDataProvider;
 use DateTime;
+use common\models\referral\Loginlogs;
 
 use yii\base\Model;
 use mysqli;
@@ -107,240 +108,9 @@ class SiteController extends Controller
      * @return mixed
      */
     public function actionIndex(){
-        
-        global $tmpLabId;
-        /*$Payment_details=[];
-        $Payment_detail=[
-            'request_ref_num'=>"R9-072018-MET-0230",
-            'rrn_date_time'=>"2018-10-09 10:25:12",
-            'amount'=>3200
-        ];
-        array_push($Payment_details, $Payment_detail);
-        
-        $TransactDetails=[
-            'transaction_num'=>"R9-072018-MET-0230",
-            'customer_code'=>"11-011",
-            'email'=>"nolansunico@gmail.com",
-            'collection_type'=>"Testing",
-            'collection_code'=>'03-200',
-            'order_date'=>"2018-10-09",
-            'agency_code'=>"R9",
-            'total_amount'=>3200.00,
-            'payment_details'=>$Payment_details
-        ];
-        Yii::$app->response->format= yii\web\Response::FORMAT_JSON;
-        return $TransactDetails;
-        exit;
-         * 
-         */
-     //   $dashDetails = new DashboardDetails();
-   //     $sqlQueryString = 'Call eulims_lab.spGetDashboardDetails('. 0 .','. 11 . ',' . 0 .',' . 0 .');'; 
-   //     $mysqli = new mysqli('localhost', 'eulims', 'eulims', 'eulims_lab');
-   //     $sql = $sqlQueryString; 
-   //     $res = $mysqli->query($sql);
-             //   $dashDetails = $res->fetch_all(MYSQLI_ASSOC);
-       
-     //    $dashDetails = Yii::$app->db->createCommand('Call eulims_lab.spGetDashboardDetails('. 0 .','. 11 . ',' . 0 .',' . 0 .');')->queryAll();
 
-     //    foreach ($dashDetails as $dash) {
-           
-      //      array_push($listLab,$dash->labname);
-       //  }
-      //  $listLab='';
-        $now = new DateTime();
-
-        $currentyear= $now->format('Y');
-        $currentyear = 2018;
-        $curYearValue =0;
-        $strcurrentyear = (string)$currentyear;
-        $dashArray = Yii::$app->db->createCommand('Call eulims_lab.spGetDashboardDetails('. 0 .','. 11 . ',' . 0 .',' . 0 .');')->queryAll();
+        return $this->render('index');
         
-        $listLab=array();
-        $listLabCount=array();
-        $listLabColor=array();
-        $listYear=array();
-        $listLabCode=array();
-        $datatotal=array();
-        
-        $mainLaboratoryList=array();
-        
-        
-      //  $dataTop10 =array();
-        
-       // $columnArray[] = '';// 'natureofcollection';
-        foreach ($dashArray as $col)
-            {
-               // $columnArray[]=$col['labname'];
-                array_push($listLab,$col['labname']);
-                array_push($listLabCount,$col['countperlab']);
-                array_push($listLabColor,$col['labcolor']);
-                 array_push($listLabCode,$col['labcode']);
-                
-                $mainLaboratoryRec=array();
-                $mainLaboratoryRec['labid']=$col['lab_id'];
-                $mainLaboratoryRec['labname']=$col['labname'];
-                $mainLaboratoryRec['labcolor']=$col['labcolor'];
-                $mainLaboratoryRec['labcode']=$col['labcode'];
-                $mainLaboratoryRec['labicon']=$col['labicon'];
-                array_push($mainLaboratoryList,$mainLaboratoryRec);
-                 
-            }
-            
-         
-        $arrayYear = Yii::$app->db->createCommand('Call eulims_lab.spGetDashboardDetails('. 2 .','. 11 . ',' . 0 .',' . 0 .');')->queryAll();
-        $index = 0;
-        foreach ($arrayYear as $colYear)
-            {
-               // $columnArray[]=$col['labname'];
-                array_push($listYear,$colYear['iyear']);
-                if($currentyear==$colYear['iyear'])
-                {
-                    $curYearValue=$index;
-                }
-                $index++;
-        
-            }
-       // $dashDetails = Yii::$app->db->createCommand($sqlQueryString);
-        
-        
-        // $dataTop10 = Yii::$app->db->createCommand('Call eulims_lab.spGetDashboardDetails('. 1 .','. 11 . ',' . 2018 .',' . 1 .');')->queryAll();
-        
-        
-        
-   //     $listLab = array("Chemical", "Microbiology", "Metrology", "Rubber", "Test Lab", "Test Lab2", "Test Lab3","New Members","New Referrals");
-     //   $listLabCode = array("Chemical", "Microbiology", "Metrology", "Rubber", "TestLab", "TestLab2", "TestLab3","","");
-     //   $listLabCount = array(400, 500, 600, 700, 800, 900, 1000,6,8);
-     //   $listLabColor = array("red", "green", "blue", "orange", "aqua", "purple", "orange","gray","gray");
-        $listLabIcons = array("fa fa-comments-o", "fa fa-thumbs-o-up", "fa fa-bookmark-o", "fa fa-comments-o", "fa fa-bookmark-o", "fa fa-comments-o", "fa fa-bookmark-o","fa fa-bookmark-o","fa fa-bookmark-o");
-   //     $listYear = array("2015","2016","2017");
-       
-        $listColumn = array("Rank", "Test Name", "No. of Tests");
-        
-        $dataGraphCalibration=array();
-        
-       $arrayGraphMain=array();
-       
-       $arrayGraphPieQuery = Yii::$app->db->createCommand('Call eulims_lab.spGetChartDashboardDetails('. 4 .','. 11 . ',' . $currentyear .',' . 2 .');')->queryAll();
-       $arrayGraphPieMain=array();
-       foreach ($arrayGraphPieQuery as $rows)
-            {
-                $arrayGraphPieRec=array();
-                $arrayGraphPieRec['name']= $rows['labname'];
-                $arrayGraphPieRec['y']= (int)$rows['labtotal'];
-                $arrayGraphPieRec['slice']= 'true';
-                $arrayGraphPieRec['color']= $rows['labcolor'];
-                array_push($arrayGraphPieMain,$arrayGraphPieRec);
-            }
-            
-       
-        foreach ($listYear as $colYear)
-        {
-       
-            $arrayGraph = Yii::$app->db->createCommand('Call eulims_lab.spGetChartDashboardDetails('. 0 .','. 11 . ',' . $colYear .',' . 2 .');')->queryAll();
-            
-      
-            foreach ($arrayGraph as $rows)
-            {
-                $arrayGraphRec=array();
-                $arrayGraphRec['labid']= $rows['labid'];
-                $arrayGraphRec['labtotal']=(int) $rows['labtotal'];
-                $arrayGraphRec['year']= $rows['year'];
-                $arrayGraphRec['labname']= $rows['labname'];
-                $arrayGraphRec['labcolor']= $rows['labcolor'];
-                array_push($arrayGraphMain,$arrayGraphRec);
-            }
-            
-            
-            
-           
-        }
-        
-        $index = 0;
-        
-         $dataGraphCalibrationTmpList=array();
-        foreach ($mainLaboratoryList as $colMain)
-            {
-            $dataGraphCalibrationTmpRec=array();
-                $dataGraphCalibrationTmpRec['type']='column';
-                $dataGraphCalibrationTmpRec['name']=$colMain['labname'];
-             
-              
-               
-                $NUM =$colMain['labid'];;
-               
-                $filtered = array_filter($arrayGraphMain, function($item) use($NUM){
-                    return $item['labid'] == $NUM;
-                });
-          
-                   
-                $datatotal =array_column($filtered, 'labtotal');
-                $dataGraphCalibrationTmpRec['data']=$datatotal;
-                $dataGraphCalibrationTmpRec['color']=$colMain['labcolor'];
-                
-                array_push($dataGraphCalibrationTmpList,$dataGraphCalibrationTmpRec);
-               
-             //  array_push($dataGraphCalibration,$dataGraphCalibrationTmp);
-                
-        
-            }
-            
-            
-            
-    
-        
-        $dataGraphCalibration=$dataGraphCalibrationTmpList;
-        
-            //remove this
-   //    $dataGraphCalibration = array(
-    //      array('type'=>'column', 'name' => 'Chemical', 'data' => array(50, 60, 70), 'color' => 'red'),
-    //       array('type'=>'column','name' => 'Microbiology', 'data' => array(150, 120, 140), 'color' => 'green'),
-    //       array('type'=>'column','name' => 'Metrology', 'data' => array(200, 180, 210), 'color' => 'blue'),
-    //      array('type'=>'column','name' => 'Rubber', 'data' => array(250, 240, 280), 'color' => 'orange'),
-   //        array('type'=>'column','name' => 'TestLab', 'data' => array(300, 300, 350), 'color' => 'aqua')
-   //  );
-        
-        $dataGraphPie2017 = array(
-                array('name' => 'Chemical', 'y' => 20, 'sliced' => 'true','color'=>'red'),
-                array('name' => 'Microbiology', 'y' => 50, 'sliced' => 'true','color'=>'green'),
-                array('name' => 'Metrology', 'y' => 15, 'sliced' => 'true','color'=>'blue'),
-                array('name' => 'Rubber', 'y' => 15, 'sliced' => 'true','color'=>'orange'),
-            );
-        
-       
-     
-        
-        $dataTop10 = new SqlDataProvider([
-            'sql' => 'Call eulims_lab.spGetDashboardDetails(1,11,' . $strcurrentyear . ',1);',
-            
-            'totalCount' => 10,
-           'pagination' => [
-                'pageSize' => 0
-            ],
-           
-        ]);
-        
-       //  print_r($dataGraphCalibrationTmpList);
-        // exit;
-         
-        $datainitial = array();
-        $datainitial['listlab']=$listLab;
-        $datainitial['listlabcode']=$listLabCode;
-        $datainitial['listlabcount']=$listLabCount;
-        $datainitial['listlabcolor']=$listLabColor;
-        $datainitial['listlabicons']=$listLabIcons;
-        $datainitial['listyear']=$listYear;
-        $datainitial['listcolumn']=$listColumn;
-        $datainitial['datatop10']=$dataTop10;
-        
-        $datainitial['column'] = $dataGraphCalibration;
-        $datainitial['pie'] = $arrayGraphPieMain;//$dataGraphPie2017; 
-        $datainitial['arrmain'] =$datatotal;// $arrayGraphMain; 
-        
-       // return  print_r($dataGraphCalibration);exit;
-        
-        return $this->render('index', array('data'=>$datainitial,'curYearValue'=>$curYearValue));
-     
-     //   return $this->render('index');
     }
 
     /**
@@ -356,7 +126,17 @@ class SiteController extends Controller
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+			
+			$loginlogs = new Loginlogs();
+			$loginlogs->user_id = (int) Yii::$app->user->identity->profile->user_id;
+			$loginlogs->agency_id = (int) Yii::$app->user->identity->profile->rstl_id;
+			$loginlogs->login_date = date('Y-m-d H:i:s');
+			
+			if($loginlogs->save()){
+				return $this->goBack();
+			} else {
+				Yii::$app->user->logout();
+			}
         } else {
             return $this->render('login', [
                 'model' => $model,

@@ -30,7 +30,7 @@ class Testnamemethod extends \yii\db\ActiveRecord
      */
     public static function getDb()
     {
-        return Yii::$app->get('labdb');
+        return Yii::$app->get('eulimsdb');
     }
 
     /**

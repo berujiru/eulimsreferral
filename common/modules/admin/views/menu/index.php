@@ -12,7 +12,7 @@ use common\components\Functions;
 $this->title = Yii::t('rbac-admin', 'Menus');
 $this->params['breadcrumbs'][] = $this->title;
 $func=new Functions();
-$Header="Port Management System<br>";
+$Header="<br>";
 $Header.="List of Menus";
 ?>
 <div class="menu-index">

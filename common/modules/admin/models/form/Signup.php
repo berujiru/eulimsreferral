@@ -22,6 +22,7 @@ class Signup extends Model
     public $middleinitial;
     public $lab_id;
     public $rstl_id;
+	public $pstc_id;
     /**
      * @inheritdoc
      */
@@ -44,7 +45,7 @@ class Signup extends Model
             ['designation', 'required','message'=>'Designation is required!'],
             ['rstl_id', 'required','message'=>'RSTL is required!'],
             ['lab_id', 'required','message'=>'Laboratory is required!'],
-            [['rstl_id','lab_id'], 'integer'],
+            [['rstl_id','lab_id','pstc_id'], 'integer'],
             
             [['password','verifypassword'], 'required'],
             [['password', 'verifypassword'], 'string', 'min' => 6],
@@ -61,7 +62,8 @@ class Signup extends Model
             'verifypassword'=>'Verify Password',
             'middleinitial'=>'Middle Name',
             'rstl_id'=>'RSTL',
-            'lab_id'=>'Laboratory'
+            'lab_id'=>'Laboratory',
+			'pstc_id'=>'PSTC'
         ];
     }
     /**
@@ -79,23 +81,24 @@ class Signup extends Model
             $user->generateAuthKey();
             if ($user->save()) {
                 // Ceate default Profile
-                $Profile= Profile::find()->where(['user_id'=>$user->user_id])->one();
-                if(!$Profile){// No Profile Record yet
-                    $Profile=new Profile();
-                    $Profile->user_id=$user->user_id;
-                    $Profile->lastname= $this->lastname;
-                    $Profile->firstname= $this->firstname;
-                    $Profile->designation= $this->designation;
-                    $Profile->lab_id=$this->lab_id;
-                    $Profile->rstl_id= $this->rstl_id;
+                $profile=Profile::find()->where(['user_id'=>$user->user_id])->one();
+                if(!$profile){// No profile Record yet
+                    $profile=new Profile();
+                    $profile->user_id=$user->user_id;
+                    $profile->lastname=$this->lastname;
+                    $profile->firstname=$this->firstname;
+                    $profile->designation=$this->designation;
+                    $profile->lab_id=$this->lab_id;
+                    $profile->rstl_id=$this->rstl_id;
+					$profile->pstc_id=$this->pstc_id;
                     if(trim($this->middleinitial)!=''){
                         $initial=strtoupper(substr($this->middleinitial, 0, 1)).". ";
                     }else{
                         $initial="";
                     }
-                    $Profile->middleinitial= $this->middleinitial;
-                    $Profile->fullname= $this->firstname .' '.$initial.$this->lastname;
-                    $Profile->save();
+                    $profile->middleinitial= $this->middleinitial;
+                    $profile->fullname= $this->firstname .' '.$initial.$this->lastname;
+                    $profile->save();
                 }
                 return $user;
             }

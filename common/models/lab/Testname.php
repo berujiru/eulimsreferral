@@ -30,7 +30,7 @@ class Testname extends \yii\db\ActiveRecord
      */
     public static function getDb()
     {
-        return Yii::$app->get('labdb');
+        return Yii::$app->get('eulimsdb');
     }
 
     /**
@@ -66,5 +66,13 @@ class Testname extends \yii\db\ActiveRecord
     public function getTestnameMethods()
     {
         return $this->hasMany(TestnameMethod::className(), ['testname_id' => 'testname_id']);
+    }
+	
+	/**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSampletypes()
+    {
+        return $this->hasMany(Sampletypetestname::className(), ['testname_id' => 'testname_id']);
     }
 }

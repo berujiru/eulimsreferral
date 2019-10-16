@@ -4,10 +4,10 @@ use yii\helpers\Html;
 use kartik\grid\GridView;
 use kartik\tabs\TabsX;
 use yii\helpers\Url;
-use common\models\lab\Lab;
+use common\models\referral\Lab;
 use yii\helpers\ArrayHelper;
-use common\models\lab\LabManagerSearch;
-use common\models\lab\discountSearch;
+use common\models\referral\LabManagerSearch;
+//use common\models\lab\discountSearch;
 use common\models\system\Labrbac;
 use common\components\Functions;
 
@@ -92,7 +92,7 @@ $LaboratoryContent="<div class='row'><div class='col-md-12'>". GridView::widget(
                 ],
                 'filterInputOptions' => ['placeholder' => 'Lab Code', 'lab_id' => 'grid-products-search-category_type_id']
             ],
-            [
+            /* [
                 'attribute' => 'labcount',
                 'label' => 'Laboratory Count',
                 'value' => function($model) {
@@ -105,7 +105,7 @@ $LaboratoryContent="<div class='row'><div class='col-md-12'>". GridView::widget(
                 'value' => function($model) {
                     return $model->nextrequestcode ? $model->nextrequestcode : '<No Request Code>';
                 }
-            ],
+            ], */
             [
                 'class'=>'kartik\grid\BooleanColumn',
                 'attribute' => 'active',
@@ -207,7 +207,7 @@ $TechnicalManagerContent=GridView::widget([
             ],
         ],
     ]);
-
+/*
 $searchModel = new discountSearch();
 $dataProvider3 = $searchModel->search(Yii::$app->request->queryParams);
 $DiscountContent=GridView::widget([
@@ -270,7 +270,7 @@ $DiscountContent=GridView::widget([
                
             ],
         ],
-    ]);
+    ]); */
 ?>
 <div class="lab-index">
     <div class="panel panel-primary">
@@ -299,13 +299,13 @@ $DiscountContent=GridView::widget([
                         'options' => ['id' => 'manager_config'],
                        // 'visible' => Yii::$app->user->can('access-terminal-configurations')
                     ],
-                    [
+                   /* [
                         'label' => '<i class="fa-level-down"></i> Discounts',
                         'content' =>$DiscountContent ,
                         'active' => $DiscActive,
                         'options' => ['id' => 'discount_config'],
                        // 'visible' => Yii::$app->user->can('access-terminal-configurations')
-                    ],
+                    ], */
                 ],
             ]);
     ?>

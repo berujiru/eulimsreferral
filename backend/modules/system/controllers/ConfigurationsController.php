@@ -3,10 +3,10 @@
 namespace backend\modules\system\controllers;
 
 use Yii;
-use common\models\lab\Lab;
+use common\models\referral\Lab;
 use common\models\lab\RstlLab;
-use common\models\lab\LabSearch;
-use common\models\lab\LabManagerSearch;
+use common\models\referral\LabSearch;
+use common\models\referral\LabManagerSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -77,9 +77,9 @@ class ConfigurationsController extends Controller
             \Yii::$app->session['config-item']=1;
             return $this->redirect(['/system/configurations']);
         } else {
-            $model->labcount=0;
+            //$model->labcount=0;
             $model->active=0;
-            $model->nextrequestcode='';
+            //$model->nextrequestcode='';
             if(\Yii::$app->request->isAjax){
                 return $this->renderAjax('create', [
                     'model' => $model,

@@ -11,6 +11,7 @@ use common\models\referral\Analysis;
 use common\models\referral\Testbid;
 use common\models\referral\Bidnotification;
 use common\models\referral\Agency;
+use common\components\ReferralFunctions;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -403,12 +404,120 @@ class BidController extends Controller
         $noticeCount = Bidnotification::find()->where('referral_id =:referralId AND recipient_agency_id =:agencyId AND bid_notification_id =:noticeId',[':referralId'=>$referralId,':agencyId'=>$agencyId,':noticeId'=>$noticeId])->count();
 
         if($referralId > 0 && $noticeId > 0 && $seen == 1 && $noticeCount > 0){
+			$function = new ReferralFunctions();
+			
             $referral = $this->findReferral($referralId);
-            $bid = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:agencyId',[':referralId'=>$referralId,':agencyId'=>$agencyId])->count();
-            $samples = Sample::find()->where('referral_id =:referralId',[':referralId'=>$referralId]);
-            $agency = $this->findAgency($agencyId);
+			$checkOwner = $function->checkOwner($referralId,$agencyId);
+			$modelBidNotification = Bidnotification::findOne($noticeId);
+			
+			if($checkOwner == 1){
+				$queryBid = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:bidderAgencyId',[':referralId'=>$referralId,':bidderAgencyId'=>$modelBidNotification->postedby_agency_id]);
+				$countBid = $queryBid->count();
+				$bidding = $queryBid->one();
+				$bidProvider = new ActiveDataProvider([
+					'query' => $queryBid,
+					'pagination' => false,
+				]);
+				
+				$testBids = Testbid::find()->where('referral_id =:referralId AND bidder_agency_id =:bidderAgencyId AND bid_id =:bidId',[':referralId'=>$referralId,':bidderAgencyId'=>$bidding->bidder_agency_id,':bidId'=>$bidding->bid_id]);
+				$testbidDataProvider = new ActiveDataProvider([
+					'query' => $testBids,
+					'pagination' => false,
+				]);
+				
+				$subtotal = $testBids->sum('fee');
+				$discounted = $subtotal * ($referral->discount_rate/100);
+				$total = $subtotal - $discounted;
+				
+				$samples = Sample::find()->where('referral_id =:referralId AND receiving_agency_id =:receivingAgencyId',[':referralId'=>$referralId,':receivingAgencyId'=>$agencyId]);
+				$sampleDataprovider = new ActiveDataProvider([
+					'query' => $samples,
+					'pagination' => [
+						'pageSize' => 20,
+					],
+				]);
+				
+			} else {
+				$bid = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:agencyId',[':referralId'=>$referralId,':agencyId'=>$agencyId])->count();
+				$samples = Sample::find()->where('referral_id =:referralId AND receiving_agency_id =:receivingAgencyId',[':referralId'=>$referralId,':receivingAgencyId'=>$referral->receiving_agency_id]);
+				
+				$analysis = Analysis::find()
+					->joinWith('sample',false)
+					->where('tbl_sample.referral_id =:referralId',[':referralId'=>$referralId])
+					->orderBy('sample_id');
 
-            $modelBidNotification = Bidnotification::findOne($noticeId);
+				$analysisDataprovider = new ActiveDataProvider([
+					'query' => $analysis,
+					'pagination' => [
+						'pageSize' => 20,
+					],
+				]);
+
+				$sampleDataprovider = new ActiveDataProvider([
+					'query' => $samples,
+					'pagination' => [
+						'pageSize' => 20,
+					],
+				]);
+
+				$list_testbid = 'test_bids_'.$referralId;
+				$subtotal = 0;
+				$discounted = 0;
+				$total = 0;
+				if(!isset($_SESSION[$list_testbid]) || empty($_SESSION[$list_testbid])){
+					if($bid > 0){
+						$testBids = Testbid::find()->where('referral_id =:referralId AND bidder_agency_id =:bidderAgencyId',[':referralId'=>$referralId,':bidderAgencyId'=>$agencyId]);
+
+						$testbidDataProvider = new ActiveDataProvider([
+							'query' => $testBids,
+							'pagination' => false,
+						]);
+						
+						$subtotal = $testBids->sum('fee');
+						$discounted = $subtotal * ($referral->discount_rate/100);
+						$total = $subtotal - $discounted;
+					} else {
+						$testbidDataProvider = new ArrayDataProvider([
+							//'key'=>'analysis_id',
+							'allModels' => [],
+							'pagination' => [
+								'pageSize' => 10,
+							],
+						]);
+					}
+				} else {
+					$listTestbid = [];
+					$sum_fees = [];
+					//ksort($_SESSION[$list_testbid]); //sort array key in ascending order so that analysis_id will be sorted
+					foreach($_SESSION[$list_testbid] as $testbid){
+						$analysis = Analysis::find()->where('analysis_id =:analysisId',[':analysisId'=>$testbid['analysis_id']])->one();
+						$raw = array(
+							'sample_id' => $analysis->sample_id,
+							'sample_name' => $analysis->sample->sample_name,
+							//'sample_code' => $analysis->sample->sample_code,
+							'analysis_id'=> $analysis->analysis_id,
+							'test_name' => $analysis->testname->test_name,
+							'method' => $analysis->methodreference->method,
+							'reference' => $analysis->methodreference->reference,
+							'fee' => $testbid['analysis_fee']
+						);
+						//asort($raw); //sort array key in ascending order so that analysis_id will be sorted
+						array_push($listTestbid, $raw);
+						array_push($sum_fees, $testbid['analysis_fee']);
+					}
+					asort($listTestbid);
+
+					$subtotal = array_sum($sum_fees);
+					$discounted = $subtotal * ($referral->discount_rate/100);
+					$total = $subtotal - $discounted;
+
+					$testbidDataProvider = new ArrayDataProvider([
+						'key'=>'analysis_id',
+						'allModels' => $listTestbid,
+						'pagination' => false,
+					]);
+				}
+			}
 
             if($modelBidNotification->seen == 0){
                 $modelBidNotification->seen = 1;
@@ -423,96 +532,41 @@ class BidController extends Controller
             Yii::$app->session->setFlash('error', "Not a valid referral request!");
             return $this->redirect(['/referrals/bidnotification']);
         }
-
-        $analysis = Analysis::find()
-            ->joinWith('sample',false)
-            ->where('tbl_sample.referral_id =:referralId',[':referralId'=>$referralId])
-            ->orderBy('sample_id');
-
-        $analysisDataprovider = new ActiveDataProvider([
-            'query' => $analysis,
-            'pagination' => [
-                'pageSize' => 20,
-            ],
-        ]);
-
-        $sampleDataprovider = new ActiveDataProvider([
-            'query' => $samples,
-            'pagination' => [
-                'pageSize' => 20,
-            ],
-        ]);
-
-        $list_testbid = 'test_bids_'.$referralId;
-        $subtotal = 0;
-        $discounted = 0;
-        $total = 0;
-        if(!isset($_SESSION[$list_testbid]) || empty($_SESSION[$list_testbid])){
-            if($bid > 0){
-                $testBids = Testbid::find()->where('referral_id =:referralId AND bidder_agency_id =:bidderAgencyId',[':referralId'=>$referralId,':bidderAgencyId'=>$agencyId]);
-
-                $testbidDataProvider = new ActiveDataProvider([
-                    'query' => $testBids,
-                    'pagination' => false,
-                ]);
-                
-                $subtotal = $testBids->sum('fee');
-                $discounted = $subtotal * ($referral->discount_rate/100);
-                $total = $subtotal - $discounted;
-            } else {
-                $testbidDataProvider = new ArrayDataProvider([
-                    //'key'=>'analysis_id',
-                    'allModels' => [],
-                    'pagination' => [
-                        'pageSize' => 10,
-                    ],
-                ]);
-            }
-        } else {
-            $listTestbid = [];
-            $sum_fees = [];
-            //ksort($_SESSION[$list_testbid]); //sort array key in ascending order so that analysis_id will be sorted
-            foreach($_SESSION[$list_testbid] as $testbid){
-                $analysis = Analysis::find()->where('analysis_id =:analysisId',[':analysisId'=>$testbid['analysis_id']])->one();
-                $raw = array(
-                    'sample_id' => $analysis->sample_id,
-                    'sample_name' => $analysis->sample->sample_name,
-                    //'sample_code' => $analysis->sample->sample_code,
-                    'analysis_id'=> $analysis->analysis_id,
-                    'test_name' => $analysis->testname->test_name,
-                    'method' => $analysis->methodreference->method,
-                    'reference' => $analysis->methodreference->reference,
-                    'fee' => $testbid['analysis_fee']
-                );
-                //asort($raw); //sort array key in ascending order so that analysis_id will be sorted
-                array_push($listTestbid, $raw);
-                array_push($sum_fees, $testbid['analysis_fee']);
-            }
-            asort($listTestbid);
-
-            $subtotal = array_sum($sum_fees);
-            $discounted = $subtotal * ($referral->discount_rate/100);
-            $total = $subtotal - $discounted;
-
-            $testbidDataProvider = new ArrayDataProvider([
-                'key'=>'analysis_id',
-                'allModels' => $listTestbid,
-                'pagination' => false,
-            ]);
-        }
-
-        return $this->render('viewbid', [
-            //'model' => $model,
-            'countBid' => $bid,
-            'referralId' => $referralId,
-            'sampleDataProvider'=> $sampleDataprovider,
-            'analysisDataProvider'=> $analysisDataprovider,
-            'testbidDataProvider'=> $testbidDataProvider,
-            'subtotal' => $subtotal,
-            'discounted' => $discounted,
-            'total' => $total,
-            'agencyCode' => $agency->code,
-        ]);
+		
+		if($checkOwner == 1){
+			$agency = $this->findAgency($modelBidNotification->postedby_agency_id);
+			return $this->render('viewreq', [
+				//'model' => $model,
+				'countBid' => $countBid,
+				'referralId' => $referralId,
+				'sampleDataProvider'=> $sampleDataprovider,
+				//'analysisDataProvider'=> $analysisDataprovider,
+				'testbidDataProvider'=> $testbidDataProvider,
+				'bidProvider'=> $bidProvider,
+				'subtotal' => $subtotal,
+				'discounted' => $discounted,
+				'total' => $total,
+				//'agencyCode' => $agency->code,
+				'agency' => $agency,
+				'owner' => $checkOwner,
+			]);
+		} else {
+			$agency = $this->findAgency($agencyId);
+			return $this->render('viewbid', [
+				//'model' => $model,
+				'countBid' => $bid,
+				'referralId' => $referralId,
+				'sampleDataProvider'=> $sampleDataprovider,
+				'analysisDataProvider'=> $analysisDataprovider,
+				'testbidDataProvider'=> $testbidDataProvider,
+				'subtotal' => $subtotal,
+				'discounted' => $discounted,
+				'total' => $total,
+				'agencyCode' => $agency->code,
+				//'agency' => $agency,
+				'owner' => $checkOwner,
+			]);
+		}
     }
 
     public function actionAddbid_requirement(){
@@ -696,6 +750,58 @@ class BidController extends Controller
             $out = Json::encode(['output' => $output, 'message' => $message]);
             echo $out;
         }
-
     }
+	
+	public function actionBidderdetails()
+	{
+		$agencyId = (int) Yii::$app->request->get('agency_id');
+		$rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+        $referralId = (int) Yii::$app->request->get('referral_id');
+		$bidId = (int) Yii::$app->request->get('bid_id');
+        $notifyCount = Bidnotification::find()->where('referral_id =:referralId AND recipient_agency_id =:rstlId AND postedby_agency_id =:bidderAgencyId AND bid_notification_type_id = 2',[':referralId'=>$referralId,':rstlId'=>$rstlId,':bidderAgencyId'=>$agencyId])->count();
+
+        if($referralId > 0 && $bidId > 0 && $notifyCount > 0){
+			$function = new ReferralFunctions();
+			
+            $referral = $this->findReferral($referralId);
+			$checkOwner = $function->checkOwner($referralId,$agencyId);
+			$modelBidNotification = Bidnotification::findOne($noticeId);
+			
+			if($checkOwner == 1){
+				$queryBid = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:bidderAgencyId',[':referralId'=>$referralId,':bidderAgencyId'=>$agencyId]);
+				$countBid = $queryBid->count();
+				$bidding = $queryBid->one();
+				$bidProvider = new ActiveDataProvider([
+					'query' => $queryBid,
+					'pagination' => false,
+				]);
+				
+				$testBids = Testbid::find()->where('referral_id =:referralId AND bidder_agency_id =:bidderAgencyId AND bid_id =:bidId',[':referralId'=>$referralId,':bidderAgencyId'=>$bidding->bidder_agency_id,':bidId'=>$bidding->bid_id]);
+				$testbidDataProvider = new ActiveDataProvider([
+					'query' => $testBids,
+					'pagination' => false,
+				]);
+				
+				$subtotal = $testBids->sum('fee');
+				$discounted = $subtotal * ($referral->discount_rate/100);
+				$total = $subtotal - $discounted;
+				
+				$agency = $this->findAgency($modelBidNotification->postedby_agency_id);
+				return $this->renderAjax('bidder_req', [
+					'countBid' => $countBid,
+					'referralId' => $referralId,
+					'testbidDataProvider'=> $testbidDataProvider,
+					'bidProvider'=> $bidProvider,
+					'subtotal' => $subtotal,
+					'discounted' => $discounted,
+					'total' => $total,
+					'agency' => $agency,
+					'owner' => $checkOwner,
+				]);
+			}
+		} else {
+			Yii::$app->session->setFlash('error', "Not a valid referral request!");
+            return $this->redirect(['/referrals/bidnotification']);
+		}
+	}
 }

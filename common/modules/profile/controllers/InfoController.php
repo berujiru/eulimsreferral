@@ -156,7 +156,7 @@ class InfoController extends Controller
     public function actionUpdate($id)
     {
         Yii::$app->params['uploadPath'] = realpath(dirname(__FILE__)).'\..' . '\assets\photo\\';
-        $x = realpath(dirname(__FILE__)).'\..' . '\assets\photo\\';
+        $img = realpath(dirname(__FILE__)).'\..' . '\assets\photo\\';
         $model = $this->findModel($id);
         if(Yii::$app->user->can('access-his-profile') && !Yii::$app->user->can('profile-full-access')){
             if($model->user_id!=Yii::$app->user->identity->user_id){
@@ -167,7 +167,8 @@ class InfoController extends Controller
         $OldImageUrl=$model->image_url;
         $changeImage=false;
         if ($model->load(Yii::$app->request->post())) {
-         
+				$post_data = Yii::$app->request->post('Profile');
+				$model->pstc_id = $post_data['pstc_id'];
                 $image = UploadedFile::getInstance($model, 'image');
                 if($image){
                     // store the source file name
@@ -211,12 +212,12 @@ class InfoController extends Controller
             if(Yii::$app->request->isAjax){
             return $this->renderAjax('update', [
                 'model' => $model,
-                'x'=>$x
+                'img'=>$img
             ]);
             }else{
                return $this->render('update', [
                 'model' => $model,
-                'x'=>$x
+                'img'=>$img
             ]); 
             }
         }

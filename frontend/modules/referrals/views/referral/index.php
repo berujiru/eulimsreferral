@@ -64,6 +64,15 @@ $this->params['breadcrumbs'][] = $this->title;
                     ]
                 ],
             ],
+            /*[
+                'header' => 'Customer',
+                'attribute' => 'customer_id',
+                'format' => 'raw',
+                'value' => function($data){ 
+                    return !empty($data->customer) ? $data->customer->customer_name : null;
+                },
+                'headerOptions' => ['class' => 'text-center'],
+            ],*/
             [
                 'header' => 'Customer',
                 'attribute' => 'customer_id',
@@ -72,7 +81,22 @@ $this->params['breadcrumbs'][] = $this->title;
                     return !empty($data->customer) ? $data->customer->customer_name : null;
                 },
                 'headerOptions' => ['class' => 'text-center'],
+                'filterType' => GridView::FILTER_SELECT2,
+                'filter' => $customers,
+                'filterWidgetOptions' => [
+                    'pluginOptions' => ['allowClear' => true],
+                ],
+                'filterInputOptions' => ['placeholder' => 'Search customer name', 'id' => 'grid-search-customer_id'],
             ],
+            /*[
+                'header' => 'Referred By',
+                'attribute' => 'receiving_agency_id',
+                'format' => 'raw',
+                'value' => function($data){
+                    return !empty($data->customer) ? $data->agencyreceiving->name : null;
+                },
+                'headerOptions' => ['class' => 'text-center'],
+            ], */
             [
                 'header' => 'Referred By',
                 'attribute' => 'receiving_agency_id',
@@ -81,7 +105,22 @@ $this->params['breadcrumbs'][] = $this->title;
                     return !empty($data->customer) ? $data->agencyreceiving->name : null;
                 },
                 'headerOptions' => ['class' => 'text-center'],
+                'filterType' => GridView::FILTER_SELECT2,
+                'filter' => $agencies,
+                'filterWidgetOptions' => [
+                    'pluginOptions' => ['allowClear' => true],
+                ],
+                'filterInputOptions' => ['placeholder' => 'Search receiving agency', 'id' => 'grid-search-receiving_agency_id'],
             ],
+            /*[
+                'header' => 'Referred To',
+                'attribute' => 'testing_agency_id',
+                'format' => 'raw',
+                'value' => function($data){
+                    return !empty($data->customer) ? $data->agencytesting->name : null;
+                },
+                'headerOptions' => ['class' => 'text-center'],
+            ],*/
             [
                 'header' => 'Referred To',
                 'attribute' => 'testing_agency_id',
@@ -90,6 +129,12 @@ $this->params['breadcrumbs'][] = $this->title;
                     return !empty($data->customer) ? $data->agencytesting->name : null;
                 },
                 'headerOptions' => ['class' => 'text-center'],
+                'filterType' => GridView::FILTER_SELECT2,
+                'filter' => $agencies,
+                'filterWidgetOptions' => [
+                    'pluginOptions' => ['allowClear' => true],
+                ],
+                'filterInputOptions' => ['placeholder' => 'Search testing agency', 'id' => 'grid-search-testing_agency_id'],
             ],
             [
                 'class' => 'kartik\grid\ActionColumn',

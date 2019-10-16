@@ -5,8 +5,9 @@ use yii\widgets\ActiveForm;
 use kartik\select2\Select2;
 use common\models\system\User;
 use yii\helpers\ArrayHelper;
-use common\models\system\Rstl;
-use common\models\lab\Lab;
+use common\models\referral\Agency;
+use common\models\referral\Lab;
+use common\models\referral\Pstc;
 //use cozumel\cropper\ImageCropper;
 use kartik\widgets\FileInput;
 use yii\web\View;
@@ -21,8 +22,9 @@ if(Yii::$app->user->can('access-his-profile') && !Yii::$app->user->can('profile-
 }else{
     $UserList= ArrayHelper::map(User::find()->all(),'user_id','email');
 }
-$RstlList= ArrayHelper::map(Rstl::find()->all(),'rstl_id','name');
-$LabList= ArrayHelper::map(lab::find()->all(),'lab_id','labname');
+$agencyList= ArrayHelper::map(Agency::find()->all(),'agency_id','name');
+$labList= ArrayHelper::map(lab::find()->all(),'lab_id','labname');
+$pstcList =  ArrayHelper::map(Pstc::find()->all(),'pstc_id','name');
 
 $js =<<< SCRIPT
    $('#profileImage_upload').on('fileclear', function(event) {
@@ -108,7 +110,7 @@ $imagePath=\Yii::$app->getModule("profile")->assetsUrl."/photo/";
      <div class="row">
         <div class="col-md-6">
             <?= $form->field($model, 'rstl_id')->widget(Select2::classname(), [
-                'data' => $RstlList,
+                'data' => $agencyList,
                 'language' => 'en',
                 'options' => ['placeholder' => 'Select RSTL'],
                 'pluginOptions' => [
@@ -118,7 +120,7 @@ $imagePath=\Yii::$app->getModule("profile")->assetsUrl."/photo/";
         </div>
         <div class="col-md-6">
             <?= $form->field($model, 'lab_id')->widget(Select2::classname(), [
-                'data' => $LabList,
+                'data' => $labList,
                 'language' => 'en',
                 'options' => ['placeholder' => 'Select Lab'],
                 'pluginOptions' => [
@@ -127,9 +129,53 @@ $imagePath=\Yii::$app->getModule("profile")->assetsUrl."/photo/";
             ]); ?>
         </div>
     </div>
+	<div class="row">
+		<div class="col-md-6">
+			<label>Check for PSTC Account</label> <input type="checkbox" id="for_pstc" name="is_check_pstc" value="1"  onclick="showPstc()">
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6" id="pstc-container" style="display:none;">
+			<?php
+				echo $form->field($model,'pstc_id')->widget(Select2::classname(),[
+					'data' => $pstcList,
+					'theme' => Select2::THEME_KRAJEE,
+					'pluginOptions' => [
+						'placeholder' => 'Select PSTC',
+						'allowClear' => true,
+					],
+				])->label('');
+			?>
+		</div>
+	</div>
     <div class="row pull-right" style="padding-right: 15px">
-    <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+    <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary','id' => 'btn_signup']) ?>
         <button style='margin-left: 5px' type='button' class='btn btn-secondary pull-left-sm' data-dismiss='modal'>Cancel</button>
     </div>    
    <?php ActiveForm::end(); ?>
 </div>
+<script type="text/javascript">
+function showPstc() {
+  var checkBox = document.getElementById("for_pstc");
+  var pstc_div = document.getElementById("pstc-container");
+  if (checkBox.checked == true){
+    pstc_div.style.display = "block";
+  } else {
+    pstc_div.style.display = "none";
+  }
+}
+
+$('#btn_signup').on('click',function(){
+	var checkPstc = $("#for_pstc:checked").val();
+	var pstc = $('#signup-pstc_id').val();
+	
+	if($("#for_pstc").is(':checked') && pstc == '') {
+		alert("Please select PSTC!");
+		return false;
+	} else {
+		//$('.image-loader').addClass('img-loader');
+		$('.site-signup form').submit();
+		//$('.image-loader').removeClass('img-loader');
+	}
+});
+</script>

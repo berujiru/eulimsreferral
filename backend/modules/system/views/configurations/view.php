@@ -19,14 +19,14 @@ $this->params['breadcrumbs'][] = $this->title;
             'lab_id',
             'labname',
             'labcode',
-            [
+            /*[
                 'label'=>'Total',
                 'attribute'=>'labcount'
-            ],
+            ], 
             [
                 'label'=>'Next RequestCode',
                 'attribute'=>'nextrequestcode'
-            ],
+            ], */
             'active:boolean'
         ],
     ]) ?>

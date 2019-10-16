@@ -49,7 +49,7 @@ class Profile extends \yii\db\ActiveRecord
         return [
             [['lastname', 'firstname', 'designation'], 'required'],
             [['user_id'],'required','message'=>'Please select Username!'],
-            [['user_id'], 'integer'],
+            [['user_id','rstl_id','pstc_id'], 'integer'],
             [['lastname', 'firstname', 'middleinitial','designation'], 'string', 'max' => 50],
             [['image_url','avatar','fullname','contact_numbers'], 'string', 'max' => 100],
             [['image'], 'safe'],
@@ -88,6 +88,7 @@ class Profile extends \yii\db\ActiveRecord
             'middleinitial' => 'Middle Initial',
             'rstl_id' => 'RSTL',
             'lab_id' => 'Lab',
+			'pstc_id' => 'PSTC',
             'contact_numbers' => 'Contact #',
             'image_url'=>'Image',
             'avatar'=>'Avatar',

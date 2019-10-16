@@ -4,11 +4,11 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use kartik\widgets\Select2;
 use yii\helpers\ArrayHelper;
-use common\models\lab\Lab;
+use common\models\referral\Lab;
 use common\models\system\Rstl;
 use kartik\base\InputWidget;
 use kartik\widgets\SwitchInput;
-use common\models\lab\CodeTemplate;
+use common\models\referral\CodeTemplate;
 use kartik\checkbox\CheckboxX;
 
 
@@ -21,11 +21,11 @@ if(!$RequestcodedTemplate){
    $rstl_id=0; 
    $request_code_template='';
    $sample_code_template='';
-   $generate_mode=0;
+   //$generate_mode=0;
 }else{
     $request_code_template=$RequestcodedTemplate->request_code_template;
     $sample_code_template=$RequestcodedTemplate->sample_code_template;
-    $generate_mode=$RequestcodedTemplate->generate_mode;
+    //$generate_mode=$RequestcodedTemplate->generate_mode;
     $rstl_id=$RequestcodedTemplate->rstl_id;
 }
 $js=<<<SCRIPT
@@ -37,8 +37,7 @@ $js=<<<SCRIPT
         $.post('/ajax/saverequesttemplate', {
             rstl_id: $("#RSTLSelect2").val(),
             rtemp: $("#requestcodetemplate").val(),
-            stemp: $("#samplecodetemplate").val(),
-            gmode: $("#_generatemode").val()
+            stemp: $("#samplecodetemplate").val()
         }, function(result){
             //Return values
             if(result.Status=='Failed'){
@@ -66,7 +65,6 @@ $this->registerJs($js);
         echo $form->field($model, 'active')->hiddenInput()->label(false);
     }
     ?>
-    <input type="hidden" id="_generatemode" name="_generatemode" value="<?= $generate_mode ?>">
     <div class="row">
         <div class="col-md-6">
         <?php
@@ -89,14 +87,6 @@ $this->registerJs($js);
     <?= $form->field($model, 'labcode')->textInput(['maxlength' => true])->label('Laboratory Code') ?>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-6">
-    <?= $form->field($model, 'labcount')->textInput(['readonly'=>true])->label('Laboratory Count') ?>
-        </div>
-         <div class="col-md-6">
-    <?= $form->field($model, 'nextrequestcode')->textInput(['maxlength' => true,'readonly'=>true])->label('Next Request Code') ?>
-        </div>
-     </div>
     <?php if(!$model->isNewRecord){ ?>
     <div class="row">
         <?php if(\Yii::$app->user->can('access-configure-template')){ ?> 
@@ -169,7 +159,7 @@ $this->registerJs($js);
                 </div>
                 <div class="col-md-6">
                 <?php
-                    echo '<label class="control-label" style="font-size:11px;">Reset sample code number every request</label>';
+                /*    echo '<label class="control-label" style="font-size:11px;">Reset sample code number every request</label>';
                     echo SwitchInput::widget([
                         'id'=>'generatemode',
                         'name'=>'generatemode', 
@@ -188,7 +178,7 @@ $this->registerJs($js);
                             "init.bootstrapSwitch" => "function() { console.log('init'); }",
                             "switchChange.bootstrapSwitch" => "function() { $('#_generatemode').val(this.checked ? 1:0); }",
                         ]
-                    ]);
+                    ]); */
                 ?>
         </div>
                 

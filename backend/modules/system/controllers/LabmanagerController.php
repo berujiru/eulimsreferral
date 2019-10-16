@@ -3,8 +3,8 @@
 namespace backend\modules\system\controllers;
 
 use Yii;
-use common\models\lab\LabManager;
-use common\models\lab\LabManagerSearch;
+use common\models\referral\LabManager;
+use common\models\referral\LabManagerSearch;
 use common\models\system\Labrbac;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
