@@ -227,7 +227,7 @@ use yii\web\JsExpression;
         <div class="col-lg-12">
             <div id="methodreference">
                 <?php
-                    echo $this->render('_methodreference', [ 'methodProvider' => $methodrefDataProvider,'model'=>$model]);
+                    echo $this->render('_methodreference', [ 'methodProvider' => $methodrefDataProvider,'model'=>$request_model]);
                 ?>
             </div>
         </div>

@@ -462,6 +462,10 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                         <span class="progress-tooltiptext">Uploaded</span>
                 </li>
         </ul>
+        <?php
+        echo "<a href='/referrals/referral/printref?id=".$model->referral_id."' class='btn btn-success' style='margin-left: 5px'><i class='fa fa-print'></i> Print Referral</a>";
+        echo "<br /><br />";
+        ?>
     </div>
     
       <div class="container">

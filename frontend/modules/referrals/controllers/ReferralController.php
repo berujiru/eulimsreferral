@@ -24,6 +24,7 @@ use common\models\referral\Statuslogs;
 use common\models\referral\Referraltrackreceiving;
 use common\models\referral\Referraltracktesting;
 use frontend\modules\referrals\template\Referralpdf;
+use frontend\modules\referrals\template\Printreferral;
 /**
  * ReferralController implements the CRUD actions for Referral model.
  */
@@ -575,5 +576,12 @@ class ReferralController extends Controller
         else{
             return 0;
         }
+    }
+
+    public function actionPrintref($id){
+        $Printing=new Printreferral();
+        $referral= Referral::find()->where(['referral_id' => $id])->one();
+        $Printing->setReferral($referral);
+        $Printing->Printing($id);
     }
 }

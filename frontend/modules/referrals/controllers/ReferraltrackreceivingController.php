@@ -81,7 +81,7 @@ class ReferraltrackreceivingController extends Controller
             $model->save();
             $test=ReferralController::Checkstatuslogs($referralid, 2);
             if($test == 0){
-                $status=ReferralController::Statuslogs($referralid,2); // #6 means Uploaded
+                $status=ReferralController::Statuslogs($referralid,2); 
             }
             if($status>0){
                  Yii::$app->session->setFlash('success', 'Successfully Created!');
