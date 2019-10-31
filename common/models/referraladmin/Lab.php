@@ -27,11 +27,6 @@ class Lab extends \yii\db\ActiveRecord
     {
         return 'tbl_lab';
     }
-    
-    public static function getDb()
-    {
-        return Yii::$app->get('db');
-    }
 
     /**
      * {@inheritdoc}

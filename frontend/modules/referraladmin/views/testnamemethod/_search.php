@@ -4,28 +4,28 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\lab\LabSearch */
+/* @var $model common\models\referraladmin\TestnameMethodSearch */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="lab-search">
+<div class="testname-method-search">
 
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
         'method' => 'get',
     ]); ?>
 
-    <?= $form->field($model, 'lab_id') ?>
+    <?= $form->field($model, 'testname_method_id') ?>
 
-    <?= $form->field($model, 'labname') ?>
+    <?= $form->field($model, 'testname_id') ?>
 
-    <?= $form->field($model, 'labcode') ?>
+    <?= $form->field($model, 'methodreference_id') ?>
 
-    <?= $form->field($model, 'labcount') ?>
+    <?= $form->field($model, 'added_by') ?>
 
-    <?= $form->field($model, 'nextrequestcode') ?>
+    <?= $form->field($model, 'create_time') ?>
 
-    <?php // echo $form->field($model, 'active') ?>
+    <?php // echo $form->field($model, 'update_time') ?>
 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>

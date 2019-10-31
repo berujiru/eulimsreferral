@@ -4,19 +4,19 @@ use yii\helpers\Html;
 use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\lab\Lab */
+/* @var $model common\models\referraladmin\LabSampletype */
 
-$this->title = $model->lab_id;
-$this->params['breadcrumbs'][] = ['label' => 'Labs', 'url' => ['index']];
+$this->title = $model->labsampletype_id;
+$this->params['breadcrumbs'][] = ['label' => 'Lab Sampletypes', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="lab-view">
+<div class="lab-sampletype-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Update', ['update', 'id' => $model->lab_id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->lab_id], [
+        <?= Html::a('Update', ['update', 'id' => $model->labsampletype_id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('Delete', ['delete', 'id' => $model->labsampletype_id], [
             'class' => 'btn btn-danger',
             'data' => [
                 'confirm' => 'Are you sure you want to delete this item?',
@@ -28,12 +28,11 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
+            'labsampletype_id',
             'lab_id',
-            'labname',
-            'labcode',
-            'labcount',
-            'nextrequestcode',
-            'active',
+            'sampletype_id',
+            'date_added',
+            'added_by',
         ],
     ]) ?>
 

@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\lab\Lab */
+/* @var $model common\models\referraladmin\Lab */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
@@ -15,10 +15,6 @@ use yii\widgets\ActiveForm;
     <?= $form->field($model, 'labname')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'labcode')->textInput(['maxlength' => true]) ?>
-
-    <?= $form->field($model, 'labcount')->textInput() ?>
-
-    <?= $form->field($model, 'nextrequestcode')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'active')->textInput() ?>
 

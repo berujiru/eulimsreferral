@@ -4,13 +4,13 @@ use yii\helpers\Html;
 
 
 /* @var $this yii\web\View */
-/* @var $model common\models\lab\Lab */
+/* @var $model common\models\referraladmin\LabSampletype */
 
-$this->title = 'Create Lab';
-$this->params['breadcrumbs'][] = ['label' => 'Labs', 'url' => ['index']];
+$this->title = 'Create Lab Sampletype';
+$this->params['breadcrumbs'][] = ['label' => 'Lab Sampletypes', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="lab-create">
+<div class="lab-sampletype-create">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
