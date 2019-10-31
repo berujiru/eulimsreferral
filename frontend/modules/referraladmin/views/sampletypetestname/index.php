@@ -4,20 +4,20 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 
 /* @var $this yii\web\View */
-/* @var $searchModel common\models\referraladmin\LabSearch */
+/* @var $searchModel common\models\referraladmin\SampletypetestnameSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Labs';
+$this->title = 'Sampletypetestnames';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="lab-index">
+<div class="sampletypetestname-index">
 <div class="panel panel-default col-xs-12">
         <div class="panel-heading"><i class="fa fa-adn"></i> </div>
         <div class="panel-body">
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <p>
-        <?= Html::a('Create Lab', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Create Sampletypetestname', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -25,10 +25,11 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
 
-            'lab_id',
-            'labname',
-            'labcode',
-            'active',
+            'sampletypetestname_id',
+            'sampletype_id',
+            'testname_id',
+            'added_by',
+            'date_added',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

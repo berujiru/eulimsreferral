@@ -3,16 +3,16 @@
 namespace frontend\modules\referraladmin\controllers;
 
 use Yii;
-use common\models\referraladmin\Lab;
-use common\models\referraladmin\LabSearch;
+use common\models\referraladmin\LabSampletype;
+use common\models\referraladmin\LabSampletypeSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * LabController implements the CRUD actions for Lab model.
+ * LabsampletypeController implements the CRUD actions for LabSampletype model.
  */
-class LabController extends Controller
+class LabsampletypeController extends Controller
 {
     /**
      * @inheritdoc
@@ -30,12 +30,12 @@ class LabController extends Controller
     }
 
     /**
-     * Lists all Lab models.
+     * Lists all LabSampletype models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new LabSearch();
+        $searchModel = new LabSampletypeSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -45,30 +45,28 @@ class LabController extends Controller
     }
 
     /**
-     * Displays a single Lab model.
+     * Displays a single LabSampletype model.
      * @param integer $id
      * @return mixed
      */
     public function actionView($id)
     {
-        if(Yii::$app->request->isAjax){
-            return $this->renderAjax('view', [
-                    'model' => $this->findModel($id),
-                ]);
-        }
+        return $this->render('view', [
+            'model' => $this->findModel($id),
+        ]);
     }
 
     /**
-     * Creates a new Lab model.
+     * Creates a new LabSampletype model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new Lab();
+        $model = new LabSampletype();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->lab_id]);
+            return $this->redirect(['view', 'id' => $model->labsampletype_id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
@@ -77,7 +75,7 @@ class LabController extends Controller
     }
 
     /**
-     * Updates an existing Lab model.
+     * Updates an existing LabSampletype model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -87,7 +85,7 @@ class LabController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->lab_id]);
+            return $this->redirect(['view', 'id' => $model->labsampletype_id]);
         } else {
             return $this->render('update', [
                 'model' => $model,
@@ -96,7 +94,7 @@ class LabController extends Controller
     }
 
     /**
-     * Deletes an existing Lab model.
+     * Deletes an existing LabSampletype model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -109,15 +107,15 @@ class LabController extends Controller
     }
 
     /**
-     * Finds the Lab model based on its primary key value.
+     * Finds the LabSampletype model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Lab the loaded model
+     * @return LabSampletype the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Lab::findOne($id)) !== null) {
+        if (($model = LabSampletype::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
