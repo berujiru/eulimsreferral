@@ -12,10 +12,10 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="lab-sampletype-create">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
     <?= $this->render('_form', [
         'model' => $model,
+        'lablist' => $lablist,
+        'sampletypelist' => $sampletypelist
     ]) ?>
 
 </div>

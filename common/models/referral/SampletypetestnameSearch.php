@@ -1,16 +1,16 @@
 <?php
 
-namespace common\models\referraladmin;
+namespace common\models\referral;
 
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\referraladmin\Testname;
+use common\models\referral\Sampletypetestname;
 
 /**
- * TestnameSearch represents the model behind the search form about `common\models\referraladmin\Testname`.
+ * SampletypetestnameSearch represents the model behind the search form about `common\models\referraladmin\Sampletypetestname`.
  */
-class TestnameSearch extends Testname
+class SampletypetestnameSearch extends Sampletypetestname
 {
     /**
      * @inheritdoc
@@ -18,8 +18,8 @@ class TestnameSearch extends Testname
     public function rules()
     {
         return [
-            [['testname_id'], 'integer'],
-            [['test_name', 'active', 'create_time', 'update_time'], 'safe'],
+            [['sampletypetestname_id', 'sampletype_id', 'testname_id'], 'integer'],
+            [['added_by', 'date_added'], 'safe'],
         ];
     }
 
@@ -41,7 +41,7 @@ class TestnameSearch extends Testname
      */
     public function search($params)
     {
-        $query = Testname::find();
+        $query = Sampletypetestname::find();
 
         // add conditions that should always apply here
 
@@ -59,13 +59,13 @@ class TestnameSearch extends Testname
 
         // grid filtering conditions
         $query->andFilterWhere([
+            'sampletypetestname_id' => $this->sampletypetestname_id,
+            'sampletype_id' => $this->sampletype_id,
             'testname_id' => $this->testname_id,
-            'create_time' => $this->create_time,
-            'update_time' => $this->update_time,
+            'date_added' => $this->date_added,
         ]);
 
-        $query->andFilterWhere(['like', 'test_name', $this->test_name])
-            ->andFilterWhere(['like', 'active', $this->active]);
+        $query->andFilterWhere(['like', 'added_by', $this->added_by]);
 
         return $dataProvider;
     }

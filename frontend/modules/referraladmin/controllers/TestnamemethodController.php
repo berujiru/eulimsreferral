@@ -3,12 +3,17 @@
 namespace frontend\modules\referraladmin\controllers;
 
 use Yii;
-use common\models\referraladmin\TestnameMethod;
-use common\models\referraladmin\TestnameMethodSearch;
+use common\models\referral\Testnamemethod;
+use common\models\referral\TestnameMethodSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-
+use common\models\referral\Methodreference;
+use yii\data\ActiveDataProvider;
+use yii\helpers\Json;
+use yii\data\ArrayDataProvider;
+use linslin\yii2\curl;
+use common\models\system\Profile;
 /**
  * TestnamemethodController implements the CRUD actions for TestnameMethod model.
  */
@@ -51,7 +56,7 @@ class TestnamemethodController extends Controller
      */
     public function actionView($id)
     {
-        return $this->render('view', [
+        return $this->renderAjax('view', [
             'model' => $this->findModel($id),
         ]);
     }
@@ -63,15 +68,33 @@ class TestnamemethodController extends Controller
      */
     public function actionCreate()
     {
-        $model = new TestnameMethod();
+        $model = new Testnamemethod();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->testname_method_id]);
-        } else {
-            return $this->render('create', [
+        if ($model->load(Yii::$app->request->post())) {
+
+            $testnamemethod = Testnamemethod::find()->where(['testname_id'=> $model->testname_id, 'methodreference_id'=>$model->methodreference_id])->one();
+            if ($testnamemethod){
+                Yii::$app->session->setFlash('warning', "The system has detected a duplicate record. You are not allowed to perform this operation."); 
+            }else{
+                $profile= Profile::find()->where(['user_id'=> Yii::$app->user->id])->one();
+                if($profile){
+                $model->added_by=$profile->firstname.' '. strtoupper(substr($profile->middleinitial,0,1)).'. '.$profile->lastname;
+                }else{
+                    $model->added_by="";
+                }
+                $model->save();
+                Yii::$app->session->setFlash('success', 'Test Name Method Successfully Created'); 
+            }
+            return $this->runAction('index');   
+        }
+
+        if(Yii::$app->request->isAjax){
+            $model->create_time=date("Y-m-d h:i:s");
+            $model->update_time=date("Y-m-d h:i:s");
+            return $this->renderAjax('_form', [
                 'model' => $model,
             ]);
-        }
+       }
     }
 
     /**
@@ -85,9 +108,10 @@ class TestnamemethodController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->testname_method_id]);
+            Yii::$app->session->setFlash('success', 'Successfully Updated'); 
+            return $this->redirect(['index']);
         } else {
-            return $this->render('update', [
+            return $this->renderAjax('update', [
                 'model' => $model,
             ]);
         }
@@ -102,7 +126,7 @@ class TestnamemethodController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
+        Yii::$app->session->setFlash('success', 'Successfully Deleted'); 
         return $this->redirect(['index']);
     }
 
@@ -110,15 +134,38 @@ class TestnamemethodController extends Controller
      * Finds the TestnameMethod model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return TestnameMethod the loaded model
+     * @return Testnamemethod the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = TestnameMethod::findOne($id)) !== null) {
+        if (($model = Testnamemethod::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+
+    public function actionGetmethod()
+	{
+      
+        $labid = $_GET['lab_id'];
+        $testname_id = $_GET['id'];
+    
+         $methodreference = Methodreference::find()->orderBy(['methodreference_id' => SORT_DESC])->all();
+         $testnamedataprovider = new ArrayDataProvider([
+                 'allModels' => $methodreference,
+                 'pagination' => [
+                     'pageSize' =>false,
+                 ],
+              
+         ]);
+       
+
+         return $this->renderAjax('_method', [
+            'testnamedataprovider' => $testnamedataprovider,    
+            'testname_id'=> $testname_id,
+         ]);
+	
+     }
 }

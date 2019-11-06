@@ -18,13 +18,23 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'fee')->textInput() ?>
 
-    <?= $form->field($model, 'create_time')->textInput() ?>
-
-    <?= $form->field($model, 'update_time')->textInput() ?>
-
-    <div class="form-group">
-        <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+    <div class="row">
+    <div class="col-md-6">
+    <?= $form->field($model, 'create_time')->textInput(['readonly' => true]) ?>
+    
+    
     </div>
+    <div class="col-md-6">
+    <?= $form->field($model, 'update_time')->textInput(['readonly' => true]) ?>
+    </div>
+    </div>
+
+    <div class="form-group pull-right">
+   <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+    <?php if(Yii::$app->request->isAjax){ ?>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+    <?php } ?> 
+	</div>
 
     <?php ActiveForm::end(); ?>
 

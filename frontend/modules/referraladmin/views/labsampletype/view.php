@@ -12,25 +12,34 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="lab-sampletype-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
-    <p>
-        <?= Html::a('Update', ['update', 'id' => $model->labsampletype_id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->labsampletype_id], [
-            'class' => 'btn btn-danger',
-            'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
-                'method' => 'post',
-            ],
-        ]) ?>
-    </p>
-
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
             'labsampletype_id',
-            'lab_id',
-            'sampletype_id',
+            [
+                'attribute' => 'lab_id',
+                'format' => 'raw',
+                'value' => function($model) {
+                   if ($model->lab){
+                      return $model->lab->labname;
+                   }else{
+                        return "";
+                   }
+                   
+                }
+            ],
+            [
+                'attribute' => 'sampletype_id',
+                'format' => 'raw',
+                'value' => function($model) {
+
+                    if ($model->sampletype){
+                        return $model->sampletype->type;
+                    }else{
+                        return "";
+                    }        
+                }
+            ],
             'date_added',
             'added_by',
         ],

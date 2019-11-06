@@ -11,11 +11,10 @@ $this->params['breadcrumbs'][] = ['label' => $model->labsampletype_id, 'url' => 
 $this->params['breadcrumbs'][] = 'Update';
 ?>
 <div class="lab-sampletype-update">
-
-    <h1><?= Html::encode($this->title) ?></h1>
-
     <?= $this->render('_form', [
         'model' => $model,
+        'lablist' => $lablist,
+        'sampletypelist' => $sampletypelist
     ]) ?>
 
 </div>

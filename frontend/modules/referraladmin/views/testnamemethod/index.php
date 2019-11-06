@@ -1,40 +1,109 @@
 <?php
 
 use yii\helpers\Html;
-use yii\grid\GridView;
+use kartik\grid\GridView;
+use common\models\referral\Methodreference;
+use common\models\referral\Testname;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
-/* @var $searchModel common\models\referraladmin\TestnameMethodSearch */
+/* @var $searchModel common\models\lab\TestnamemethodSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Testname Methods';
-$this->params['breadcrumbs'][] = $this->title;
-?>
-<div class="testname-method-index">
-<div class="panel panel-default col-xs-12">
-        <div class="panel-heading"><i class="fa fa-adn"></i> </div>
-        <div class="panel-body">
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
-    <p>
-        <?= Html::a('Create Testname Method', ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
-    <?= GridView::widget([
+$methodlist= ArrayHelper::map(Methodreference::find()->all(),'methodreference_id','method');
+$testnamelist= ArrayHelper::map(Testname::find()->all(),'testname_id','test_name');
+
+$this->title = 'Test Name Methods';
+$this->params['breadcrumbs'][] = $this->title;
+
+?>
+
+<div class="testnamemethod-index">
+
+<?php $this->registerJsFile("/js/services/services.js"); ?>
+
+<?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'pjax' => true,
+        'pjaxSettings' => [
+            'options' => [
+                'enablePushState' => false,
+            ]
+        ],
+        'panel' => [
+                'type' => GridView::TYPE_PRIMARY,
+                'heading' => '<span class="glyphicon glyphicon-book"></span>  ' . Html::encode($this->title),
+                'before'=> Html::button('<span class="glyphicon glyphicon-plus"></span> Create Test Name Method', ['value'=>'/referraladmin/testnamemethod/create', 'class' => 'btn btn-success','title' => Yii::t('app', "Create New Test Name Method"),'id'=>'btnTestnamemethod','onclick'=>'addTestnamemethod(this.value,this.title)']),
+               
+        ],
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
+            [
+                'attribute' => 'testname_id',
+                'label' => 'Test Name',
+                'value' => function($model) {
 
-            'testname_method_id',
-            'testname_id',
-            'methodreference_id',
-            'added_by',
+                    if ($model->testname){
+                        return $model->testname->test_name;
+                    }else{
+                        return "";
+                    }
+                    
+                },
+                'filterType' => GridView::FILTER_SELECT2,
+                'filter' => $testnamelist,
+                'filterWidgetOptions' => [
+                    'pluginOptions' => ['allowClear' => true],
+               ],
+               'filterInputOptions' => ['placeholder' => 'Test Name', 'testcategory_id' => 'grid-products-search-category_type_id']
+            ],
+            [
+                'attribute' => 'methodreference_id',
+                'label' => 'Method',
+                'value' => function($model) {
+                     if($model->methodreference){
+                      return $model->methodreference->method;
+                    }else{
+                        return "";
+                 }    
+                },
+                'filterType' => GridView::FILTER_SELECT2,
+                'filter' => $methodlist,
+                'filterWidgetOptions' => [
+                    'pluginOptions' => ['allowClear' => true],
+               ],
+               'filterInputOptions' => ['placeholder' => 'Method', 'testcategory_id' => 'grid-products-search-category_type_id']
+            ],
             'create_time',
-            // 'update_time',
+            'update_time',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            ['class' => 'kartik\grid\ActionColumn',
+            'contentOptions' => ['style' => 'width: 8.7%'],
+           'template' => '{view}{update}{delete}{workflow}',
+            'buttons'=>[
+                'view'=>function ($url, $model) {
+                    return Html::button('<span class="glyphicon glyphicon-eye-open"></span>', ['value'=>Url::to(['/referraladmin/testnamemethod/view','id'=>$model->testname_method_id]), 'onclick'=>'LoadModal(this.title, this.value);', 'class' => 'btn btn-primary','title' => Yii::t('app', "View Test Name Method")]);
+                },
+                'update'=>function ($url, $model) {
+                    return Html::button('<span class="glyphicon glyphicon-pencil"></span>', ['value'=>Url::to(['/referraladmin/testnamemethod/update','id'=>$model->testname_method_id]),'onclick'=>'LoadModal(this.title, this.value);', 'class' => 'btn btn-success','title' => Yii::t('app', "Update Test Name Method")]);
+                },
+                'delete'=>function ($url, $model) {
+                    $urls = '/referraladmin/testnamemethod/delete?id='.$model->testname_method_id;
+                    return Html::a('<span class="glyphicon glyphicon-trash"></span>', $urls,['data-confirm'=>"Are you sure you want to delete this record?<b></b>", 'data-method'=>'post', 'class'=>'btn btn-danger','title'=>'Delete Test Name Method','data-pjax'=>'0']);
+                },
+                ],
+            ],
+          
         ],
     ]); ?>
-        </div>
 </div>
-</div>
+
+<script type="text/javascript">
+    function addTestnamemethod(url,title){
+        LoadModal(title,url,'true','700px');
+    }
+  
+</script>

@@ -3,7 +3,8 @@
 namespace common\models\referral;
 
 use Yii;
-
+use common\models\referral\Lab;
+use common\models\referral\Sampletype;
 /**
  * This is the model class for table "tbl_labsampletype".
  *
@@ -51,10 +52,19 @@ class Labsampletype extends \yii\db\ActiveRecord
     {
         return [
             'labsampletype_id' => 'Labsampletype ID',
-            'lab_id' => 'Lab ID',
-            'sampletype_id' => 'Sampletype ID',
+            'lab_id' => 'Laboratory',
+            'sampletype_id' => 'Sample Type',
             'date_added' => 'Date Added',
             'added_by' => 'Added By',
         ];
+    }
+
+    public function getLab()
+    {
+        return $this->hasOne(Lab::className(), ['lab_id' => 'lab_id']);
+    }
+    public function getSampletype()
+    {
+        return $this->hasOne(Sampletype::className(), ['sampletype_id' => 'sampletype_id']);
     }
 }
