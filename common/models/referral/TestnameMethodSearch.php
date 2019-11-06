@@ -1,16 +1,16 @@
 <?php
 
-namespace common\models\referraladmin;
+namespace common\models\referral;
 
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\referraladmin\Sampletypetestname;
+use common\models\referral\Testnamemethod;
 
 /**
- * SampletypetestnameSearch represents the model behind the search form about `common\models\referraladmin\Sampletypetestname`.
+ * TestnameMethodSearch represents the model behind the search form about `common\models\referraladmin\TestnameMethod`.
  */
-class SampletypetestnameSearch extends Sampletypetestname
+class TestnameMethodSearch extends Testnamemethod
 {
     /**
      * @inheritdoc
@@ -18,8 +18,8 @@ class SampletypetestnameSearch extends Sampletypetestname
     public function rules()
     {
         return [
-            [['sampletypetestname_id', 'sampletype_id', 'testname_id'], 'integer'],
-            [['added_by', 'date_added'], 'safe'],
+            [['testname_method_id', 'testname_id', 'methodreference_id'], 'integer'],
+            [['added_by', 'create_time', 'update_time'], 'safe'],
         ];
     }
 
@@ -41,7 +41,7 @@ class SampletypetestnameSearch extends Sampletypetestname
      */
     public function search($params)
     {
-        $query = Sampletypetestname::find();
+        $query = Testnamemethod::find();
 
         // add conditions that should always apply here
 
@@ -59,10 +59,11 @@ class SampletypetestnameSearch extends Sampletypetestname
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'sampletypetestname_id' => $this->sampletypetestname_id,
-            'sampletype_id' => $this->sampletype_id,
+            'testname_method_id' => $this->testname_method_id,
             'testname_id' => $this->testname_id,
-            'date_added' => $this->date_added,
+            'methodreference_id' => $this->methodreference_id,
+            'create_time' => $this->create_time,
+            'update_time' => $this->update_time,
         ]);
 
         $query->andFilterWhere(['like', 'added_by', $this->added_by]);

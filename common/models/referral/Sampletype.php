@@ -51,8 +51,8 @@ class Sampletype extends \yii\db\ActiveRecord
     {
         return [
             'sampletype_id' => 'Sampletype ID',
-            'type' => 'Type',
-            'status_id' => 'Status ID',
+            'type' => 'Sample Type',
+            'status_id' => 'Status',
         ];
     }
 

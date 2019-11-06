@@ -3,11 +3,15 @@
 namespace frontend\modules\referraladmin\controllers;
 
 use Yii;
-use common\models\referraladmin\Sampletypetestname;
-use common\models\referraladmin\SampletypetestnameSearch;
+use common\models\referral\Sampletypetestname;
+use common\models\referral\SampletypetestnameSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\helpers\ArrayHelper;
+use common\models\referral\Sampletype;
+use common\models\referral\Testname;
+use common\models\system\Profile;
 
 /**
  * SampletypetestnameController implements the CRUD actions for Sampletypetestname model.
@@ -51,7 +55,7 @@ class SampletypetestnameController extends Controller
      */
     public function actionView($id)
     {
-        return $this->render('view', [
+        return $this->renderAjax('view', [
             'model' => $this->findModel($id),
         ]);
     }
@@ -64,12 +68,30 @@ class SampletypetestnameController extends Controller
     public function actionCreate()
     {
         $model = new Sampletypetestname();
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->sampletypetestname_id]);
+        $sampletypelist= ArrayHelper::map(Sampletype::find()->orderBy(['sampletype_id' => SORT_DESC])->all(),'sampletype_id','type');
+        $testnamelist= ArrayHelper::map(Testname::find()->orderBy(['testname_id' => SORT_DESC])->all(),'testname_id','test_name');
+        if ($model->load(Yii::$app->request->post())) {
+            $sampletypetestname = Sampletypetestname::find()->where(['sampletype_id'=> $model->sampletype_id, 'testname_id'=>$model->testname_id])->one();
+            if ($sampletypetestname){
+                Yii::$app->session->setFlash('warning', "The system has detected a duplicate record. You are not allowed to perform this operation."); 
+            }else{
+                $model->date_added= date('Y-m-d');
+                $model->save();
+                Yii::$app->session->setFlash('success', 'Sample Type Test Name Successfully Created'); 
+                
+            }      
+            return $this->runAction('index');
         } else {
-            return $this->render('create', [
+            $profile= Profile::find()->where(['user_id'=> Yii::$app->user->id])->one();
+            if($profile){
+            $model->added_by=$profile->firstname.' '. strtoupper(substr($profile->middleinitial,0,1)).'. '.$profile->lastname;
+            }else{
+                $model->added_by="";
+            }
+            return $this->renderAjax('create', [
                 'model' => $model,
+                'sampletypelist' => $sampletypelist,
+                'testnamelist' => $testnamelist
             ]);
         }
     }
@@ -83,12 +105,17 @@ class SampletypetestnameController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
+        $sampletypelist= ArrayHelper::map(Sampletype::find()->orderBy(['sampletype_id' => SORT_DESC])->all(),'sampletype_id','type');
+        $testnamelist= ArrayHelper::map(Testname::find()->orderBy(['testname_id' => SORT_DESC])->all(),'testname_id','test_name');
+       
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->sampletypetestname_id]);
+            Yii::$app->session->setFlash('success', 'Successfully Updated'); 
+            return $this->redirect(['index']);
         } else {
-            return $this->render('update', [
+            return $this->renderAjax('update', [
                 'model' => $model,
+                'sampletypelist' => $sampletypelist,
+                'testnamelist' => $testnamelist
             ]);
         }
     }
@@ -102,7 +129,7 @@ class SampletypetestnameController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
+        Yii::$app->session->setFlash('success', 'Successfully Deleted'); 
         return $this->redirect(['index']);
     }
 

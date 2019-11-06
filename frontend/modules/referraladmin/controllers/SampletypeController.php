@@ -3,8 +3,8 @@
 namespace frontend\modules\referraladmin\controllers;
 
 use Yii;
-use common\models\referraladmin\Sampletype;
-use common\models\referraladmin\SampletypeSearch;
+use common\models\referral\Sampletype;
+use common\models\referral\SampletypeSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -66,17 +66,16 @@ class SampletypeController extends Controller
     public function actionCreate()
     {
         $model = new Sampletype();
-        $post= Yii::$app->request->post();
         if ($model->load(Yii::$app->request->post())) {
 
-          $sampletype = Sampletype::find()->where(['type'=> $post['Sampletype']['type']])->one();
+          $sampletype = Sampletype::find()->where(['type'=> $model->type])->one();
 
           if ($sampletype){
-            //Yii::$app->session->setFlash('warning', "The system has detected a duplicate record. You are not allowed to perform this operation."); 
+            Yii::$app->session->setFlash('warning', "The system has detected a duplicate record. You are not allowed to perform this operation."); 
             return $this->runAction('index');
           }else{
             $model->save();  
-            //Yii::$app->session->setFlash('success', 'Sample Type Successfully Created'); 
+            Yii::$app->session->setFlash('success', 'Sample Type Successfully Created'); 
             return $this->runAction('index');
           }
          
@@ -105,6 +104,7 @@ class SampletypeController extends Controller
                     return $this->redirect(['index']);
 
                 } else if (Yii::$app->request->isAjax) {
+             
                     return $this->renderAjax('update', [
                         'model' => $model,
                     ]);
@@ -120,7 +120,7 @@ class SampletypeController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
+        Yii::$app->session->setFlash('success', 'Successfully Deleted'); 
         return $this->redirect(['index']);
     }
 

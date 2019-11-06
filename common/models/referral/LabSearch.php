@@ -1,16 +1,16 @@
 <?php
 
-namespace common\models\referraladmin;
+namespace common\models\referral;
 
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\referraladmin\Methodreference;
+use common\models\referral\Lab;
 
 /**
- * MethodreferenceSearch represents the model behind the search form about `common\models\referraladmin\Methodreference`.
+ * LabSearch represents the model behind the search form about `common\models\referraladmin\Lab`.
  */
-class MethodreferenceSearch extends Methodreference
+class LabSearch extends Lab
 {
     /**
      * @inheritdoc
@@ -18,9 +18,8 @@ class MethodreferenceSearch extends Methodreference
     public function rules()
     {
         return [
-            [['methodreference_id'], 'integer'],
-            [['method', 'reference', 'create_time', 'update_time'], 'safe'],
-            [['fee'], 'number'],
+            [['lab_id'], 'integer'],
+            [['labname', 'labcode', 'active'], 'safe'],
         ];
     }
 
@@ -42,7 +41,7 @@ class MethodreferenceSearch extends Methodreference
      */
     public function search($params)
     {
-        $query = Methodreference::find();
+        $query = Lab::find();
 
         // add conditions that should always apply here
 
@@ -60,14 +59,12 @@ class MethodreferenceSearch extends Methodreference
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'methodreference_id' => $this->methodreference_id,
-            'fee' => $this->fee,
-            'create_time' => $this->create_time,
-            'update_time' => $this->update_time,
+            'lab_id' => $this->lab_id,
         ]);
 
-        $query->andFilterWhere(['like', 'method', $this->method])
-            ->andFilterWhere(['like', 'reference', $this->reference]);
+        $query->andFilterWhere(['like', 'labname', $this->labname])
+            ->andFilterWhere(['like', 'labcode', $this->labcode])
+            ->andFilterWhere(['like', 'active', $this->active]);
 
         return $dataProvider;
     }

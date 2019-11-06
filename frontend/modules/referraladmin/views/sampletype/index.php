@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 use kartik\grid\GridView;
-use common\models\referraladmin\Lab;
+use common\models\referral\Lab;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 
@@ -66,7 +66,7 @@ $lablist= ArrayHelper::map(Lab::find()->all(),'lab_id','labname');
                     return Html::button('<span class="glyphicon glyphicon-pencil"></span>', ['value'=>Url::to(['/referraladmin/sampletype/update','id'=>$model->sampletype_id]),'onclick'=>'LoadModal(this.title, this.value);', 'class' => 'btn btn-success','title' => Yii::t('app', "Update Sample Type")]);
                 },
                 'delete'=>function ($url, $model) {
-                    $urls = '/lab/sampletype/delete?id='.$model->sampletype_id;
+                    $urls = '/referraladmin/sampletype/delete?id='.$model->sampletype_id;
                     return Html::a('<span class="glyphicon glyphicon-trash"></span>', $urls,['data-confirm'=>"Are you sure you want to delete this record?<b></b>", 'data-method'=>'post', 'class'=>'btn btn-danger','title'=>'Delete Sample Type','data-pjax'=>'0']);
                 },
             ],

@@ -3,8 +3,8 @@
 namespace frontend\modules\referraladmin\controllers;
 
 use Yii;
-use common\models\referraladmin\Testname;
-use common\models\referraladmin\TestnameSearch;
+use common\models\referral\Testname;
+use common\models\referral\TestnameSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -65,10 +65,20 @@ class TestnameController extends Controller
     {
         $model = new Testname();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->testname_id]);
+        if ($model->load(Yii::$app->request->post())) {
+            $testname = Testname::find()->where(['test_name'=> $model->test_name])->one();
+
+            if($testname){
+                Yii::$app->session->setFlash('warning', "The system has detected a duplicate record. You are not allowed to perform this operation."); 
+            }else{
+                $model->save();  
+                Yii::$app->session->setFlash('success', 'Test Name Successfully Created'); 
+            } 
+            return $this->runAction('index');
         } else {
-            return $this->render('create', [
+            $model->create_time=date("Y-m-d h:i:s");
+            $model->update_time=date("Y-m-d h:i:s");
+            return $this->renderAjax('create', [
                 'model' => $model,
             ]);
         }
@@ -85,9 +95,10 @@ class TestnameController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->testname_id]);
+            Yii::$app->session->setFlash('success', 'Successfully Updated'); 
+            return $this->redirect(['index']);
         } else {
-            return $this->render('update', [
+            return $this->renderAjax('update', [
                 'model' => $model,
             ]);
         }
@@ -102,7 +113,7 @@ class TestnameController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
+        Yii::$app->session->setFlash('success', 'Successfully Deleted'); 
         return $this->redirect(['index']);
     }
 

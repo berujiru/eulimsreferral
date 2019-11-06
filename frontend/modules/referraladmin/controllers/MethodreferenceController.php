@@ -3,8 +3,8 @@
 namespace frontend\modules\referraladmin\controllers;
 
 use Yii;
-use common\models\referraladmin\Methodreference;
-use common\models\referraladmin\MethodreferenceSearch;
+use common\models\referral\Methodreference;
+use common\models\referral\MethodreferenceSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -65,10 +65,20 @@ class MethodreferenceController extends Controller
     {
         $model = new Methodreference();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->methodreference_id]);
+        if ($model->load(Yii::$app->request->post())) {
+            $methodreference = Methodreference::find()->where(['method'=> $model->method, 'reference'=> $model->reference, 'fee'=> $model->fee])->one();
+            if ($methodreference){
+                Yii::$app->session->setFlash('warning', 'The system has detected a duplicate record. You are not allowed to perform this operation!');
+                return $this->runAction('index');
+            }else{
+                $model->save();
+                Yii::$app->session->setFlash('success', 'Method Reference Successfully Created'); 
+                return $this->runAction('index');
+            }
         } else {
-            return $this->render('create', [
+            $model->create_time=date("Y-m-d h:i:s");
+            $model->update_time=date("Y-m-d h:i:s");
+            return $this->renderAjax('create', [
                 'model' => $model,
             ]);
         }
@@ -85,9 +95,10 @@ class MethodreferenceController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->methodreference_id]);
+            Yii::$app->session->setFlash('success', 'Method Reference Successfully Updated'); 
+            return $this->redirect(['index']);
         } else {
-            return $this->render('update', [
+            return $this->renderAjax('update', [
                 'model' => $model,
             ]);
         }
@@ -102,7 +113,7 @@ class MethodreferenceController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
+        Yii::$app->session->setFlash('success', 'Successfully Deleted'); 
         return $this->redirect(['index']);
     }
 
@@ -120,5 +131,33 @@ class MethodreferenceController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    public function actionCreatemethod()
+    {
+        $model = new Methodreference();
+        $model->testname_id = 0;
+        $post= Yii::$app->request->post();
+        if ($model->load(Yii::$app->request->post())) {
+
+            $methodreference = Methodreference::find()->where(['method'=> $post['Methodreference']['method'], 'reference'=> $post['Methodreference']['reference'], 'fee'=> $post['Methodreference']['fee']])->one();
+            if ($methodreference){
+              //  Yii::$app->session->setFlash('warning', "The system has detected a duplicate record. You are not allowed to perform this operation."); 
+                return $this->runAction('index');
+            }else{
+               // Yii::$app->session->setFlash('success', 'Method Reference Successfully Created'); 
+                $model->save();
+                return $this->runAction('index');
+            }
+        }
+        $model->create_time=date("Y-m-d h:i:s");
+        $model->update_time=date("Y-m-d h:i:s");
+
+       $model->testname_id = 0;
+        if(Yii::$app->request->isAjax){
+            return $this->renderAjax('_form', [
+                'model' => $model,
+            ]);
+       }
     }
 }

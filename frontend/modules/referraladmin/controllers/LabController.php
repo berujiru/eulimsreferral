@@ -3,8 +3,8 @@
 namespace frontend\modules\referraladmin\controllers;
 
 use Yii;
-use common\models\referraladmin\Lab;
-use common\models\referraladmin\LabSearch;
+use common\models\referral\Lab;
+use common\models\referral\LabSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -68,9 +68,10 @@ class LabController extends Controller
         $model = new Lab();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->lab_id]);
+            Yii::$app->session->setFlash('success', 'Successfully Saved!');
+            return $this->redirect(['/referraladmin/lab']);
         } else {
-            return $this->render('create', [
+            return $this->renderAjax('create', [
                 'model' => $model,
             ]);
         }
@@ -87,9 +88,11 @@ class LabController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->lab_id]);
+            Yii::$app->session->setFlash('success', 'Successfully Updated!');
+            return $this->redirect(['/referraladmin/lab']);
+                
         } else {
-            return $this->render('update', [
+            return $this->renderAjax('update', [
                 'model' => $model,
             ]);
         }
@@ -104,8 +107,9 @@ class LabController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+        Yii::$app->session->setFlash('success', 'Successfully Done!');
+        return $this->redirect(['/referraladmin/lab']);
+        
     }
 
     /**

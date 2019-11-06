@@ -55,9 +55,9 @@ class Lab extends \yii\db\ActiveRecord
     {
         return [
             'lab_id' => 'Lab ID',
-            'labname' => 'Labname',
-            'labcode' => 'Labcode',
-            'active' => 'Active',
+            'labname' => 'Laboratory Name',
+            'labcode' => 'Laboratory Code',
+            'active' => 'Status',
         ];
     }
 
