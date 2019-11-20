@@ -42,7 +42,12 @@ class ReferralSearch extends Referral
      */
     public function search($params)
     {
-        $query = Referral::find()->orderBy('referral_date_time DESC, create_time DESC');
+        $agencyId = (int) Yii::$app->user->identity->profile->rstl_id;
+        $query = Referral::find()
+            ->where('receiving_agency_id =:receivingAgency OR testing_agency_id =:testingAgency',[':receivingAgency'=>$agencyId,':testingAgency'=>$agencyId])
+            ->orderBy(['create_time'=>SORT_DESC,'referral_date_time'=>SORT_DESC]);
+            //->orderBy('DATE_FORMAT("%Y-%m-%d",`create_time`) DESC')
+            //->addOrderBy('`referral_date_time` DESC');
 
         // add conditions that should always apply here
 

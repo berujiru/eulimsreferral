@@ -55,6 +55,14 @@ class ReferralController extends Controller
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+
+        if(isset(Yii::$app->user->identity->profile->rstl_id)){
+            $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+        } else {
+            //return 'Session time out!';
+            return $this->redirect(['/site/login']);
+        }
+        
         $customers = $this->listCustomers();
         $agency = $this->listAgency();
 

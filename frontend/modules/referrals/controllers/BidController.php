@@ -210,9 +210,9 @@ class BidController extends Controller
                     $modelBid->referral_id = $referralId;
                     $modelBid->bidder_agency_id = (int) Yii::$app->user->identity->profile->rstl_id;
                     $modelBid->sample_requirements = $sample_requirements['sample_requirements'];
+                    $modelBid->bid_amount = $bidding_fee['bid_total_fee'];
                     $modelBid->remarks = $sample_requirements['remarks'];
                     $modelBid->estimated_due = $sample_requirements['estimated_due'];
-                    $modelBid->bid_amount = $bidding_fee['bid_total_fee'];
                     $modelBid->bidder_user_id = (int) Yii::$app->user->identity->profile->user_id;
                     $modelBid->created_at = date('Y-m-d H:i:s');
                     $modelBid->updated_at = date('Y-m-d H:i:s');
@@ -286,10 +286,13 @@ class BidController extends Controller
         $noticeCount = Bidnotification::find()->where('referral_id =:referralId AND recipient_agency_id =:agencyId AND seen =:seen',[':referralId'=>$referralId,':agencyId'=>$agencyId,':seen'=>1])->count();
 
         if($referralId > 0 && $noticeCount > 0){
+            $function = new ReferralFunctions();
+
             $referral = $this->findReferral($referralId);
             $bid = Bid::find()->where('referral_id =:referralId AND bidder_agency_id =:agencyId',[':referralId'=>$referralId,':agencyId'=>$agencyId])->count();
             $samples = Sample::find()->where('referral_id =:referralId',[':referralId'=>$referralId]);
             $agency = $this->findAgency($agencyId);
+            $checkOwner = $function->checkOwner($referralId,$agencyId);
         } else {
             Yii::$app->session->setFlash('error', "Not a valid referral request!");
             return $this->redirect(['/referrals/bidnotification']);
@@ -392,6 +395,7 @@ class BidController extends Controller
             'discounted' => $discounted,
             'total' => $total,
             'agencyCode' => $agency->code,
+            'checkOwner' => $checkOwner,
         ]);
     }
 
@@ -548,7 +552,7 @@ class BidController extends Controller
 				'total' => $total,
 				//'agencyCode' => $agency->code,
 				'agency' => $agency,
-				'owner' => $checkOwner,
+				'checkOwner' => $checkOwner,
 			]);
 		} else {
 			$agency = $this->findAgency($agencyId);
@@ -564,7 +568,7 @@ class BidController extends Controller
 				'total' => $total,
 				'agencyCode' => $agency->code,
 				//'agency' => $agency,
-				'owner' => $checkOwner,
+				'checkOwner' => $checkOwner,
 			]);
 		}
     }
@@ -796,7 +800,7 @@ class BidController extends Controller
 					'discounted' => $discounted,
 					'total' => $total,
 					'agency' => $agency,
-					'owner' => $checkOwner,
+					'checkOwner' => $checkOwner,
 				]);
 			}
 		} else {

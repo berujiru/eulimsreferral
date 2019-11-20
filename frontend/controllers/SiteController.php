@@ -109,7 +109,12 @@ class SiteController extends Controller
      */
     public function actionIndex(){
 
-        return $this->render('index');
+        //return $this->render('index');
+		if(Yii::$app->user->isGuest){
+            return $this->redirect(['/site/login']);
+        }else{
+            return $this->render('index');
+        }
         
     }
 
@@ -152,7 +157,17 @@ class SiteController extends Controller
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+			
+            $loginlogs = new Loginlogs();
+			$loginlogs->user_id = (int) Yii::$app->user->identity->profile->user_id;
+			$loginlogs->agency_id = (int) Yii::$app->user->identity->profile->rstl_id;
+			$loginlogs->login_date = date('Y-m-d H:i:s');
+			
+			if($loginlogs->save()){
+				return $this->goBack();
+			} else {
+				Yii::$app->user->logout();
+			}
         } else {
             return $this->render('..\admin-lte\site\userdashboard.php', [
                 'model' => $model,

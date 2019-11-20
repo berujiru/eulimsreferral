@@ -102,7 +102,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'receiving_agency_id',
                 'format' => 'raw',
                 'value' => function($data){
-                    return !empty($data->customer) ? $data->agencyreceiving->name : null;
+                    //return !empty($data->customer) ? $data->agencyreceiving->name : null;
+                    return !empty($data->agencyreceiving) ? $data->agencyreceiving->name : null;
                 },
                 'headerOptions' => ['class' => 'text-center'],
                 'filterType' => GridView::FILTER_SELECT2,
@@ -126,7 +127,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'testing_agency_id',
                 'format' => 'raw',
                 'value' => function($data){
-                    return !empty($data->customer) ? $data->agencytesting->name : null;
+                    //return !empty($data->customer) ? $data->agencytesting->name : null;
+                    return !empty($data->agencytesting) ? $data->agencytesting->name : null;
                 },
                 'headerOptions' => ['class' => 'text-center'],
                 'filterType' => GridView::FILTER_SELECT2,

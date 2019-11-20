@@ -1,6 +1,7 @@
 <?php
 use yii\helpers\Html;
 use common\modules\profile\ProfileAsset;
+use common\models\referral\Visitedpage;
 /* @var $this \yii\web\View */
 /* @var $content string */
 
@@ -35,7 +36,53 @@ if (Yii::$app->controller->action->id === 'login') {
     ProfileAsset::register($this);
     //Yii::$app->assetManager->forceCopy=false;
     $directoryAsset = Yii::$app->assetManager->getPublishedUrl('@vendor/almasaeed2010/adminlte/dist');
+
+    //Yii::$app->runAction('/visitepaged/logpage');
     
+    ?>
+    <?php 
+      //for logging pages accessed by the user
+      $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
+
+      if($rstlId > 0) {
+        $page_request = Yii::$app->request;
+        $page_controller = Yii::$app->controller;
+        $pstcId = !empty(Yii::$app->user->identity->profile->pstc_id) ? (int) Yii::$app->user->identity->profile->pstc_id : NULL;
+
+        /*if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') { 
+          $logpage = new Visitedpage();            
+          $logpage->absolute_url = $page_request->absoluteUrl;
+          $logpage->home_url = $page_request->hostInfo;
+          $logpage->module =  $page_controller->module->id;
+          $logpage->controller = $page_controller->id;
+          $logpage->action = $page_controller->action->id;
+          $logpage->user_id = (int) Yii::$app->user->identity->profile->user_id;
+          $logpage->params = $page_request->queryString;
+          $logpage->rstl_id = $rstlId;
+          $logpage->pstc_id = $pstcId;
+          $logpage->date_visited = date('Y-m-d H:i:s');
+          $logpage->save();
+        } */
+
+        $logpage = new Visitedpage();            
+        $logpage->absolute_url = $page_request->absoluteUrl;
+        $logpage->home_url = $page_request->hostInfo;
+        $logpage->module =  $page_controller->module->id;
+        $logpage->controller = $page_controller->id;
+        $logpage->action = $page_controller->action->id;
+        $logpage->user_id = (int) Yii::$app->user->identity->profile->user_id;
+        $logpage->params = $page_request->queryString;
+        $logpage->rstl_id = $rstlId;
+        $logpage->pstc_id = $pstcId;
+        $logpage->date_visited = date('Y-m-d H:i:s');
+        if($logpage->save()) {
+          //echo 'save';
+        } else {
+          print_r($logpage->getErrors());
+        }
+      } else {
+          return $this->redirect(['/site/login']);
+      }
     ?>
     <?php $this->beginPage() ?>
     <!DOCTYPE html>
