@@ -161,15 +161,15 @@ class Printreferral {
         <table>
             <tr>
                 <td width="80">CUSTOMER:</td>
-                <td width="380" style="border-right: 0.5px solid #000;font-size:10px">'.substr($customer ? $customer->customer_name : null,0,80).'</td>
+                <td width="380" style="border-right: 0.5px solid #000;font-size:10px">'.substr($customer->customer_name,0,80).'</td>
                 <td width="52">TEL NO.:</td>
-                <td width="104" style="font-size:10px;">'.substr($customer ? $customer->tel : 0,0,23).'</td>
+                <td width="104" style="font-size:10px;">'.substr($customer->tel,0,23).'</td>
             </tr>
             <tr>
                 <td>ADDRESS:</td>
-                <td style="border-right: 0.5px solid #000;font-size:10px;white-space:nowrap;">'.substr($customer ? $customer->address : null,0,80).'</td>
+                <td style="border-right: 0.5px solid #000;font-size:10px;white-space:nowrap;">'.substr($customer->address,0,80).'</td>
                 <td>FAX NO.:</td>
-                <td style="font-size:10px;">'. $customer ? $customer->fax : null.'</td>
+                <td style="font-size:10px;">'. $customer->fax .'</td>
             </tr>
         </table>
         </br>

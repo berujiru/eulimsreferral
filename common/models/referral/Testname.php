@@ -54,7 +54,7 @@ class Testname extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'testname_id' => 'Testname ID',
+            'testname_id' => 'Test Name',
             'test_name' => 'Test Name',
             'active' => 'Active',
             'create_time' => 'Create Time',

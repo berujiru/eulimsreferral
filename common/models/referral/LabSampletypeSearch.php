@@ -5,12 +5,12 @@ namespace common\models\referral;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\referral\Lab;
+use common\models\referral\Labsampletype;
 
 /**
- * LabSearch represents the model behind the search form about `common\models\referraladmin\Lab`.
+ * LabSampletypeSearch represents the model behind the search form about `common\models\referraladmin\LabSampletype`.
  */
-class LabSearch extends Lab
+class LabSampletypeSearch extends Labsampletype
 {
     /**
      * @inheritdoc
@@ -18,8 +18,8 @@ class LabSearch extends Lab
     public function rules()
     {
         return [
-            [['lab_id'], 'integer'],
-            [['labname', 'labcode', 'active'], 'safe'],
+            [['labsampletype_id', 'lab_id', 'sampletype_id'], 'integer'],
+            [['date_added', 'added_by'], 'safe'],
         ];
     }
 
@@ -41,7 +41,7 @@ class LabSearch extends Lab
      */
     public function search($params)
     {
-        $query = Lab::find();
+        $query = LabSampletype::find();
 
         // add conditions that should always apply here
 
@@ -59,13 +59,13 @@ class LabSearch extends Lab
 
         // grid filtering conditions
         $query->andFilterWhere([
+            'labsampletype_id' => $this->labsampletype_id,
             'lab_id' => $this->lab_id,
-            'active' => $this->active,
+            'sampletype_id' => $this->sampletype_id,
+            'date_added' => $this->date_added,
         ]);
 
-        $query->andFilterWhere(['like', 'labname', $this->labname])
-            ->andFilterWhere(['like', 'labcode', $this->labcode])
-            ->andFilterWhere(['like', 'active', $this->active]);
+        $query->andFilterWhere(['like', 'added_by', $this->added_by]);
 
         return $dataProvider;
     }

@@ -3,16 +3,16 @@
 namespace frontend\modules\referraladmin\controllers;
 
 use Yii;
-use common\models\referral\Lab;
-use common\models\referral\LabSearch;
+use common\models\referral\Sampletype;
+use common\models\referral\SampletypeSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * LabController implements the CRUD actions for Lab model.
+ * SampletypeController implements the CRUD actions for Sampletype model.
  */
-class LabController extends Controller
+class SampletypeController extends Controller
 {
     /**
      * @inheritdoc
@@ -30,12 +30,12 @@ class LabController extends Controller
     }
 
     /**
-     * Lists all Lab models.
+     * Lists all Sampletype models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new LabSearch();
+        $searchModel = new SampletypeSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -45,7 +45,7 @@ class LabController extends Controller
     }
 
     /**
-     * Displays a single Lab model.
+     * Displays a single Sampletype model.
      * @param integer $id
      * @return mixed
      */
@@ -59,26 +59,38 @@ class LabController extends Controller
     }
 
     /**
-     * Creates a new Lab model.
+     * Creates a new Sampletype model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new Lab();
+        $model = new Sampletype();
+        if ($model->load(Yii::$app->request->post())) {
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            Yii::$app->session->setFlash('success', 'Successfully Saved!');
-            return $this->redirect(['/referraladmin/lab']);
-        } else {
-            return $this->renderAjax('create', [
+          $sampletype = Sampletype::find()->where(['type'=> $model->type])->one();
+
+          if ($sampletype){
+            Yii::$app->session->setFlash('warning', "The system has detected a duplicate record. You are not allowed to perform this operation."); 
+            return $this->runAction('index');
+          }else{
+            $model->save();  
+            Yii::$app->session->setFlash('success', 'Sample Type Successfully Created'); 
+            return $this->runAction('index');
+          }
+         
+        }
+
+        if(Yii::$app->request->isAjax){
+            return $this->renderAjax('_form', [
                 'model' => $model,
             ]);
-        }
+            }
+
     }
 
     /**
-     * Updates an existing Lab model.
+     * Updates an existing Sampletype model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -86,20 +98,21 @@ class LabController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        
+                if ($model->load(Yii::$app->request->post()) && $model->save()) {
+                    Yii::$app->session->setFlash('success', 'Sample Type Successfully Updated'); 
+                    return $this->redirect(['index']);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            Yii::$app->session->setFlash('success', 'Successfully Updated!');
-            return $this->redirect(['/referraladmin/lab']);
-                
-        } else {
-            return $this->renderAjax('update', [
-                'model' => $model,
-            ]);
-        }
+                } else if (Yii::$app->request->isAjax) {
+             
+                    return $this->renderAjax('update', [
+                        'model' => $model,
+                    ]);
+                 }
     }
 
     /**
-     * Deletes an existing Lab model.
+     * Deletes an existing Sampletype model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -107,21 +120,20 @@ class LabController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-        Yii::$app->session->setFlash('success', 'Successfully Done!');
-        return $this->redirect(['/referraladmin/lab']);
-        
+        Yii::$app->session->setFlash('success', 'Successfully Deleted'); 
+        return $this->redirect(['index']);
     }
 
     /**
-     * Finds the Lab model based on its primary key value.
+     * Finds the Sampletype model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Lab the loaded model
+     * @return Sampletype the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Lab::findOne($id)) !== null) {
+        if (($model = Sampletype::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
