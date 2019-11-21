@@ -74,7 +74,8 @@ $Session= Yii::$app->session;
 if(empty($model->referral_code)){
     $labelpanel = '<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code;
 } else {
-    $btnPrint = "<a href='/referrals/referral/print-referral?id=".$model->referral_id."' class='btn-sm btn-default' style='color:#000000;margin-left:15px;'><i class='fa fa-print'></i> Print</a>";
+    //$btnPrint = "<a href='/referrals/referral/print-referral?id=".$model->referral_id."' class='btn-sm btn-default' style='color:#000000;margin-left:15px;'><i class='fa fa-print'></i> Print</a>";
+    $btnPrint = "<a href='/referrals/referral/printref?id=".$model->referral_id."' class='btn btn-success' style='margin-left: 5px' target='_blank'><i class='fa fa-print'></i> Print Referral</a>";
     $labelpanel = '<i class="glyphicon glyphicon-book"></i> Referral Code ' . $model->referral_code .' '.$btnPrint;
 }
 
@@ -423,6 +424,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
             ]);
         ?>
     </div>
+    <?php if($model->referral_code){ ?>
     <div class="container" <?php echo $haveStatus; ?>>
         <ul class="progress-track">
                 <li class="<?php echo $statusreceived; ?> progress-tooltip">
@@ -463,8 +465,8 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                 </li>
         </ul>
         <?php
-        echo "<a href='/referrals/referral/printref?id=".$model->referral_id."' class='btn btn-success' style='margin-left: 5px' target='_blank'><i class='fa fa-print'></i> Print Referral</a>";
-        echo "<br /><br />";
+       // echo "<a href='/referrals/referral/printref?id=".$model->referral_id."' class='btn btn-success' style='margin-left: 5px' target='_blank'><i class='fa fa-print'></i> Print Referral</a>";
+       // echo "<br /><br />";
         ?>
     </div>
     
@@ -672,6 +674,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                 $gridColumn2=Html::button('<span class="glyphicon glyphicon-plus"></span> Add Referral Track', ['value'=>"/referrals/referraltrackreceiving/create?referralid=$model->referral_id", 'class' => 'btn btn-success','title' => Yii::t('app', "Referral Track Receiving Lab"),'id'=>'btnreceivedtrack','onclick'=>'addreceivedtrack(this.value,this.title)']);
             }
             
+            
             $gridColumnResult=$gridColumnsResults;
          }
          else{
@@ -718,6 +721,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
         </div>
         </div>      
     </div>
+    <?php } ?>
 </div>
 
 </div>
