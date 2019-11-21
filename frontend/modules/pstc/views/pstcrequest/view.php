@@ -399,7 +399,7 @@ $btn_add_sample_received = empty($model->sample_received_date) ? Html::button('<
 
                     'before'=> ($accepted == 0 && $countSample > 0) ? $btn_add_analysis : '',
 
-                    'after'=> $model->is_referral == 1 ? Html::button('<i class="glyphicon glyphicon-repeat"></i> Revert for Local Request', ['value' => Url::to(['/pstc/pstcrequest/revertlocal','request_id'=>$model->pstc_request_id]),'title'=>'Revert for Local Request', 'onclick'=>'markReferral(this.value,this.title)', 'class' => 'btn btn-danger','id' => 'modalBtn']) : Html::button('<i class="glyphicon glyphicon-bookmark"></i> Mark for Referral Request', ['value' => Url::to(['/pstc/pstcrequest/markreferral','request_id'=>$model->pstc_request_id]),'title'=>'Mark for Referral Request', 'onclick'=>'markReferral(this.value,this.title)', 'class' => 'btn btn-primary','id' => 'modalBtn']),
+                    'after'=> $model->local_request_id > 0 && $accepted == 1 ? '' : ($model->is_referral == 1 ? Html::button('<i class="glyphicon glyphicon-repeat"></i> Revert for Local Request', ['value' => Url::to(['/pstc/pstcrequest/revertlocal','request_id'=>$model->pstc_request_id]),'title'=>'Revert for Local Request', 'onclick'=>'markReferral(this.value,this.title)', 'class' => 'btn btn-danger','id' => 'modalBtn']) : Html::button('<i class="glyphicon glyphicon-bookmark"></i> Mark for Referral Request', ['value' => Url::to(['/pstc/pstcrequest/markreferral','request_id'=>$model->pstc_request_id]),'title'=>'Mark for Referral Request', 'onclick'=>'markReferral(this.value,this.title)', 'class' => 'btn btn-primary','id' => 'modalBtn'])),
                     //'footer'=>$actionButtonConfirm.$actionButtonSaveLocal,
                     'footer'=>false,
                 ],
@@ -460,6 +460,8 @@ $btn_add_sample_received = empty($model->sample_received_date) ? Html::button('<
 
 <script type="text/javascript">
     function addSample(url,title){
+        var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
+        $('#modalContent').html(_replace);
         $(".modal-title").html(title);
         $('#modal').modal('show')
             .find('#modalContent')
@@ -467,14 +469,18 @@ $btn_add_sample_received = empty($model->sample_received_date) ? Html::button('<
     }
 
     function addReceived_date(url,title) {
-        //$(".modal-title").html(title);
+        var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
+        $(".modal-title").html(title);
+        $('#modalBody').html(_replace);
         $('#modalMark').modal('show')
             .find('#modalBody')
             .load(url);
     }
 
     function updateSample(id,requestId){
-       var url = '/pstc/pstcsample/update?id='+id+'&request_id='+requestId;
+        var url = '/pstc/pstcsample/update?id='+id+'&request_id='+requestId;
+        var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
+        $('#modalContent').html(_replace);
         $('.modal-title').html('Update Sample');
         $('#modal').modal('show')
             .find('#modalContent')
@@ -492,7 +498,9 @@ $btn_add_sample_received = empty($model->sample_received_date) ? Html::button('<
                     cssClass: 'btn-danger',
                     action: function(thisDialog){
                         thisDialog.close();
+                        var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
                         $('.modal-title').html(title);
+                        $('#modalBody').html(_replace);
                         $('#modalMark').modal('show')
                             .find('#modalBody')
                             .load(url);
@@ -509,6 +517,8 @@ $btn_add_sample_received = empty($model->sample_received_date) ? Html::button('<
     }
 
     function addAnalysis(url,title){
+        var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
+        $('#modalContent').html(_replace);
         $(".modal-title").html(title);
         $('#modalAnalysis').modal('show')
             .find('#modalContent')
@@ -521,6 +531,8 @@ $btn_add_sample_received = empty($model->sample_received_date) ? Html::button('<
             success: function (data) {
                 $('.image-loader').removeClass('img-loader');
                 var url = '/pstc/pstcanalysis/update?id='+id+'&request_id='+requestId+'&page='+data;
+                var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
+                $('#modalContent').html(_replace);
                 $('.modal-title').html(title);
                 $('#modalAnalysis').modal('show')
                     .find('#modalContent')
@@ -538,6 +550,8 @@ $btn_add_sample_received = empty($model->sample_received_date) ? Html::button('<
             success: function (data) {
                 $('.image-loader').removeClass('img-loader');
                 var url = '/pstc/pstcanalysis/update_not_offer?id='+id+'&request_id='+requestId+'&page='+data;
+                var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
+                $('#modalContent').html(_replace);
                 $('.modal-title').html(title);
                 $('#modalAnalysis').modal('show')
                     .find('#modalContent')
@@ -550,6 +564,8 @@ $btn_add_sample_received = empty($model->sample_received_date) ? Html::button('<
     }
 
     function updatePackage(url,title){
+        var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
+        $('#modalContent').html(_replace);
         $('.modal-title').html(title);
         $('#modalAnalysis').modal('show')
             .find('#modalContent')

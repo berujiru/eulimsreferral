@@ -112,8 +112,7 @@ class PstcanalysisController extends Controller
 
             if(Yii::$app->request->post()) {
 
-                //print_r(Yii::$app->request->post());
-                //exit;
+                $model_request = Pstcrequest::findOne($requestId);
 
                 $connection = Yii::$app->db;
                 $transaction = $connection->beginTransaction();
@@ -156,6 +155,11 @@ class PstcanalysisController extends Controller
                     $method = $this->getMethodrefOne($methodrefId);
 
                     $analysis = new Pstcanalysis();
+
+                    if($model_request->is_referral == 1) {
+                        $analysis->analysis_offered = 0;
+                    }
+
                     $analysis->pstc_sample_id = (int) $sample;
                     $analysis->rstl_id = (int) $rstlId;
                     $analysis->pstc_id = (int) Yii::$app->user->identity->profile->pstc_id;
@@ -311,6 +315,10 @@ class PstcanalysisController extends Controller
                 $method = $this->getMethodrefOne($methodrefId);
 
                 //$model = new Pstcanalysis();
+                if($model_request->is_referral == 1) {
+                    $analysis->analysis_offered = 0;
+                }
+
                 $model->pstc_sample_id = $sampleId;
                 $model->rstl_id = (int) $rstlId;
                 $model->pstc_id = (int) Yii::$app->user->identity->profile->pstc_id;

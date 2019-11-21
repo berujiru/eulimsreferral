@@ -394,14 +394,66 @@ class PstcrequestController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $rstlId = (int) Yii::$app->user->identity->profile->rstl_id;
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->pstc_request_id]);
+        if($rstlId > 0) {
+            $mi = !empty(Yii::$app->user->identity->profile->middleinitial) ? " ".substr(Yii::$app->user->identity->profile->middleinitial, 0, 1).". " : " ";
+            $user_fullname = Yii::$app->user->identity->profile->firstname.$mi.Yii::$app->user->identity->profile->lastname;
+
+            $customers = $this->listCustomers($rstlId);
+            
+            if($user_fullname){
+                $model->received_by = $user_fullname;
+            } else {
+                $model->received_by = "";
+            }
+        } else {
+            return $this->redirect(['/site/login']);
         }
 
-        return $this->render('update', [
-            'model' => $model,
-        ]);
+        if(Yii::$app->request->post()) {
+            $post = Yii::$app->request->post('Pstcrequest');
+
+            $model->rstl_id = $rstlId;
+            $model->pstc_id = (int) Yii::$app->user->identity->profile->pstc_id;
+            $model->customer_id = (int) $post['customer_id'];
+            $model->submitted_by = $post['submitted_by'];
+            $model->received_by = $user_fullname;
+            $model->user_id = (int) Yii::$app->user->identity->profile->user_id;
+            $model->status_id = 1;
+            $model->created_at = date('Y-m-d H:i:s');
+            $model->updated_at = date('Y-m-d H:i:s');
+
+            if($model->save()) {
+                Yii::$app->session->setFlash('success', 'PSTC Request Successfully Updated!');
+                return $this->redirect(['view', 'id' => $model->pstc_request_id]);
+                //return $this->redirect(['/pstc/pstcrequest']);
+            } else {
+                Yii::$app->session->setFlash('error', 'PSTC Request failed to update!');
+                return $this->redirect(['/pstc/pstcrequest']);
+            }
+
+        } else {
+            if(\Yii::$app->request->isAjax){
+                return $this->renderAjax('_form', [
+                    'model' => $model,
+                    'customers' => $customers,
+                ]);
+            } else {
+                return $this->renderAjax('_form', [
+                    'model' => $model,
+                    'customers' => $customers,
+                ]);
+            }
+        }
+
+        //if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        //    return $this->redirect(['view', 'id' => $model->pstc_request_id]);
+        //}
+
+        //return $this->render('update', [
+        //    'model' => $model,
+        //]);
     }
 
     /**

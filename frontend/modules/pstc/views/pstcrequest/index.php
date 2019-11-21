@@ -128,7 +128,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         //return Html::a('<span class="glyphicon glyphicon-eye-open"></span>', ['referral/view', 'id' => $data->referral_id], ['class' => 'btn btn-primary','title' => 'View '.$data->referral_code,'target'=>"_blank"]);
                     },
                     'edit' => function($url, $data) {
-                        return $data->accepted == 0 ? Html::button('<span class="glyphicon glyphicon-pencil"></span>', ['value'=>Url::to(['pstcrequest/view','id'=>$data->pstc_request_id]),'onclick'=>'window.open(this.value,"_blank")', 'class' => 'btn btn-primary','title' => 'View PSTC Request']) :  null;
+                        return $data->accepted == 0 ? Html::button('<span class="glyphicon glyphicon-pencil"></span>', ['value'=>Url::to(['pstcrequest/update','id'=>$data->pstc_request_id]),'onclick'=>'addRequest(this.value,this.title)', 'class' => 'btn btn-primary','title' => 'Update PSTC Request']) :  null;
                     }
                 ],
             ],
@@ -145,10 +145,11 @@ $this->params['breadcrumbs'][] = $this->title;
 <script type="text/javascript">
     $('#pstcrequest-grid tbody td').css('cursor', 'pointer');
     function addRequest(url,title){
+        var _replace = "<div style='text-align:center;'><img src='/images/img-loader64.gif' alt=''></div>";
+        $('#modalContent').html(_replace);
         $(".modal-title").html(title);
         $('#modal').modal('show')
             .find('#modalContent')
             .load(url);
     }
-    
 </script>

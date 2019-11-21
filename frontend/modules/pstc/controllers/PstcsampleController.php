@@ -118,6 +118,7 @@ class PstcsampleController extends Controller
                         $transaction->rollBack();
                     }
                 } */
+                $model_request = Pstcrequest::findOne($requestId);
 
                 if($quantity > 1) {
                     $sampleSave = 0;
@@ -125,10 +126,10 @@ class PstcsampleController extends Controller
                     {
                         $sample = new Pstcsample();
 
-                        // if(Yii::$app->request->post('checked') == 1) {
-                        //     $sample->is_referral = 1;
-                        //     $sample->sample_received_date = date('Y-m-d H:i:s', strtotime($post['sample_received_date']));
-                        // }
+                        if($model_request->is_referral == 1) {
+                            $sample->is_referral = 1;
+                            //$sample->sample_received_date = date('Y-m-d H:i:s', strtotime($post['sample_received_date']));
+                        }
 
                         $sample->rstl_id = $rstlId;
                         $sample->pstc_id = (int) Yii::$app->user->identity->profile->pstc_id;
@@ -157,10 +158,11 @@ class PstcsampleController extends Controller
                         return $this->redirect(['/pstc/pstcrequest/view', 'id' => $requestId]);
                     }
                 } else {
-                    // if(Yii::$app->request->post('checked') == 1) {
-                    //     $model->is_referral = 1;
-                    //     $model->sample_received_date = date('Y-m-d H:i:s', strtotime($post['sample_received_date']));
-                    // }
+
+                    if($model_request->is_referral == 1) {
+                        $model->is_referral = 1;
+                        //$sample->sample_received_date = date('Y-m-d H:i:s', strtotime($post['sample_received_date']));
+                    }
 
                     $model->rstl_id = $rstlId;
                     $model->pstc_id = (int) Yii::$app->user->identity->profile->pstc_id;
@@ -256,9 +258,14 @@ class PstcsampleController extends Controller
                             $transaction->rollBack();
                         }
                     } */
+                    $model_request = Pstcrequest::findOne($requestId);
 
                     if(!empty($post['sampling_date'])) {
                         $model->sampling_date = date('Y-m-d H:i:s', strtotime($post['sampling_date']));
+                    }
+
+                    if($model_request->is_referral == 1) {
+                        $model->is_referral = 1;
                     }
 
                     $model->sample_name = $post['sample_name'];
