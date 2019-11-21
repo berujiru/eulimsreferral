@@ -38,9 +38,9 @@ if(Yii::$app->user->isGuest){
     }
 	$unresponded_notification = json_decode(Yii::$app->runAction('/referrals/notification/count_unresponded_notification'),true);
 	$unresponded = $unresponded_notification['num_notification'] > 0 ? $unresponded_notification['num_notification'] : '';
-
-	$unseen_bid_notification = json_decode(Yii::$app->runAction('/referrals/bidnotification/count_unseen_bidnotification'),true);
-	$unseen = $unseen_bid_notification['bid_notification'] > 0 ? $unseen_bid_notification['bid_notification'] : '';
+    
+	 $unseen_bid_notification = json_decode(Yii::$app->runAction('/referrals/bidnotification/count_unseen_bidnotification'),true);
+     $unseen = $unseen_bid_notification['bid_notification'] > 0 ? $unseen_bid_notification['bid_notification'] : '';
 	//notification will run if the user is already logged in
 	$this->registerJs("
 		setInterval(function(e){
