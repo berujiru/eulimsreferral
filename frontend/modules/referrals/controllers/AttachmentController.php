@@ -20,6 +20,8 @@ use frontend\modules\referrals\controllers\ReferralController;
  */
 class AttachmentController extends Controller
 {
+	
+	public $apiUrl = 'http://localhost/eulimsapi.onelab.ph';
     /**
      * {@inheritdoc}
      */
@@ -168,7 +170,8 @@ class AttachmentController extends Controller
                         'user_id' => Yii::$app->user->identity->profile->user_id,
                         'uploader' => $uploaderName,
                     ];
-                    $referralUrl='https://eulimsapi.onelab.ph/api/web/referral/attachments/upload_deposit';
+                    //$referralUrl='https://eulimsapi.onelab.ph/api/web/referral/attachments/upload_deposit';
+                    $referralUrl=$this->apiUrl.'/api/web/referral/attachments/upload_deposit';
 
                     $data = ['file_data'=>$file_data,'uploader_data'=>json_encode($uploader_data)];
 
@@ -239,7 +242,8 @@ class AttachmentController extends Controller
                         'user_id' => Yii::$app->user->identity->profile->user_id,
                         'uploader' => $uploaderName,
                     ];
-                    $referralUrl='https://eulimsapi.onelab.ph/api/web/referral/attachments/upload_or';
+                    //$referralUrl='https://eulimsapi.onelab.ph/api/web/referral/attachments/upload_or';
+                    $referralUrl=$this->apiUrl.'/api/web/referral/attachments/upload_or';
 
                     $data = ['file_data'=>$file_data,'uploader_data'=>json_encode($uploader_data)];
 
@@ -310,7 +314,8 @@ class AttachmentController extends Controller
                         'user_id' => Yii::$app->user->identity->profile->user_id,
                         'uploader' => $uploaderName,
                     ];
-                    $referralUrl='https://eulimsapi.onelab.ph/api/web/referral/attachments/upload_result';
+					//$referralUrl='https://eulimsapi.onelab.ph/api/web/referral/attachments/upload_result';
+                    $referralUrl=$this->apiUrl.'/api/web/referral/attachments/upload_result';
 
                     $data = ['file_data'=>$file_data,'uploader_data'=>json_encode($uploader_data)];
 
