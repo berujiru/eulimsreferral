@@ -81,6 +81,12 @@ if(empty($model->referral_code)){
 
 $rstlId = Yii::$app->user->identity->profile->rstl_id;
 
+if($countNotificationtype3 > 0) {
+    $actionButtonGenerateSamplecode = Html::button('<span class="glyphicon glyphicon-qrcode"></span> Generate Sample Code', ['value'=>Url::to(['/referrals/referral/generatesamplecode','referral_id'=>$model->referral_id,'notice_id'=>$notificationtype3->notification_id]),'onclick'=>'generateSampleCode(this.value,this.title)','class' => 'btn btn-primary','title' => 'Generate Sample Code']);
+} else {
+    $actionButtonGenerateSamplecode = "";
+}
+
 ?>
 <div class="referral-view">
     <div class="image-loader" style="display: none;"></div>
@@ -313,7 +319,7 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
                 'panel' => [
                     'heading'=>'<h3 class="panel-title">Samples</h3>',
                     'type'=>'primary',
-                    'before'=>null,
+                    'before'=>$actionButtonGenerateSamplecode,
                     'after'=>false,
                 ],
                 'columns' => $gridColumns,
@@ -748,6 +754,13 @@ $rstlId = Yii::$app->user->identity->profile->rstl_id;
 
     //placing bid
     function placebid(url,title){
+        $('.modal-title').html(title);
+        $('#modal').modal('show')
+            .find('#modalContent')
+            .load(url);
+    }
+
+    function generateSampleCode(url,title){
         $('.modal-title').html(title);
         $('#modal').modal('show')
             .find('#modalContent')
