@@ -45,7 +45,7 @@ class Notification extends \yii\db\ActiveRecord
         return [
             [['referral_id', 'notification_type_id', 'sender_id', 'recipient_id', 'sender_user_id', 'sender_name', 'notification_date'], 'required'],
             [['referral_id', 'notification_type_id', 'sender_id', 'recipient_id', 'sender_user_id', 'responded'], 'integer'],
-            [['notification_date'], 'safe'],
+            [['notification_date', 'date_responded'], 'safe'],
             [['sender_name'], 'string', 'max' => 100],
             [['remarks'], 'string', 'max' => 200],
         ];
@@ -67,6 +67,7 @@ class Notification extends \yii\db\ActiveRecord
             'remarks' => 'Remarks',
             'responded' => 'Responded',
             'notification_date' => 'Notification Date',
+            'date_responded' => 'Date Responded',
         ];
     }
 

@@ -280,6 +280,8 @@ class PstcanalysisController extends Controller
 
             if(Yii::$app->request->post()) {
 
+                $model_request = Pstcrequest::findOne($requestId);
+
                 $connection = Yii::$app->db;
                 $transaction = $connection->beginTransaction();
                 $postData = Yii::$app->request->post();

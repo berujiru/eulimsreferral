@@ -106,7 +106,12 @@ class ReferralController extends Controller
                 $model = $this->findModel($id);
                 $samples = $model->samples;
                 $analyses = Analysis::find()->joinWith('sample',false)->where('referral_id =:referralId',[':referralId'=>$id])->all();
-                $notification= Notification::find()->where('referral_id =:referralId',[':referralId'=>$id])->orderBy(['notification_type_id' => SORT_ASC])->all();
+                $notification = Notification::find()->where('referral_id =:referralId',[':referralId'=>$id])->orderBy(['notification_type_id' => SORT_ASC])->all();
+
+                $getReferralSent = Notification::find()->where('referral_id =:referralId AND notification_type_id =:noticeType AND responded =:responded AND (sender_id =:sender OR recipient_id =:recipient)',[':referralId'=>$id,':noticeType'=>3,':responded'=>0,':sender'=>$rstlId,':recipient'=>$rstlId]);
+
+                $getReferralSentCount = $getReferralSent->count();
+
                 $statuslogs= Statuslogs::find()->where('referral_id =:referralId',[':referralId'=>$id])->all();
                 
                 //set third parameter to 1 for attachment type deposit slip
@@ -185,7 +190,9 @@ class ReferralController extends Controller
                     'modelRefTracktesting'=>$this->findModeltestingtrack($id),
                     'modelRefTrackreceiving'=>$this->findModelreceivedtrack($id),
                     'counttesting'=> $counttesting,
-                    'countreceiving'=>$countreceiving
+                    'countreceiving'=>$countreceiving,
+                    'notificationtype3' => $getReferralSent->one(),
+                    'countNotificationtype3' => $getReferralSentCount
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', "Denied access!");
@@ -318,6 +325,7 @@ class ReferralController extends Controller
                         if($notification->save()){
                             $noticeSent = Notification::find()->where(['notification_id'=>$noticeId])->one();
                             $noticeSent->responded = 1;
+                            $noticeSent->date_responded = date('Y-m-d H:i:s');
                             if($noticeSent->save()){
                                 //$transaction->commit();
                                 $success = 1;
@@ -362,19 +370,20 @@ class ReferralController extends Controller
             //return 'Session time out!';
             return $this->redirect(['/site/login']);
         }
-        $noticeId = (int) Yii::$app->request->get('notice_id');
+        //$noticeId = (int) Yii::$app->request->get('notice_id');
 		
-		if($rstlId > 0 && $referralId > 0 && $noticeId > 0){
+		if($rstlId > 0 && $referralId > 0 && $noticeId > 0) {
 			$referral = Referral::findOne($referralId);
 			$year = date('Y', strtotime($referral->referral_date_time));
 			$connection= Yii::$app->db;
 			
-			foreach ($referral->samples as $samp){
+            $updateSample = 0;
+			foreach ($referral->samples as $samp) {
 				$transaction = $connection->beginTransaction();
 				$return="false";
 				try {
 					$query = 'CALL spGetNextGenerateSampleCode(:agencyId,:labId,:referralId)';
-					$params = [':agencyId'=>$rstlId,':labId'=>$referral->lab_id,':referralId'=>$referralId];
+					$params = [':agencyId'=>$rstlId,':labId'=>$referral->lab_id,':referralId'=>$referral->referral_id];
 					$row = Yii::$app->db->createCommand($query)
 							->bindValues($params)
 							->queryOne();
@@ -386,7 +395,7 @@ class ReferralController extends Controller
 					
 					//insert to tbl_samplecode
 					$samplecode = new Samplecode();
-					$samplecode->referral_id = $referralId;
+					$samplecode->referral_id = $referral->referral_id;
 					$samplecode->referral_code = $referral->referral_code;
 					$samplecode->sample_id = $sampleId;
 					$samplecode->lab_id = $referral->lab_id;
@@ -401,25 +410,19 @@ class ReferralController extends Controller
 						$sample->sample_month = date('m', strtotime($referral->referral_date_time));
 						$sample->sample_year = date('Y', strtotime($referral->referral_date_time));
 						if($sample->save(false)){ //skip validation since only update of sample code is performed
-							$notice = Notification::find()->where('notification_id =:notificationId AND notification_type_id =:notificationType',[':notificationId'=>$noticeId,':notificationType'=>3])->one();
-							$notice->responded = 1;
-							if($notice->save()){
-								$transaction->commit();
-								$return = 1;
-							} else {
-								$transaction->rollBack();
-								$return = 0;
-							}
+							$updateSample = 1;
 						} else {
 							//error
 							$transaction->rollBack();
-							$return = 0;
+							//$return = 0;
+                            $updateSample = 0;
 						}
 					} else {
 						//error
 						$transaction->rollBack();
 						//$samplecode->getErrors();
-						$return = 0;
+						//$return = 0;
+                        $updateSample = 0;
 					}
 				} catch (\Exception $e) {
 				   $transaction->rollBack();
@@ -431,16 +434,34 @@ class ReferralController extends Controller
 				   echo $e->getMessage();
 				}
 			}
+
+            if($updateSample == 1) {
+                //$notice = Notification::find()->where('notification_id =:notificationId AND notification_type_id =:notificationType',[':notificationId'=>$noticeId,':notificationType'=>3])->one();
+                $notice = Notification::find()->where('referral_id =:referralId AND notification_type_id =:noticeType AND responded =:responded AND (sender_id =:sender OR recipient_id =:recipient)',[':referralId'=>$referral->referral_id,':noticeType'=>3,':responded'=>0,':sender'=>$rstlId,':recipient'=>$rstlId])->one();
+                $notice->responded = 1;
+                $notice->date_responded = date('Y-m-d H:i:s');
+                
+                if($notice->save(false)){
+                    $transaction->commit();
+                    $return = 1;
+                } else {
+                    $transaction->rollBack();
+                    $return = 0;
+                }
+            } else {
+                $transaction->rollBack();
+                $return = 0;
+            }
 		} else {
 			$return = 0;
 		}
 		
-		if($return > 0){
+		if($return == 1) {
 			Yii::$app->session->setFlash('success', "Sample code successfully generated.");
             return $this->redirect(['/referrals/referral']);
 		} else {
 			Yii::$app->session->setFlash('error', "Failed to generate sample code!");
-            return $this->redirect(['/referrals/referral/viewnotice','id'=>$referralId,'notice_id'=>$noticeId]);
+            return $this->redirect(['/referrals/referral/view','id'=>$referralId,'notice_id'=>$noticeId]);
 		}
 	}
 

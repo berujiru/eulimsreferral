@@ -296,7 +296,7 @@ if(count($testname) > 0){
     </div>
 
     <div class="row">
-        <div class="col-sm-8">
+        <div class="col-sm-8 required">
         <?php
 
             echo $form->field($model,'testname_id')->widget(Select2::classname(),[
