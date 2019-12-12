@@ -528,3 +528,7 @@ frontend/modules/pstc_20190919/views_bk/pstcsample/create.php
 frontend/modules/pstc_20190919/views_bk/pstcsample/index.php
 frontend/modules/pstc_20190919/views_bk/pstcsample/update.php
 frontend/modules/pstc_20190919/views_bk/pstcsample/view.php
+common/models/referral/Pstcsample_20191114.php
+common/models/referral/Sample_20190508.php
+common/models/referral/Pstcrequest - Copy.php
+frontend/modules/pstc/controllers/PstcattachmentController_or.php
