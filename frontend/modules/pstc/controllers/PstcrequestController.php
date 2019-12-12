@@ -7,6 +7,7 @@ use common\models\referral\Pstcrequest;
 use common\models\referral\Pstcsample;
 use common\models\referral\Pstcanalysis;
 use common\models\referral\PstcrequestSearch;
+use common\models\referral\Pstcattachment;
 use common\models\referral\Customer;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -105,6 +106,7 @@ class PstcrequestController extends Controller
                 $model = $this->findModel($id);
                 $samples = Pstcsample::find()->where('pstc_request_id =:requestId',[':requestId'=>$id]);
                 $analyses = Pstcanalysis::find()->joinWith(['sample'],false)->where('pstc_request_id =:requestId',[':requestId'=>$id]);
+                $attachments = Pstcattachment::find()->where('pstc_request_id =:requestId',[':requestId'=>$id]);
                 // $analyses = (new \yii\db\Query())->select('tbl_pstcanalysis.*, tbl_pstcsample.*,tbl_testname.testName, tbl_methodreference.method,tbl_methodreference.reference,tbl_methodreference.fee')->from('tbl_pstcanalysis')
                 //    ->join('LEFT JOIN', 'tbl_pstcsample', 'tbl_pstcanalysis.pstc_sample_id = tbl_pstcsample.pstc_sample_id')
                 //    ->join('LEFT JOIN', 'eulims_lab.`tbl_testname`', 'tbl_pstcanalysis.testname_id = tbl_testname.testname_id')
@@ -121,7 +123,7 @@ class PstcrequestController extends Controller
 
                 $sampleDataProvider = new ActiveDataProvider([
                     'query' => $samples,
-                    'pagination'=>false,
+                    'pagination' => false,
                     /*'pagination' => [
                         'pageSize' => 10,
                     ],*/
@@ -134,7 +136,7 @@ class PstcrequestController extends Controller
 
                 $analysisDataprovider = new ActiveDataProvider([
                     'query' => $analyses,
-                    'pagination'=>false,
+                    'pagination' => false,
                 ]);
 
                 // $analysisDataprovider = new ArrayDataProvider([
@@ -148,6 +150,11 @@ class PstcrequestController extends Controller
                 // print_r($analysisDataprovider);
                 // echo "</pre>";
                 // exit;
+
+                $attachmentDataprovider = new ActiveDataProvider([
+                    'query' => $attachments,
+                    'pagination' => false,
+                ]);
 
                
                 $query = new Query;
@@ -171,6 +178,7 @@ class PstcrequestController extends Controller
                     //'customer' => $customer,
                     'sampleDataProvider' => $sampleDataProvider,
                     'analysisDataprovider'=> $analysisDataprovider,
+                    'attachmentDataprovider' => $attachmentDataprovider,
                     'subtotal' => $subtotal,
                     'discounted' => $discounted,
                     'total' => $total,

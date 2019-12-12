@@ -17,6 +17,7 @@ use Yii;
  * @property string $sample_code
  * @property string $sample_name
  * @property string $description
+ * @property string $customer_description
  * @property string $sampling_date
  * @property string $remarks
  * @property int $sample_month
@@ -29,6 +30,7 @@ use Yii;
  *
  * @property Analysis[] $analyses
  * @property Packagelist[] $packagelists
+ * @property Packagelist[] $packagelists0
  * @property Sampletype $sampleType
  * @property Packagelist $package
  * @property Referral $referral
@@ -61,7 +63,7 @@ class Sample extends \yii\db\ActiveRecord
             [['referral_id', 'receiving_agency_id', 'sample_type_id', 'sample_name', 'description', 'sampling_date', 'sample_month', 'sample_year', 'local_request_id', 'local_sample_id', 'created_at'], 'required'],
             [['referral_id', 'receiving_agency_id', 'pstcsample_id', 'package_id', 'sample_type_id', 'sample_month', 'sample_year', 'local_request_id', 'local_sample_id', 'active'], 'integer'],
             [['package_fee'], 'number'],
-            [['description'], 'string'],
+            [['description', 'customer_description'], 'string'],
             [['sampling_date', 'created_at', 'updated_at'], 'safe'],
             [['sample_code'], 'string', 'max' => 40],
             [['sample_name', 'remarks'], 'string', 'max' => 200],
@@ -88,6 +90,7 @@ class Sample extends \yii\db\ActiveRecord
             'sample_code' => 'Sample Code',
             'sample_name' => 'Sample Name',
             'description' => 'Description',
+            'customer_description' => 'Customer Description',
             'sampling_date' => 'Sampling Date',
             'remarks' => 'Remarks',
             'sample_month' => 'Sample Month',
@@ -112,6 +115,14 @@ class Sample extends \yii\db\ActiveRecord
      * @return \yii\db\ActiveQuery
      */
     public function getPackagelists()
+    {
+        return $this->hasMany(Packagelist::className(), ['sampletype_id' => 'sample_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPackagelists0()
     {
         return $this->hasMany(Packagelist::className(), ['sampletype_id' => 'sample_id']);
     }

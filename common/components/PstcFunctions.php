@@ -8,9 +8,6 @@ use yii\web\JsExpression;
 use yii\web\NotFoundHttpException;
 use linslin\yii2\curl;
 use common\models\referral\Pstcrequest;
-use common\models\referral\Pstcsample;
-use common\models\referral\Pstcanalysis;
-use common\models\referral\Agency;
 
 /**
  * Referral User Defined Functions
@@ -19,6 +16,7 @@ use common\models\referral\Agency;
 class PstcFunctions extends Component
 {
 	//public $source = 'https://eulimsapi.onelab.ph';
+	public $source = 'http://localhost/eulimsapi.onelab.ph';
 
 	//check if the agency is the owner of the pstc request
 	function checkOwner($requestId,$rstlId,$pstcId)
@@ -40,4 +38,24 @@ class PstcFunctions extends Component
 			return 0;
 		}
 	}
+
+	//download request form
+    function downloadRequest($requestId,$rstlId,$fileId)
+    {
+        if($requestId > 0 && $rstlId > 0 && $fileId > 0) {
+            $apiUrl=$this->source.'/api/web/referral/pstcattachments/download?request_id='.$requestId.'&rstl_id='.$rstlId.'&file='.$fileId;
+            $curl = new curl\Curl();
+            $curl->setOption(CURLOPT_CONNECTTIMEOUT, 120);
+            $curl->setOption(CURLOPT_TIMEOUT, 120);
+            $list = $curl->get($apiUrl);
+
+            if($list == 'false') {
+            	return $list;
+            } else {
+            	return $apiUrl;
+            }
+        } else {
+            return false;
+        }
+    }
 }

@@ -15,7 +15,7 @@ use yii\helpers\ArrayHelper;
     <?php $form = ActiveForm::begin(); ?>
 
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-10">
             <?= $form->field($model, 'customer_id')->widget(Select2::classname(), [
                 'data' => $customers,
                 //'type'=>DepDrop::TYPE_SELECT2,
@@ -25,9 +25,14 @@ use yii\helpers\ArrayHelper;
                 'pluginOptions'=>[
                    'placeholder'=>'Select Customer',
                    'LoadingText'=>'Loading...',
-                   'allowClear' => true
+                   'allowClear' => true,
                 ],
-            ])->label('Customer'); ?>
+            ])->label('Customer') ?>
+        </div>
+        <div class="col-md-2" style="margin-left: -20px;">
+            <label>&nbsp;</label>
+            <br>
+            <?= Html::button('<i class="glyphicon glyphicon-plus-sign"></i><i class="glyphicon glyphicon-user"></i>', ['class' => 'btn btn-primary']) ?>
         </div>
         <div class="col-md-12">
             <?= $form->field($model, 'submitted_by')->textInput(['placeholder' => 'Enter name ...']) ?>
