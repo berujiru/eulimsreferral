@@ -36,7 +36,8 @@ $gridColumn = [
             return $model->user->username;
         },
         'filterType' => GridView::FILTER_SELECT2,
-        'filter' => ArrayHelper::map(User::find()->asArray()->all(), 'user_id', 'username'),
+        'filter' => Yii::$app->user->can('access-his-profile') ? ArrayHelper::map(User::findAll(['user_id'=>Yii::$app->user->identity->user_id]),'user_id','username') : ArrayHelper::map(User::find()->all(),'user_id','username'),
+        //'filter' => $UserList,
         'filterWidgetOptions' => [
             'pluginOptions' => ['allowClear' => true],
         ],
