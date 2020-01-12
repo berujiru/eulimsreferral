@@ -20,14 +20,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 //        $this->createUrl('/admindb/accomplishments/laboratory'),array('target'=>'_blank')
             //)?>
             <?php
-                echo Html::a(Html::img('@web/images/accompreportlab.png', ['class'=>'image-icon','alt'=>'Per Laboratory','title'=>'Accomplishment Report per Laboratory']), ['/reports/accomplishmentadmin', 'report_type' => 1], ['class' => 'profile-link','target' => '_blank']);
+                echo Html::a(Html::img('@web/images/accompreportlab.png', ['class'=>'image-icon','alt'=>'Per Laboratory','title'=>'Accomplishment Report per Laboratory']), ['/reports/accomplishmentadmin/laboratory'], ['target' => '_blank']);
 
-                echo Html::a(Html::img('@web/images/accompreportagency.png', ['class'=>'image-icon','alt'=>'Per Agency','title'=>'Accomplishment Report per Agency']), ['/reports/accomplishmentadmin', 'report_type' => 2], ['class' => 'profile-link','target' => '_blank']);
-            ?>
-            <?php //echo CHtml::link(
-                  //      CHtml::image(Yii::app()->baseUrl . '/images/accompreportagency.png', 'Per Agency', array('class'=>'image-icon','title'=>'Accomplishment Report per Agency')),
-                    //    $this->createUrl('/admindb/accomplishments/agency'),array('target'=>'_blank')
-                    //    )
+                echo Html::a(Html::img('@web/images/accompreportagency.png', ['class'=>'image-icon','alt'=>'Per Agency','title'=>'Accomplishment Report per Agency']), ['/reports/accomplishmentadmin/agency'], ['target' => '_blank']);
+
+                echo Html::a(Html::img('@web/images/truck.png', ['class'=>'image-icon','alt'=>'Referral Tracking','title'=>'Referral Tracking']), ['/referrals/referraltracking'], ['target' => '_blank']);
             ?>
         </div>
     </div>

@@ -32,8 +32,9 @@ $gridColumn = [
     [
         'attribute' => 'user_id',
         'label' => 'Username',
-        'value' => function($model) {
-            return $model->user->username;
+        'value' => function($data) {
+            //return $model->user->username;
+            return !empty($data->user) ? $data->user->username : "";
         },
         'filterType' => GridView::FILTER_SELECT2,
         'filter' => Yii::$app->user->can('access-his-profile') ? ArrayHelper::map(User::findAll(['user_id'=>Yii::$app->user->identity->user_id]),'user_id','username') : ArrayHelper::map(User::find()->all(),'user_id','username'),

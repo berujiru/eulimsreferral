@@ -10,9 +10,45 @@ use kartik\widgets\Select2;
 use kartik\grid\DataColumn;
 use common\models\referral\Lab;
 use arturoliveira\ExcelView;
+use kartik\export\ExportMenu;
 
 $this->title = 'Reports';
 $this->params['breadcrumbs'][] = $this->title;
+
+
+$pdfHeader = [
+    'L' => [
+        'content' => $agency->name.' - Accomplishment Report',
+        'font-size' => 9,
+        'color' => '#333333',
+    ],
+    'C' => [
+        'content' => '',//$agency->name.' - Accomplishment Report',
+        'font-size' => 16,
+        'color' => '#333333',
+    ],
+    'R' => [
+        'content' => 'Generated from EULIMS Referral - '.date('D, d-M-Y g:i A T'),
+        'font-size' => 9,
+        'color' => '#333333',
+    ],
+];
+$pdfFooter = [
+    'L' => [
+        'content' => 'DOST OneLab Referral © '.date('Y'),
+        'font-size' => 8,
+        'font-style' => 'B',
+        'color' => '#999999',
+    ],
+    'R' => [
+        'content' => '{PAGENO}',
+        'font-size' => 8,
+        'font-style' => 'B',
+        'font-family' => 'serif',
+        'color' => '#333333',
+    ],
+    'line' => true,
+];
 
 ?>
 
@@ -36,7 +72,7 @@ $this->params['breadcrumbs'][] = $this->title;
 				<h6><b>Choose type of accomplishment report to generate</b></h6>
 				<div id="gen-report-type" style="float:left; margin-right: 10px;">
 					<label class="radio-inline">
-				    	<input type="radio" name="report_type" id="all_lab" value="1"> <b>All laboratories </b>
+				    	<input type="radio" name="report_type" id="all_lab" value="1"> <b>All Laboratories </b>
 					</label>
 					<label class="radio-inline">
 						<input type="radio" name="report_type" id="per_lab" value="2"> <b>Per Laboratory</b>
@@ -123,8 +159,8 @@ $this->params['breadcrumbs'][] = $this->title;
 		                'contentOptions' => ['class' => 'bg-info text-primary','style'=>'font-weight:bold;font-size:15px;'],
 			            'group'=>true,  // enable grouping,
 			            'groupedRow'=>true,                    // move grouped column to a single grouped row
-			            //'groupOddCssClass'=>'kv-grouped-row',  // configure odd group cell css class
-			            //'groupEvenCssClass'=>'kv-grouped-row', // configure even group cell css class
+			            'groupOddCssClass'=>'kv-grouped-row',  // configure odd group cell css class
+			            'groupEvenCssClass'=>'kv-grouped-row', // configure even group cell css class
 			            'groupFooter'=>function ($model, $key, $index, $widget) { // Closure method
 			                return [
 			                    'mergeColumns'=>[[1]], // columns to merge in summary
@@ -368,18 +404,22 @@ $this->params['breadcrumbs'][] = $this->title;
 		                ],
 				        'exportConfig' => [
 					    	GridView::PDF => [
-				                'filename' => $labCode.'-Accomplishment_Report('.$startDate.'_'.$endDate.')',
-				                'alertMsg'        => 'The PDF export file will be generated for download.',
+				                'filename' => $labCode.'-Accomplishment_Report',
+				                //'alertMsg' => '<b>A PDF file for Accomplishment Report '.date('F j, Y',strtotime($startDate)).' to '.date('F j, Y',strtotime($endDate)).' will be generated for download.</b>',
+				                //'alertMsg' => false,
 				                'config' => [
-				                   // 'methods' => [
-				                   //     'SetHeader' => [$pdfHeader],
-				                   //     'SetFooter' => [$pdfFooter]
-				                   // ],
-				                    'options' => [
+					            	'methods' => [
+				                        'SetHeader' => [
+				                            ['odd' => $pdfHeader, 'even' => $pdfHeader],
+				                        ],
+				                        'SetFooter' => [
+				                            ['odd' => $pdfFooter, 'even' => $pdfFooter],
+				                        ],
+				                    ],
+				                    /*'options' => [
 				                        'title' => 'Accomplishment Report',
 				                        'subject' => 'Accomplishment_Report',
-				                        'keywords' => 'pdf, preceptors, export, other, keywords, here'
-				                    ],
+				                    ],*/
 				                ]
 				            ],
 				            GridView::EXCEL => [
@@ -394,14 +434,16 @@ $this->params['breadcrumbs'][] = $this->title;
 				                'showPageSummary' => TRUE,
 				                'showFooter'      => TRUE,
 				                'showCaption'     => TRUE,
-				                'filename'        =>  $labCode.'-Accomplishment_Report('.$startDate.'_'.$endDate.')',
-				                'alertMsg'        => 'The EXCEL export file will be generated for download.',
-				                'options'         => ['title' => 'Department of Science OneLab'],
+				                'filename'        =>  $labCode.'-Accomplishment_Report',
+				                //'alertMsg'        => 'The EXCEL export file will be generated for download.',
+				                //'options'         => ['title' => 'Department of Science OneLab'],
 				                'mime'            => 'application/vnd.ms-excel',
+				                //'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				                //'extension' => 'xlsx',
 				                'config'          => [
 				                    'worksheet' => 'Accomplishment',
 				                    'cssFile'   => ''
-				                ]
+				                ],
 				            ],
 					    ],
 				        'columns'=> $gridColumns,
@@ -409,12 +451,30 @@ $this->params['breadcrumbs'][] = $this->title;
 				        	[
 		                		'content' => Html::button('<i class="glyphicon glyphicon-repeat"></i> Reset Grid', ['title'=>'Reset Grid', 'onclick'=>'reloadGrid()', 'class' => 'btn btn-default'])
 		                	],
-		                	[
-		                		'content' => Html::button('<i class="glyphicon glyphicon-export"></i> Export', ['value'=>Url::to(['/reports/accomplishmentcro/export','lab_id'=>$labId,'report_type'=>$report_type,'from_date'=>$startDate,'to_date'=>$endDate]),'onclick'=>'window.open(this.value)','title'=>'Excel Export','class' => 'btn btn-default']),
+		                	//[
+		                		//'content' => Html::button('<i class="glyphicon glyphicon-export"></i> Export', ['value'=>Url::to(['/reports/accomplishmentcro/exportpdf','lab_id'=>$labId,'report_type'=>$report_type,'from_date'=>$startDate,'to_date'=>$endDate]),'onclick'=>'window.open(this.value)','title'=>'Excel Export','class' => 'btn btn-default']),
+		                		//'content' => Html::button('<i class="glyphicon glyphicon-export"></i> Export', ['value'=>Url::to(['/reports/export/download','lab_id'=>$labId,'module_id'=>'gridview',''=>$gridColumns,'report_type'=>$report_type,'from_date'=>$startDate,'to_date'=>$endDate]),'onclick'=>'window.open(this.value)','title'=>'Excel Export','class' => 'btn btn-default']),
 		                		//'content' => Html::button('<span class="glyphicon glyphicon-eye-open"></span>', ['value'=>Url::to(['referral/viewreferral','id'=>$data['referral_id']]),'onclick'=>'window.open(this.value)','class' => 'btn btn-primary','title' => 'View '.$data['referral_code']])
-		                	],
+		              		//	'export'=>[
+				            //    	'label' => 'Export',
+				            //    	'showConfirmAlert'=>false,
+							//        'fontAwesome'=>true,
+							//        'target'=>GridView::TARGET_SELF,
+							//    ],
+		                	//],
+		                	//'export'=>[
+			                //	'label' => 'Export',
+			                //	'showConfirmAlert'=>false,
+						    //   'fontAwesome'=>true,
+						    //    'target'=>GridView::TARGET_SELF,
+						    //],
 		                	'{export}',
 		                ],
+		                'autoXlFormat'=>true,
+		                'export'=>[
+					        'showConfirmAlert'=>false,
+					        'target'=>GridView::TARGET_BLANK
+					    ],
 	                /*'autoXlFormat'=>true,
 	                'export'=>[
 	                	'label' => 'Export',

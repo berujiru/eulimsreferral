@@ -1,12 +1,69 @@
-<div class="Lab-default-index">
-    <h1><?= $this->context->action->uniqueId ?></h1>
-    <p>
-        This is the view content for action "<?= $this->context->action->id ?>".
-        The action belongs to the controller "<?= get_class($this->context) ?>"
-        in the "<?= $this->context->module->id ?>" module.
-    </p>
-    <p>
-        You may customize this page by editing the following file:<br>
-        <code><?= __FILE__ ?></code>
-    </p>
+<?php 
+
+use yii\helpers\Html;
+use yii\helpers\Url;
+
+
+$this->title = 'Referral Reports';
+//$this->params['breadcrumbs'][] = ['label' => 'Referrals', 'url' => ['/referrals']];
+$this->params['breadcrumbs'][] = $this->title;
+?>
+
+<div class="accomplishment-report-default-index">
+    <div class="panel panel-primary">
+        <div class="panel-heading" style="font-weight: bold;font-size: 15px;">Accomplishment Reports</div>
+    <!-- <div class="panel-body">Panel Content</div> -->
+        <div class="panel-body">
+            <div class="accomplishment-image-loader" style="display: hidden;"></div>
+            <h4></h4>
+            <?php //echo CHtml::link(CHtml::image(Yii::app()->baseUrl . '/images/accompreportlab.png', 'Per Laboratory', array('class'=>'image-icon','title'=>'Accomplishment Report per Laboratory')),
+                //        $this->createUrl('/admindb/accomplishments/laboratory'),array('target'=>'_blank')
+            //)?>
+            <?php
+                echo Html::a(Html::img('@web/images/agencyaccomplishment.png', ['class'=>'image-icon','alt'=>'Accomplishment Report','title'=>'Accomplishment Report']), ['/reports/accomplishmentcro'], ['target' => '_blank']);
+
+                echo Html::a(Html::img('@web/images/truck.png', ['class'=>'image-icon','alt'=>'Referral Tracking','title'=>'Referral Tracking']), ['/referrals/referraltracking'], ['target' => '_blank']);
+            ?>
+            <?php //echo CHtml::link(
+                  //      CHtml::image(Yii::app()->baseUrl . '/images/accompreportagency.png', 'Per Agency', array('class'=>'image-icon','title'=>'Accomplishment Report per Agency')),
+                    //    $this->createUrl('/admindb/accomplishments/agency'),array('target'=>'_blank')
+                    //    )
+            ?>
+        </div>
+    </div>
 </div>
+<style type="text/css">
+/* Absolute Center Spinner */
+.accomplishment-img-loader {
+    position: fixed;
+    z-index: 999;
+    /*height: 2em;
+    width: 2em;*/
+    height: 64px;
+    width: 64px;
+    overflow: show;
+    margin: auto;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-image: url('/images/img-png-loader64.png');
+    background-repeat: no-repeat;
+}
+/* Transparent Overlay */
+.accomplishment-img-loader:before {
+    content: '';
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.3);
+}
+.image-icon {
+    height: 140px;
+    width: 160px;
+    margin-right: 40px;
+}
+</style>

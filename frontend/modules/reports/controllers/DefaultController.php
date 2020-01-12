@@ -21,10 +21,12 @@ class DefaultController extends Controller
     		return $this->render('index_admin');
        //} elseif (Yii::$app->user->can("CRO")) {
         //	return $this->render('index_non_admin');
-        } else {
-        	//return $this->render('index_non_admin');
+        } elseif (Yii::$app->user->can("CRO") || Yii::$app->user->can("Non-DOST-CRO")) {
+        	return $this->render('index_non_admin');
         	//return $this->redirect(['/referrals/referral']);
-        	return $this->redirect(['/reports/accomplishment']);
+        	//return $this->redirect(['/reports/accomplishmentcro']);
+        } else {
+            return $this->redirect(['/referrals/referral']);
         }
         //return $this->render('index');
     }

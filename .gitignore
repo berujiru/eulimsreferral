@@ -532,3 +532,9 @@ common/models/referral/Pstcsample_20191114.php
 common/models/referral/Sample_20190508.php
 common/models/referral/Pstcrequest - Copy.php
 frontend/modules/pstc/controllers/PstcattachmentController_or.php
+common/components/Exportkartik.php
+common/config/db.php
+common/config/db.php
+common/config/db.php
+frontend/modules/reports/views/accomplishmentcro/cro_review.php
+frontend/modules/reports/controllers/AccomplishmentcroController_bk.php

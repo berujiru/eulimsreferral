@@ -10,7 +10,11 @@ return [
     ],
     'vendorPath' => dirname(dirname(__DIR__)) . '/vendor',
     'modules' => [
-        'gridview' => ['class' => 'kartik\grid\Module'],
+        //'gridview' => ['class' => 'kartik\grid\Module'],
+		'gridview' => [
+			'class' => 'kartik\grid\Module',
+			'downloadAction' => '/reports/export/download',
+		],
         // 'datecontrol' =>  [
         //     'class' => 'kartik\datecontrol\Module'
         // ],
